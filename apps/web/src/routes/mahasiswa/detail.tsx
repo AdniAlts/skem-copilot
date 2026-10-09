@@ -6,7 +6,6 @@ import {
   Send,
   AlertTriangle,
   FileCheck2,
-  CheckCircle2,
   FileText,
   Upload,
   X,
@@ -23,6 +22,10 @@ import { MetadataPanel } from '../../components/MetadataPanel';
 import { FindingsList } from '../../components/FindingsList';
 import { TokenUsagePanel } from '../../components/TokenUsagePanel';
 import { AgentQuestion } from '../../components/AgentQuestion';
+import { SignatureModal } from '../../components/SignatureModal';
+import { SubmitDialog } from '../../components/SubmitDialog';
+import { useAuth } from '../../api/auth-context';
+import { useToast } from '../../components/ToastContext';
 import {
   getSubmissionDetail,
   patchSubmission,
@@ -52,8 +55,11 @@ export function MahasiswaDetailRoute() {
   const { id = 'SKM-7Q2K9D1A' } = useParams();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { showToast } = useToast();
 
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isReuploadModalOpen, setIsReuploadModalOpen] = useState(false);
   const [reuploadFile, setReuploadFile] = useState<File | null>(null);
@@ -93,14 +99,17 @@ export function MahasiswaDetailRoute() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['submission', id] });
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
-      setIsSubmitModalOpen(false);
+      setIsSubmitDialogOpen(false);
+      showToast('Pengajuan berhasil terkirim ke Verifikator', 'success');
+    },
+    onError: () => {
+      showToast('Gagal mengajukan berkas. Silakan coba lagi.', 'error');
     },
   });
 
   // Mutation Jawab Pertanyaan Agent
   const answerMutation = useMutation({
-    mutationFn: (data: { questionId: number; answer: string }) =>
-      answerQuestion(id, data),
+    mutationFn: (data: { questionId: number; answer: string }) => answerQuestion(id, data),
     onSuccess: (updated) => {
       queryClient.setQueryData(['submission', id], updated);
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
@@ -115,6 +124,7 @@ export function MahasiswaDetailRoute() {
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
       queryClient.invalidateQueries({ queryKey: ['batch'] });
       setIsCancelModalOpen(false);
+      showToast('Draf pengajuan berhasil dibatalkan', 'info');
       navigate('/mahasiswa');
     },
   });
@@ -129,8 +139,17 @@ export function MahasiswaDetailRoute() {
       setIsReuploadModalOpen(false);
       setReuploadFile(null);
       refetchCert();
+      showToast('Berkas berhasil diunggah ulang dan dianalisis kembali', 'success');
     },
   });
+
+  const handleStartSubmit = () => {
+    if (!user?.hasSignature) {
+      setIsSignatureModalOpen(true);
+    } else {
+      setIsSubmitDialogOpen(true);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -160,7 +179,8 @@ export function MahasiswaDetailRoute() {
 
   // Cek Temuan Kesesuaian Nama
   const nameFinding = submission.findings.find((f) => f.checkType === 'name_match');
-  const hasNameMismatchWarning = nameFinding && (nameFinding.result === 'warn' || nameFinding.result === 'fail');
+  const hasNameMismatchWarning =
+    nameFinding && (nameFinding.result === 'warn' || nameFinding.result === 'fail');
 
   // Tombol Ajukan hanya aktif jika reviewStatus === 'ready' dan status === 'draft'
   const isReadyToSubmit = submission.reviewStatus === 'ready' && submission.status === 'draft';
@@ -200,7 +220,9 @@ export function MahasiswaDetailRoute() {
               </div>
 
               <p className="text-xs text-slate-600 mt-1 flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-slate-900">{submission.activity.activityName}</span>
+                <span className="font-medium text-slate-900">
+                  {submission.activity.activityName}
+                </span>
                 <span>&bull;</span>
                 <span className="font-mono">{submission.publicId}.pdf</span>
               </p>
@@ -221,12 +243,8 @@ export function MahasiswaDetailRoute() {
               </div>
             ) : (
               <div className="px-3 py-1.5 bg-amber-50 rounded-lg border border-amber-200 text-right">
-                <span className="text-[10px] text-amber-700 block font-semibold">
-                  Tabel Bobot
-                </span>
-                <span className="text-xs font-medium text-amber-900">
-                  Kombinasi Luar Tabel
-                </span>
+                <span className="text-[10px] text-amber-700 block font-semibold">Tabel Bobot</span>
+                <span className="text-xs font-medium text-amber-900">Kombinasi Luar Tabel</span>
               </div>
             )}
 
@@ -258,7 +276,7 @@ export function MahasiswaDetailRoute() {
                   variant="primary"
                   size="md"
                   disabled={!isReadyToSubmit || submitMutation.isPending}
-                  onClick={() => setIsSubmitModalOpen(true)}
+                  onClick={handleStartSubmit}
                   className="gap-2 shadow-xs"
                   title={
                     !isReadyToSubmit
@@ -318,9 +336,7 @@ export function MahasiswaDetailRoute() {
             type="button"
             onClick={() => setActiveTab('pdf')}
             className={`flex-1 py-1.5 text-center font-medium rounded ${
-              activeTab === 'pdf'
-                ? 'bg-brand-teal text-white'
-                : 'text-slate-600 hover:bg-slate-100'
+              activeTab === 'pdf' ? 'bg-brand-teal text-white' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             PDF Sertifikat
@@ -352,18 +368,14 @@ export function MahasiswaDetailRoute() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* KOLOM KIRI: PRATINJAU PDF SERTIFIKAT (4/12) */}
         <div
-          className={`lg:col-span-4 space-y-4 ${
-            activeTab === 'pdf' ? 'block' : 'hidden lg:block'
-          }`}
+          className={`lg:col-span-4 space-y-4 ${activeTab === 'pdf' ? 'block' : 'hidden lg:block'}`}
         >
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between text-xs text-slate-700 font-semibold">
             <span className="flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-brand-teal" />
               Berkas Sertifikat Asli
             </span>
-            <span className="text-[11px] font-normal text-slate-500 font-mono">
-              PDF Terunggah
-            </span>
+            <span className="text-[11px] font-normal text-slate-500 font-mono">PDF Terunggah</span>
           </div>
 
           <PdfViewer
@@ -385,9 +397,7 @@ export function MahasiswaDetailRoute() {
               <FileCheck2 className="w-4 h-4 text-brand-teal" />
               Formulir FM.MHS.PENGAJUANSKEM
             </span>
-            <span className="text-[11px] font-normal text-slate-500">
-              Pratinjau Resmi
-            </span>
+            <span className="text-[11px] font-normal text-slate-500">Pratinjau Resmi</span>
           </div>
 
           <div className="overflow-y-auto max-h-[740px] rounded-lg">
@@ -528,70 +538,38 @@ export function MahasiswaDetailRoute() {
       </Modal>
 
       {/* ============================================================== */}
-      {/* MODAL KONFIRMASI AJUKAN KE VERIFIKATOR                         */}
+      {/* MODAL SIAPKAN TANDA TANGAN (JIKA BELUM ADA)                    */}
       {/* ============================================================== */}
-      <Modal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-        title="Ajukan ke Verifikator (Dosen Wali)"
-      >
-        <div className="space-y-4 text-xs text-slate-700">
-          <p className="leading-relaxed">
-            Anda akan mengajukan berkas kegiatan{' '}
-            <strong className="text-slate-900">{submission.activity.activityName}</strong> kepada
-            Dosen Wali ({submission.verifier?.name || 'Verifikator Kelas'}).
-          </p>
+      <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onSuccess={() => {
+          setIsSignatureModalOpen(false);
+          setIsSubmitDialogOpen(true);
+        }}
+      />
 
-          <div className="p-3 bg-slate-50 rounded border border-slate-200 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Nama Mahasiswa:</span>
-              <span className="font-semibold text-slate-900">{submission.student.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">NRP:</span>
-              <span className="font-mono font-semibold text-slate-900">{submission.student.nrp}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Estimasi Kredit SKEM:</span>
-              <span className="font-bold text-brand-teal">
-                {submission.skem.estimatedCredit !== null
-                  ? `${submission.skem.estimatedCredit.toFixed(2)} Poin`
-                  : 'Menunggu Keputusan'}
-              </span>
-            </div>
-          </div>
-
-          <div className="p-3 bg-teal-50/60 rounded border border-teal-100 flex items-start gap-2 text-teal-900 text-[11px] leading-relaxed">
-            <CheckCircle2 className="w-4 h-4 text-brand-teal shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold block mb-0.5">Tanda Tangan Digital Resmi</span>
-              Dengan mengklik tombol di bawah, Anda membubuhkan tanda tangan elektronik resmi pada
-              bagian IV formulir FM.MHS.PENGAJUANSKEM dan menyetujui pernyataan kebenaran data.
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsSubmitModalOpen(false)}
-              disabled={submitMutation.isPending}
-            >
-              Batal
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => submitMutation.mutate()}
-              disabled={submitMutation.isPending}
-              className="gap-1.5"
-            >
-              <Send className="w-3.5 h-3.5" />
-              {submitMutation.isPending ? 'Mengirimkan...' : 'Ya, Ajukan Sekarang'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {/* ============================================================== */}
+      {/* DIALOG KONFIRMASI TANDA TANGANI DAN KIRIM PENGAJUAN             */}
+      {/* ============================================================== */}
+      <SubmitDialog
+        isOpen={isSubmitDialogOpen}
+        onClose={() => setIsSubmitDialogOpen(false)}
+        submissionsToSubmit={[
+          {
+            publicId: submission.publicId,
+            activityName: submission.activity.activityName,
+            fileName: `${submission.publicId}.pdf`,
+            estimatedCredit: submission.skem.estimatedCredit,
+            hasWarning: hasNameMismatchWarning,
+          },
+        ]}
+        verifierName={submission.verifier?.name || user?.verifierName || undefined}
+        onSubmit={async () => {
+          await submitMutation.mutateAsync();
+        }}
+        isSubmitting={submitMutation.isPending}
+      />
     </div>
   );
 }

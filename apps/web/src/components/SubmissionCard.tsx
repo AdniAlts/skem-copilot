@@ -11,12 +11,16 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
+  Send,
 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { Button } from './Button';
 import { AgentQuestion } from './AgentQuestion';
 import { answerQuestion } from '../api/submissions';
-import type { SubmissionCard as SubmissionCardType, AgentQuestion as AgentQuestionType } from '@skem/shared';
+import type {
+  SubmissionCard as SubmissionCardType,
+  AgentQuestion as AgentQuestionType,
+} from '@skem/shared';
 import { cn } from '../lib/utils';
 
 export interface SubmissionCardProps {
@@ -25,6 +29,7 @@ export interface SubmissionCardProps {
   onReupload?: (publicId: string) => void;
   onRetry?: (publicId: string) => void;
   onAnswer?: (publicId: string) => void;
+  onOpenSubmit?: (publicId: string) => void;
   questions?: AgentQuestionType[];
   className?: string;
 }
@@ -49,6 +54,7 @@ export function SubmissionCard({
   onReupload,
   onRetry,
   onAnswer,
+  onOpenSubmit,
   questions,
   className,
 }: SubmissionCardProps) {
@@ -94,7 +100,7 @@ export function SubmissionCard({
     <div
       className={cn(
         'bg-white rounded-lg border border-slate-200 p-4 hover:border-slate-300 transition-colors',
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -203,12 +209,8 @@ export function SubmissionCard({
           <div className="flex items-start gap-2 p-2 bg-slate-100 rounded-lg">
             <AlertTriangle className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-700 font-medium mb-1">
-                Gagal menganalisis dokumen
-              </p>
-              {lastError && (
-                <p className="text-xs text-slate-600 truncate">{lastError}</p>
-              )}
+              <p className="text-xs text-slate-700 font-medium mb-1">Gagal menganalisis dokumen</p>
+              {lastError && <p className="text-xs text-slate-600 truncate">{lastError}</p>}
             </div>
           </div>
         )}
@@ -270,13 +272,24 @@ export function SubmissionCard({
           )}
 
           <div className="ml-auto flex items-center gap-2">
+            {isReady && onOpenSubmit && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => onOpenSubmit(publicId)}
+                className="flex items-center gap-1.5 shadow-xs"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Ajukan</span>
+              </Button>
+            )}
             <Link to={`/mahasiswa/detail/${publicId}`}>
               <Button
-                variant={isReady ? 'primary' : 'outline'}
+                variant={isReady && !onOpenSubmit ? 'primary' : 'outline'}
                 size="sm"
                 className="flex items-center gap-1.5"
               >
-                <span>{isReady ? 'Buka Detail & Ajukan' : 'Lihat Detail'}</span>
+                <span>{isReady && !onOpenSubmit ? 'Buka Detail & Ajukan' : 'Lihat Detail'}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </Button>
             </Link>
