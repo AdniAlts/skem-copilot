@@ -5,6 +5,9 @@ import {
   getCertificateUrl,
   submitToVerifier,
   answerQuestion,
+  getSubmissions,
+  getStudentProgress,
+  getFinalFormUrl,
 } from './submissions';
 import { apiClient } from './client';
 
@@ -231,5 +234,62 @@ describe('Submissions API Client', () => {
 
     expect(sub2.publicId).toBe('SKM-CARD-2');
     expect(sub2.skem.level).toBe('Kampus');
+  });
+
+  it('mengambil daftar pengajuan via getSubmissions', async () => {
+    const mockList = [
+      {
+        publicId: 'SKM-12345678',
+        batchId: 'BAT-01',
+        fileName: 'sertif.pdf',
+        status: 'approved' as const,
+        reviewStatus: 'ready' as const,
+        activityName: 'Lomba Desain',
+        estimatedCredit: 1.1,
+        finalCredit: 1.1,
+        warnings: [],
+        openQuestionCount: 0,
+        lastError: null,
+        updatedAt: '2026-10-10T00:00:00Z',
+      },
+    ];
+
+    vi.spyOn(apiClient, 'get').mockResolvedValueOnce(mockList);
+
+    const res = await getSubmissions();
+    expect(res).toHaveLength(1);
+    expect(res[0]?.publicId).toBe('SKM-12345678');
+    expect(apiClient.get).toHaveBeenCalledWith('/api/submissions');
+  });
+
+  it('mengambil progres kredit via getStudentProgress', async () => {
+    const mockProgress = {
+      komponen: [
+        { komponen: 1, target: 1.25, earned: 0.5 },
+        { komponen: 2, target: 0.5, earned: 0.25 },
+        { komponen: 3, target: 1.25, earned: 1.1 },
+      ],
+      total: 1.85,
+      target: 3.0,
+      fulfilled: false,
+    };
+
+    vi.spyOn(apiClient, 'get').mockResolvedValueOnce(mockProgress);
+
+    const res = await getStudentProgress();
+    expect(res.total).toBe(1.85);
+    expect(res.fulfilled).toBe(false);
+    expect(apiClient.get).toHaveBeenCalledWith('/api/me/progress');
+  });
+
+  it('mengambil URL formulir final via getFinalFormUrl', async () => {
+    vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+      url: 'https://storage.pens.ac.id/final.pdf',
+      expiresIn: 60,
+    });
+
+    const res = await getFinalFormUrl('SKM-12345678');
+    expect(res.url).toBe('https://storage.pens.ac.id/final.pdf');
+    expect(apiClient.get).toHaveBeenCalledWith('/api/submissions/SKM-12345678/final-form');
   });
 });

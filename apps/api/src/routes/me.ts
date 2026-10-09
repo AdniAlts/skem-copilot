@@ -5,14 +5,14 @@
  * GET /me/signature — unduh berkas tanda tangan privat milik sendiri
  */
 
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { Router } from 'express';
 import multer from 'multer';
 
-import { MeSchema } from '@skem/shared';
+import { MeSchema, ProgressSchema } from '@skem/shared';
 
 import { createDb } from '../db/client';
-import { classes, users } from '../db/schema';
+import { classes, submissions, users } from '../db/schema';
 import { asyncHandler, AppError } from '../middleware/error';
 import { requireAuth } from '../middleware/auth';
 import { bucketSignatures, uploadObject, downloadObject } from '../services/storage';
@@ -207,3 +207,73 @@ meRouter.get(
     }
   }),
 );
+
+/**
+ * GET /me/progress — ringkasan progres kredit per komponen menuju 3,0
+ */
+meRouter.get(
+  '/me/progress',
+  requireAuth(),
+  asyncHandler(async (req, res) => {
+    const user = req.sessionUser!;
+    if (user.role !== 'student') {
+      throw new AppError('FORBIDDEN', 'Hanya mahasiswa yang memiliki progres kredit.');
+    }
+
+    const { client, db } = createDb();
+    try {
+      const approvedRows = await db
+        .select({
+          komponen: submissions.komponen,
+          finalCredit: submissions.finalCredit,
+          estimatedCredit: submissions.estimatedCredit,
+        })
+        .from(submissions)
+        .where(
+          and(
+            eq(submissions.studentId, user.id),
+            eq(submissions.status, 'approved'),
+          ),
+        );
+
+      let earnedK1 = 0;
+      let earnedK2 = 0;
+      let earnedK3 = 0;
+
+      for (const row of approvedRows) {
+        const credit = Number(row.finalCredit ?? row.estimatedCredit ?? 0);
+        if (row.komponen === 1) earnedK1 += credit;
+        else if (row.komponen === 2) earnedK2 += credit;
+        else if (row.komponen === 3) earnedK3 += credit;
+      }
+
+      earnedK1 = Math.round(earnedK1 * 100) / 100;
+      earnedK2 = Math.round(earnedK2 * 100) / 100;
+      earnedK3 = Math.round(earnedK3 * 100) / 100;
+
+      const total = Math.round((earnedK1 + earnedK2 + earnedK3) * 100) / 100;
+      const target = 3.0;
+      const targetK1 = 1.25;
+      const targetK2 = 0.5;
+      const targetK3 = 1.25;
+
+      const fulfilled = total >= target && earnedK1 >= targetK1 && earnedK2 >= targetK2;
+
+      const body = ProgressSchema.parse({
+        komponen: [
+          { komponen: 1, target: targetK1, earned: earnedK1 },
+          { komponen: 2, target: targetK2, earned: earnedK2 },
+          { komponen: 3, target: targetK3, earned: earnedK3 },
+        ],
+        total,
+        target,
+        fulfilled,
+      });
+
+      res.json(body);
+    } finally {
+      await client.end();
+    }
+  }),
+);
+

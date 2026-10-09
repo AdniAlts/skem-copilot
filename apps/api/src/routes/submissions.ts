@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { Router } from 'express';
 import multer from 'multer';
 
@@ -7,7 +7,13 @@ import { documents, statusHistory, submissions } from '../db/schema.js';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import { certificatePath, validatePdfFile } from '../services/batch-upload.js';
-import { bucketCertificates, removeObject, uploadObject } from '../services/storage.js';
+import {
+  bucketCertificates,
+  bucketForms,
+  createSignedUrl,
+  removeObject,
+  uploadObject,
+} from '../services/storage.js';
 import { toSubmissionCard } from '../services/submission-card.js';
 import { processSubmission } from '../queue/worker.js';
 
@@ -90,6 +96,97 @@ submissionsRouter.post(
   }),
 );
 
+/**
+ * GET /submissions — daftar pengajuan milik mahasiswa sendiri
+ * Query opsional: status, reviewStatus
+ */
+submissionsRouter.get(
+  '/submissions',
+  requireAuth(),
+  asyncHandler(async (req, res) => {
+    const user = req.sessionUser!;
+    if (user.role !== 'student') {
+      throw new AppError('FORBIDDEN', 'Hanya mahasiswa yang dapat melihat pengajuan pribadi.');
+    }
+
+    const { status, reviewStatus } = req.query;
+    const { client, db } = createDb();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const conditions: any[] = [eq(submissions.studentId, user.id)];
+      if (status && typeof status === 'string') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        conditions.push(eq(submissions.status, status as any));
+      }
+      if (reviewStatus && typeof reviewStatus === 'string') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        conditions.push(eq(submissions.reviewStatus, reviewStatus as any));
+      }
+
+      const rows = await db
+        .select({
+          submission: submissions,
+          document: documents,
+        })
+        .from(submissions)
+        .leftJoin(documents, eq(documents.submissionId, submissions.id))
+        .where(and(...conditions))
+        .orderBy(desc(submissions.createdAt));
+
+      const cards = rows.map((r) =>
+        toSubmissionCard(r.submission, r.document?.fileName ?? '')
+      );
+
+      res.json(cards);
+    } finally {
+      await client.end();
+    }
+  }),
+);
+
+/**
+ * GET /submissions/:publicId/final-form — unduh formulir final (signed URL)
+ */
+submissionsRouter.get(
+  '/submissions/:publicId/final-form',
+  requireAuth(),
+  asyncHandler(async (req, res) => {
+    const { publicId } = req.params;
+    const { client, db } = createDb();
+    try {
+      const row = (
+        await db
+          .select({
+            finalFormPath: submissions.finalFormPath,
+            finalFormStatus: submissions.finalFormStatus,
+            studentId: submissions.studentId,
+          })
+          .from(submissions)
+          .where(eq(submissions.publicId, String(publicId)))
+          .limit(1)
+      )[0];
+
+      if (!row) {
+        throw new AppError('NOT_FOUND', 'Pengajuan tidak ditemukan.');
+      }
+
+      if (req.sessionUser!.role === 'student' && row.studentId !== req.sessionUser!.id) {
+        throw new AppError('FORBIDDEN', 'Tidak memiliki akses ke pengajuan ini.');
+      }
+
+      if (!row.finalFormPath || row.finalFormStatus === 'none') {
+        throw new AppError('NOT_FOUND', 'Formulir final belum tersedia.');
+      }
+
+      const signed = await createSignedUrl(bucketForms(), row.finalFormPath);
+      res.json(signed);
+    } finally {
+      await client.end();
+    }
+  }),
+);
+
 export async function runSubmissionNow(submissionId: number): Promise<void> {
   await processSubmission(submissionId);
 }
+
