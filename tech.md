@@ -31,7 +31,16 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 ## Library, framework, template, boilerplate
 | Nama | Versi | Lisensi | Dipakai untuk | Template/boilerplate? |
 |---|---|---|---|---|
-| TODO (diisi saat L-01 dan seterusnya: React, Vite, Express, Drizzle, zod, TanStack Query, pdf-lib, sharp, grammY, Vitest, …) | | | | |
+| React, React DOM | 19.3.0 | MIT | UI web | — |
+| Vite, @vitejs/plugin-react | 8.3.4, 6.1.2 | MIT | Dev server & build web | Konfigurasi ditulis manual (bukan `npm create vite`) |
+| Express | 5.3.0 | MIT | REST API | — |
+| tsx | 4.23.15 | MIT | Menjalankan TypeScript API saat dev/start | — |
+| TypeScript | 6.0.3 | Apache-2.0 | Bahasa & typecheck | — |
+| Vitest, Supertest | 5.0.3, 7.3.1 | MIT | Tes unit & integrasi HTTP | — |
+| ESLint, typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-react-refresh, eslint-config-prettier | 10.12.0, 8.71.1, … | MIT | Lint | — |
+| Prettier | 3.9.9 | MIT | Format kode | — |
+| concurrently | 10.0.6 | MIT | Menjalankan API + web bersamaan | — |
+| TODO (menyusul: Drizzle, zod, TanStack Query, pdf-lib, sharp, grammY, …) | | | | |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 
