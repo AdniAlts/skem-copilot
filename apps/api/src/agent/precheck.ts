@@ -33,7 +33,7 @@ export type PrecheckResult = {
   warnings: Finding[];
   questions: TemplateQuestion[];
   extractedFields: ExtractedFields;
-  classification: ClassificationResult;
+  classification: ClassificationResult | null;
   readerStrategy: ReaderStrategy;
   activityName: string | null;
   activityDate: string | null;
@@ -89,7 +89,7 @@ function refForFinding(sections: GuidelineSections, checkType: Finding['checkTyp
 
 export async function runPrecheck(input: PrecheckInput, dependencies: PrecheckDependencies): Promise<PrecheckResult> {
   const readerResult = input.extractedFields
-    ? { strategy: 'cache' as const, fields: input.extractedFields }
+    ? { strategy: 'cache' as const, fields: input.extractedFields, llmCalls: 0 }
     : await dependencies.reader.read({ sha256: input.sha256, pdf: input.pdf }, { submissionId: input.submissionId, runId: input.runId });
   const fields = readerResult.fields;
   const candidates = buildCandidates(dependencies.creditTable, {
@@ -102,33 +102,37 @@ export async function runPrecheck(input: PrecheckInput, dependencies: PrecheckDe
     tags: ['check:category', 'check:level', 'check:role', 'check:activity_name', 'check:completeness', 'check:credit'],
     ...(candidates.category[0] ? { categoryCode: candidates.category[0].code } : {}),
   }).sections;
-  const classification = input.classification ?? await classifyActivity(
-    fields,
-    candidates,
-    sections,
-    { submissionId: input.submissionId, runId: input.runId },
-    dependencies.classify,
-  );
-  const missingSet = new Set(confidenceMissing(classification, dependencies.rules.confidenceThreshold));
+  const classification = input.classification ?? (readerResult.llmCalls >= 2
+    ? null
+    : await classifyActivity(
+      fields,
+      candidates,
+      sections,
+      { submissionId: input.submissionId, runId: input.runId },
+      dependencies.classify,
+    ));
+  const missingSet = new Set(classification
+    ? confidenceMissing(classification, dependencies.rules.confidenceThreshold)
+    : ['category', 'level', 'role', 'achievement']);
   if (!fields.recipient_name.value || fields.recipient_name.confidence < dependencies.rules.confidenceThreshold) missingSet.add('recipient_name');
   if (!fields.activity_end_date.value || fields.activity_end_date.confidence < dependencies.rules.confidenceThreshold) missingSet.add('activity_end_date');
   if (!fields.activity_name.value || fields.activity_name.confidence < dependencies.rules.confidenceThreshold) missingSet.add('activity_name');
-  const category = classification.category[0];
+  const category = classification?.category[0];
   const selectedCategoryRows = dependencies.creditTable.entries.filter((entry) => entry.categoryCode === category?.code);
   const supportsLevels = selectedCategoryRows.some((entry) => entry.level !== null);
   const supportsRoles = selectedCategoryRows.some((entry) => entry.role !== null);
-  if (!supportsLevels) missingSet.delete('level');
-  if (!supportsRoles) {
+  if (category && !supportsLevels) missingSet.delete('level');
+  if (category && !supportsRoles) {
     missingSet.delete('role');
     missingSet.delete('achievement');
   }
   const missing = [...missingSet];
-  const scopeLevels = hasScopeLevels(category ? [category] : [], dependencies.creditTable);
+  const scopeLevels = hasScopeLevels(category ? [category] : candidates.category, dependencies.creditTable);
   const questions = toQuestions(missing, candidates, scopeLevels, input.answers);
-  const levelCandidate = classification.level[0];
+  const levelCandidate = classification?.level[0];
   const needsScopeAnswer = scopeLevels && missing.includes('level') && !input.answers.participant_scope;
-  const roleCandidate = classification.role[0];
-  const achievementCandidate = classification.achievement[0];
+  const roleCandidate = classification?.role[0];
+  const achievementCandidate = classification?.achievement[0];
   const selectedLevel = levelCandidate?.code === NO_LEVEL_CODE ? null : levelCandidate?.code ?? null;
   const selectedRole = roleCandidate?.code === NO_ROLE_CODE ? null : roleCandidate?.code ?? null;
   const selectedAchievement = achievementCandidate?.code === NO_ROLE_CODE ? null : achievementCandidate?.code ?? null;
@@ -136,7 +140,7 @@ export async function runPrecheck(input: PrecheckInput, dependencies: PrecheckDe
     ? dependencies.creditTable.entries.find((entry) => entry.categoryCode === category.code)
     : undefined;
   const component = categoryEntry?.komponen ?? null;
-  const activityNameFull = classification.activity_name_full;
+  const activityNameFull = classification?.activity_name_full ?? null;
   const activityName = activityNameFull && activityNameFull.confidence >= dependencies.rules.confidenceThreshold
     ? activityNameFull.value
     : fields.activity_name.value;

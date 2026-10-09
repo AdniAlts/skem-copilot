@@ -12,10 +12,10 @@ export function extractionPrompt(text: string): string {
   return `${buildExtractTextPrompt(text)}\n\n${EXTRACT_SYSTEM_PROMPT}`;
 }
 
-export async function extractTextFields(pdf: Buffer, context: ReaderContext): Promise<ExtractedFields> {
-  const result = await extractText(pdf, { mergePages: false });
+export async function extractTextFields(pdf: Buffer, context: ReaderContext): Promise<ExtractedFields | null> {
+  const result = await extractText(new Uint8Array(pdf), { mergePages: false });
   const pages = result.text.slice(0, 2).join('\n').trim();
-  if (pages.length < 200) throw new Error('PDF text layer tidak cukup; gunakan vision.');
+  if (pages.length < 200) return null;
   const response: CallLlmResult<ExtractedFields> = await callLlm({
     purpose: 'extract_text',
     submissionId: context.submissionId,

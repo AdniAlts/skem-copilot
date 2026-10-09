@@ -55,6 +55,29 @@ function makeClassifier(missing: string[], categoryCode?: string, preferredRole?
 }
 
 describe('runPrecheck', () => {
+  it('caps each card at two model calls and skips classification after extraction fallback', async () => {
+    const fake = makeClassifier([]);
+    const result = await runPrecheck({
+      submissionId: 1,
+      runId: 6,
+      pdf: Buffer.from('%PDF fallback'),
+      sha256: 'fixture-two-calls',
+      student: { name: 'Budi Santoso', angkatan: 2025 },
+      today: '2026-10-09',
+      answers: {},
+    }, {
+      reader: { read: async () => ({ strategy: 'vision', fields, llmCalls: 2 }) },
+      classify: fake.classify,
+      rules,
+      creditTable,
+      guidelineSections,
+    });
+    expect(result.reviewStatus).toBe('needs_fix');
+    expect(result.classification).toBeNull();
+    expect(result.questions.length).toBeLessThanOrEqual(3);
+    expect(fake.callCount()).toBe(0);
+  });
+
   it('asks participant scope, then recheck maps national to official credit without a second classification', async () => {
     const fake = makeClassifier(['level']);
     const first = await runPrecheck({
@@ -66,7 +89,7 @@ describe('runPrecheck', () => {
       today: '2026-10-09',
       answers: {},
     }, {
-      reader: { read: async () => ({ strategy: 'text', fields }) },
+      reader: { read: async () => ({ strategy: 'text', fields, llmCalls: 1 }) },
       classify: fake.classify,
       rules,
       creditTable,
@@ -76,6 +99,7 @@ describe('runPrecheck', () => {
     expect(first.questions[0]?.field).toBe('participant_scope');
     expect(first.questions[0]?.options).toHaveLength(5);
 
+    if (!first.classification) throw new Error('First precheck should include classification result');
     const afterAnswer = await runPrecheck({
       submissionId: 1,
       runId: 3,
@@ -118,7 +142,7 @@ describe('runPrecheck', () => {
       today: '2026-10-09',
       answers: {},
     }, {
-      reader: { read: async () => ({ strategy: 'text', fields: spellingFields }) },
+      reader: { read: async () => ({ strategy: 'text', fields: spellingFields, llmCalls: 1 }) },
       classify: fake.classify,
       rules,
       creditTable,
@@ -170,7 +194,7 @@ describe('runPrecheck', () => {
       today: '2026-10-09',
       answers: { participant_scope: 'national' },
     }, {
-      reader: { read: async () => ({ strategy: 'text', fields: wrongRecipient }) },
+      reader: { read: async () => ({ strategy: 'text', fields: wrongRecipient, llmCalls: 1 }) },
       classify: fake.classify,
       rules,
       creditTable,
