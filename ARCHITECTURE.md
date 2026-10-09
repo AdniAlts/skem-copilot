@@ -258,7 +258,7 @@ sequenceDiagram
 
 ## 6. Antrian analisis (`apps/api/src/queue/worker.ts`)
 
-- Worker mulai bersama server; `setInterval` 2 s; konkurensi `WORKER_CONCURRENCY` di `data/rules.json` (default 1, maks 2).
+- Worker mulai bersama server; `setInterval` 2 s; konkurensi `worker.concurrency` di `data/rules.json` (default 1, maks 2; percobaan maks. `worker.maxAttempts`).
 - Klaim pekerjaan dalam satu transaksi:
   ```sql
   UPDATE submissions SET review_status='analyzing', locked_at=now(), attempts=attempts+1
@@ -313,8 +313,8 @@ Aturan:
 - `classify_activity` hanya boleh memilih `code` dari `candidates` (diambil dari `credit_table.json`); kode di luar daftar = invalid.
 - Pertanyaan dari **templat kode**, maks. 3 per kartu (`CHECK seq ≤ 3`). Pertanyaan tingkat selalu berupa pilihan cakupan peserta (`PARTICIPANT_SCOPE` + "Saya tidak tahu"). Jawaban dipetakan ke field lalu aturan deterministik dijalankan ulang **tanpa LLM**.
 - Panggilan LLM: `temperature: 0`, `response_format: { type: 'json_object' }`, timeout 45 s. JSON invalid → satu kali percobaan perbaikan (kirim error zod, minta JSON saja); gagal lagi → error transien (retry antrian).
-- Ambang (`data/rules.json`): `confidenceThreshold` awal 0,7; `nameMatch.warnMin` 0,8 (`pass` = sama persis setelah normalisasi gelar/tanda baca; skor ≥ 0,8 → `warn`; di bawahnya → `fail`; dikalibrasi dengan test set).
-- Aturan tanggal (`data/rules.json`): angkatan ≤ 2024 → `activity_end_date ≥ 2024-01-01`; angkatan ≥ 2025 → `[submissionDate − 1 tahun, submissionDate]` inklusif; tanggal masa depan selalu tidak valid. `submissionDate` = hari ini saat analisis/cek ulang.
+- Ambang (`data/rules.json`): `confidenceThreshold` awal 0,7; `nameMatch.warnMin` 0,8. `match_name`: `pass` = sama persis setelah normalisasi (gelar, aksen, tanda baca, kapital); selain itu skor = rata-rata Jaro-Winkler per kata (setiap kata nama yang lebih pendek dipasangkan dengan kata paling mirip; inisial "M." cocok "Muhammad"), skor ≥ 0,8 → `warn`, di bawahnya → `fail`. Skor per kata dipilih daripada Jaro-Winkler string utuh agar nama depan yang sama ("Muhammad Ilham" vs "Muhammad Rizki") tidak lolos sebagai `warn`.
+- Aturan tanggal (`data/rules.json` → `dateRules`): angkatan < `minAngkatan` (2024) → `fail` ("SKEM berlaku untuk angkatan 2024 dan setelahnya"); angkatan 2024 → `activity_end_date ≥ angkatan2024MinDate` (2024-01-01); angkatan ≥ 2025 → `[submissionDate − angkatan2025PlusWindowYears, submissionDate]` inklusif (29 Feb → 28 Feb); tanggal masa depan selalu `fail`. Di dalam rentang tetapi sebelum perkiraan awal masa studi (`{angkatan}-{studyStartMonthDay}`, default 1 Agustus) → `warn`, bukan `fail` (Ketentuan Umum SKEM poin 8; keputusan tim). `submissionDate` = hari ini saat analisis/cek ulang, selalu diteruskan sebagai argumen `today`.
 
 Catatan domain untuk `credit_table.json` (182 baris; rincian di `data/credit_table.NOTES.md`): kolom "Tingkat" di Lampiran tidak selalu cakupan peserta (ada "Program Studi (Hima)", "UKM / Tim Kompetisi", "Lanjut/Menengah", "Perseroan Terbatas (PT)", dll.). Karena itu `level` adalah string per baris, sedangkan pertanyaan cakupan peserta hanya dipakai untuk baris bertingkat Internasional/Nasional/Regional/Kampus. `level` dan `role` bernilai `null` bila kolomnya kosong di tabel (Komponen 1–2 tanpa tingkat; bidang D tanpa tingkat dan jabatan), dan `bidang` (`A`–`D`) hanya diisi untuk Komponen 3. `lookup_credit_table` harus mencocokkan `null` secara eksplisit, bukan sebagai wildcard.
 
