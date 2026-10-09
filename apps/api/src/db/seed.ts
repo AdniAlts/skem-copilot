@@ -34,9 +34,30 @@ const SEED_CLASSES: { name: string; advisor: SeedUser; students: SeedUser[] }[] 
       departemen: 'Teknologi Informasi',
     },
     students: [
-      { name: 'Mahasiswa A1', nrp: '240810100001', role: 'student', angkatan: 2024, programStudi: 'D3 Teknologi Informasi', departemen: 'Teknologi Informasi' },
-      { name: 'Mahasiswa A2', nrp: '240810100002', role: 'student', angkatan: 2024, programStudi: 'D3 Teknologi Informasi', departemen: 'Teknologi Informasi' },
-      { name: 'Mahasiswa A3', nrp: '240810100003', role: 'student', angkatan: 2024, programStudi: 'D3 Teknologi Informasi', departemen: 'Teknologi Informasi' },
+      {
+        name: 'Mahasiswa A1',
+        nrp: '240810100001',
+        role: 'student',
+        angkatan: 2024,
+        programStudi: 'D3 Teknologi Informasi',
+        departemen: 'Teknologi Informasi',
+      },
+      {
+        name: 'Mahasiswa A2',
+        nrp: '240810100002',
+        role: 'student',
+        angkatan: 2024,
+        programStudi: 'D3 Teknologi Informasi',
+        departemen: 'Teknologi Informasi',
+      },
+      {
+        name: 'Mahasiswa A3',
+        nrp: '240810100003',
+        role: 'student',
+        angkatan: 2024,
+        programStudi: 'D3 Teknologi Informasi',
+        departemen: 'Teknologi Informasi',
+      },
     ],
   },
   {
@@ -49,9 +70,30 @@ const SEED_CLASSES: { name: string; advisor: SeedUser; students: SeedUser[] }[] 
       departemen: 'Teknologi Informasi',
     },
     students: [
-      { name: 'Mahasiswa B1', nrp: '240810100011', role: 'student', angkatan: 2024, programStudi: 'D3 Teknologi Informasi', departemen: 'Teknologi Informasi' },
-      { name: 'Mahasiswa B2', nrp: '240810100012', role: 'student', angkatan: 2024, programStudi: 'D3 Teknologi Informasi', departemen: 'Teknologi Informasi' },
-      { name: 'Mahasiswa B3', nrp: '240810100013', role: 'student', angkatan: 2024, programStudi: 'D3 Teknologi Informasi', departemen: 'Teknologi Informasi' },
+      {
+        name: 'Mahasiswa B1',
+        nrp: '240810100011',
+        role: 'student',
+        angkatan: 2024,
+        programStudi: 'D3 Teknologi Informasi',
+        departemen: 'Teknologi Informasi',
+      },
+      {
+        name: 'Mahasiswa B2',
+        nrp: '240810100012',
+        role: 'student',
+        angkatan: 2024,
+        programStudi: 'D3 Teknologi Informasi',
+        departemen: 'Teknologi Informasi',
+      },
+      {
+        name: 'Mahasiswa B3',
+        nrp: '240810100013',
+        role: 'student',
+        angkatan: 2024,
+        programStudi: 'D3 Teknologi Informasi',
+        departemen: 'Teknologi Informasi',
+      },
     ],
   },
   {
@@ -64,9 +106,30 @@ const SEED_CLASSES: { name: string; advisor: SeedUser; students: SeedUser[] }[] 
       departemen: 'Teknologi Informasi',
     },
     students: [
-      { name: 'Mahasiswa C1', nrp: '25810100101', role: 'student', angkatan: 2025, programStudi: 'Sarjana Terapan Informatika', departemen: 'Teknologi Informasi' },
-      { name: 'Mahasiswa C2', nrp: '25810100102', role: 'student', angkatan: 2025, programStudi: 'Sarjana Terapan Informatika', departemen: 'Teknologi Informasi' },
-      { name: 'Mahasiswa C3', nrp: '25810100103', role: 'student', angkatan: 2025, programStudi: 'Sarjana Terapan Informatika', departemen: 'Teknologi Informasi' },
+      {
+        name: 'Mahasiswa C1',
+        nrp: '25810100101',
+        role: 'student',
+        angkatan: 2025,
+        programStudi: 'Sarjana Terapan Informatika',
+        departemen: 'Teknologi Informasi',
+      },
+      {
+        name: 'Mahasiswa C2',
+        nrp: '25810100102',
+        role: 'student',
+        angkatan: 2025,
+        programStudi: 'Sarjana Terapan Informatika',
+        departemen: 'Teknologi Informasi',
+      },
+      {
+        name: 'Mahasiswa C3',
+        nrp: '25810100103',
+        role: 'student',
+        angkatan: 2025,
+        programStudi: 'Sarjana Terapan Informatika',
+        departemen: 'Teknologi Informasi',
+      },
     ],
   },
 ];
@@ -92,7 +155,11 @@ const { client, db } = createDb();
 async function upsertUser(u: SeedUser, classId: number | null): Promise<number> {
   // nrp NULL (verifikator/validator/unit): idempoten via nama
   if (u.nrp === null) {
-    const found = await db.select({ id: users.id }).from(users).where(eq(users.name, u.name)).limit(1);
+    const found = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.name, u.name))
+      .limit(1);
     if (found[0]) return found[0].id;
     const [inserted] = await db
       .insert(users)
@@ -154,7 +221,9 @@ async function main(): Promise<void> {
     }
 
     const allClasses = await db.select({ id: classes.id, name: classes.name }).from(classes);
-    const allUsers = await db.select({ id: users.id, name: users.name, role: users.role }).from(users);
+    const allUsers = await db
+      .select({ id: users.id, name: users.name, role: users.role })
+      .from(users);
     console.log(
       `Seed selesai: ${allClasses.length} kelas, ${allUsers.length} pengguna ` +
         `(${allUsers.filter((u) => u.role === 'student').length} mahasiswa, ` +

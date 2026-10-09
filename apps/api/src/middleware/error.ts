@@ -41,7 +41,11 @@ export function errorHandler(err: unknown, _req: Request, res: Response, next: N
   }
   if (err instanceof AppError) {
     res.status(err.httpStatus).json({
-      error: { code: err.code, message: err.message, ...(err.details ? { details: err.details } : {}) },
+      error: {
+        code: err.code,
+        message: err.message,
+        ...(err.details ? { details: err.details } : {}),
+      },
     });
     return;
   }

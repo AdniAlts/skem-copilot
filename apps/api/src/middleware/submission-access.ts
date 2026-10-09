@@ -12,7 +12,9 @@ import { AppError } from './error.js';
 
 /** Muat submission by publicId lalu cek akses req.sessionUser. */
 export function loadSubmissionWithAccess(
-  findByPublicId: (publicId: string) => Promise<{ id: number; studentId: number; classId: number } | null>,
+  findByPublicId: (
+    publicId: string,
+  ) => Promise<{ id: number; studentId: number; classId: number } | null>,
   publicIdFrom: (req: Request) => string,
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   return async (req, res, next) => {

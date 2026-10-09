@@ -85,10 +85,7 @@ export const users = pgTable(
     telegramLinkToken: text('telegram_link_token'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [
-    unique('users_nrp_unique').on(t.nrp),
-    index('users_class_id_idx').on(t.classId),
-  ],
+  (t) => [unique('users_nrp_unique').on(t.nrp), index('users_class_id_idx').on(t.classId)],
 );
 
 // FK lingkar: classes.advisor_id → users (diisi setelah users ada)
@@ -256,7 +253,9 @@ export const llmCalls = pgTable(
   {
     id: serial('id').primaryKey(),
     runId: integer('run_id').references(() => precheckRuns.id, { onDelete: 'set null' }),
-    submissionId: integer('submission_id').references(() => submissions.id, { onDelete: 'set null' }),
+    submissionId: integer('submission_id').references(() => submissions.id, {
+      onDelete: 'set null',
+    }),
     purpose: text('purpose').notNull(),
     model: text('model').notNull(),
     promptVersion: text('prompt_version').notNull(),
@@ -312,8 +311,14 @@ export const reviews = pgTable(
   (t) => [
     index('reviews_submission_idx').on(t.submissionId),
     index('reviews_reviewer_stage_idx').on(t.reviewerId, t.stage),
-    check('reviews_reject_note_check', sql`(${t.decision} <> 'reject') OR (length(trim(${t.note})) > 0)`),
-    check('reviews_adjust_reason_check', sql`(${t.adjustedCredit} IS NULL) OR (length(trim(${t.adjustReason})) > 0)`),
+    check(
+      'reviews_reject_note_check',
+      sql`(${t.decision} <> 'reject') OR (length(trim(${t.note})) > 0)`,
+    ),
+    check(
+      'reviews_adjust_reason_check',
+      sql`(${t.adjustedCredit} IS NULL) OR (length(trim(${t.adjustReason})) > 0)`,
+    ),
   ],
 );
 
@@ -345,9 +350,13 @@ export const notifications = pgTable(
     userId: integer('user_id')
       .notNull()
       .references(() => users.id),
-    submissionId: integer('submission_id').references(() => submissions.id, { onDelete: 'cascade' }),
+    submissionId: integer('submission_id').references(() => submissions.id, {
+      onDelete: 'cascade',
+    }),
     channel: notificationChannel('channel').notNull(),
-    triggerReviewId: integer('trigger_review_id').references(() => reviews.id, { onDelete: 'set null' }),
+    triggerReviewId: integer('trigger_review_id').references(() => reviews.id, {
+      onDelete: 'set null',
+    }),
     title: text('title').notNull(),
     body: text('body').notNull(),
     status: notificationStatus('status').notNull().default('pending'),
@@ -389,7 +398,10 @@ export const submissionsRelations = relations(submissions, ({ one, many }) => ({
 }));
 
 export const precheckRunsRelations = relations(precheckRuns, ({ one, many }) => ({
-  submission: one(submissions, { fields: [precheckRuns.submissionId], references: [submissions.id] }),
+  submission: one(submissions, {
+    fields: [precheckRuns.submissionId],
+    references: [submissions.id],
+  }),
   findings: many(findings),
   agentQuestions: many(agentQuestions),
   llmCalls: many(llmCalls),
