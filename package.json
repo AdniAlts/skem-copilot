@@ -17,11 +17,11 @@
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit -p scripts",
     "db:generate": "node scripts/not-implemented.mjs db:generate BE-01",
     "db:migrate": "node scripts/not-implemented.mjs db:migrate BE-01",
     "seed": "node scripts/not-implemented.mjs seed BE-01",
-    "data:validate": "node scripts/not-implemented.mjs data:validate D-01",
+    "data:validate": "tsx scripts/validate-data.ts",
     "eval": "node scripts/not-implemented.mjs eval T-02"
   },
   "devDependencies": {
