@@ -31,17 +31,24 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 ## Library, framework, template, boilerplate
 | Nama | Versi | Lisensi | Dipakai untuk | Template/boilerplate? |
 |---|---|---|---|---|
-| zod | 3.23.x | MIT | Validasi schema API, LLM output, dan data file | Bukan template |
-| TypeScript | 5.6.x | Apache-2.0 | Bahasa pemrograman utama | Bukan template |
-| Vitest | 2.1.x | MIT | Testing framework | Bukan template |
-| Node.js | ≥22 | MIT | Runtime | Bukan template |
+| React, React DOM | 19.3.0 | MIT | UI web | — |
+| Vite, @vitejs/plugin-react | 8.3.4, 6.1.2 | MIT | Dev server & build web | Konfigurasi ditulis manual (bukan `npm create vite`) |
+| Express | 5.3.0 | MIT | REST API | — |
+| tsx | 4.23.15 | MIT | Menjalankan TypeScript API saat dev/start | — |
+| TypeScript | 6.0.3 | Apache-2.0 | Bahasa & typecheck | — |
+| Vitest, Supertest | 5.0.3, 7.3.1 | MIT | Tes unit & integrasi HTTP | — |
+| ESLint, typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-react-refresh, eslint-config-prettier | 10.12.0, 8.71.1, … | MIT | Lint | — |
+| Prettier | 3.9.9 | MIT | Format kode | — |
+| concurrently | 10.0.6 | MIT | Menjalankan API + web bersamaan | — |
+| zod | 3.25.76 | MIT | Validasi schema API, keluaran LLM, dan file data (`@skem/shared`) | — |
+| TODO (menyusul: Drizzle, TanStack Query, pdf-lib, sharp, grammY, …) | | | | |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 
 ## Pekerjaan yang dikerjakan selama acara
 | Waktu | Pekerjaan | Oleh |
 |---|---|---|
-| 9 Oktober 2026 | Setup monorepo minimal (root package.json, tsconfig) dan implementasi @skem/shared (enum, zod schema, labels, tes) untuk issue L-03 | AdniAlts dengan OpenCode (qwen3-coder-flash) |
+| 9 Oktober 2026 | Implementasi @skem/shared (enum, zod schema, labels, tes) untuk issue L-03 | AdniAlts dengan OpenCode (qwen3-coder-flash) |
 
 ## Data
 - Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis.

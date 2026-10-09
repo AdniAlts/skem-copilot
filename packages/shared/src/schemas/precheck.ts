@@ -8,7 +8,6 @@ import { z } from 'zod';
 import {
   CHECK_TYPE,
   FINDING_RESULT,
-  PARTICIPANT_SCOPE,
 } from '../enums.js';
 
 // ── Klasifikasi aktivitas ─────────────────────────────────────────────────

@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { REVIEW_STATUS, PARTICIPANT_SCOPE } from '../enums.js';
+import { REVIEW_STATUS } from '../enums.js';
 
 // ── credit_table.json ─────────────────────────────────────────────────────
 

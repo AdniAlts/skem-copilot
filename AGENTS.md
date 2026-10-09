@@ -39,13 +39,15 @@ docs/             PRD.md, API.md, ui-spec.md (acuan layar final), design-prompts
 | `npm run dev:api` / `npm run dev:web` | jalankan satu sisi |
 | `npm test` | Vitest semua workspace |
 | `npm run lint` | ESLint |
-| `npm run typecheck` | `tsc -b` |
+| `npm run typecheck` | `tsc --noEmit` per workspace |
+| `npm run format` | Prettier (tulis ulang) |
 | `npm run db:generate` / `npm run db:migrate` | buat / terapkan migrasi Drizzle |
 | `npm run seed` | data dummy kelas & akun |
 | `npm run data:validate` | validasi `data/*.json` dengan zod |
 | `npm run eval [-- --split=heldout]` | evaluasi test set (memanggil gateway, memakan token) |
-| `npm run build` | build produksi |
-Node.js ≥ 22. Jika perintah belum ada di `package.json`, berarti issue L-01 belum selesai; jangan membuat versi sendiri.
+| `npm run build` | build produksi web (API dijalankan dengan `npm run start -w @skem/api`) |
+Node.js ≥ 22. Perintah yang belum diimplementasi mencetak "belum diimplementasi" beserta issue yang akan mengisinya; isi lewat issue itu, jangan membuat versi sendiri.
+`@skem/shared` dipakai langsung dari `src/*.ts` (tanpa build); jangan menambah langkah build untuk paket itu.
 
 ## 4. Konvensi kode
 - TypeScript `strict`. Tanpa `any`; jika terpaksa, `// eslint-disable-next-line` + alasan.

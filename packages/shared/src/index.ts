@@ -5,6 +5,9 @@
  * Perubahan harus dilakukan bersamaan di shared, docs/API.md, dan ARCHITECTURE.
  */
 
+// ── Konstanta ─────────────────────────────────────────────────────────────
+export { API_PREFIX } from './constants.js';
+
 // ── Enum ──────────────────────────────────────────────────────────────────
 export {
   // Enum Postgres

@@ -11,12 +11,10 @@ import {
   REVIEW_STATUS,
   SUBMISSION_STATUS,
   FINAL_FORM_STATUS,
-  CHECK_TYPE,
   FINDING_RESULT,
-  PARTICIPANT_SCOPE,
   NOTIFICATION_CHANNEL,
 } from '../enums.js';
-import { FindingSchema, GuidelineRefSchema, AgentQuestionSchema } from './precheck.js';
+import { FindingSchema, AgentQuestionSchema } from './precheck.js';
 
 // ── Error API ─────────────────────────────────────────────────────────────
 

@@ -1,25 +1,40 @@
 {
   "name": "skem-copilot",
-  "version": "0.1.0",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc -b",
-    "lint": "eslint . --ext .ts,.tsx"
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w @skem/api\" \"npm run dev -w @skem/web\"",
+    "dev:api": "npm run dev -w @skem/api",
+    "dev:web": "npm run dev -w @skem/web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:generate": "node scripts/not-implemented.mjs db:generate BE-01",
+    "db:migrate": "node scripts/not-implemented.mjs db:migrate BE-01",
+    "seed": "node scripts/not-implemented.mjs seed BE-01",
+    "data:validate": "node scripts/not-implemented.mjs data:validate D-01",
+    "eval": "node scripts/not-implemented.mjs eval T-02"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.6.0",
-    "vitest": "^2.1.0",
-    "eslint": "^9.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0"
-  },
-  "engines": {
-    "node": ">=22.0.0"
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3"
   }
 }
