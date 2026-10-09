@@ -1,6 +1,6 @@
 /** Database-backed analysis worker. Pre-check implementation is a stub until BE-03/BE-04. */
 
-import { and, eq, isNull, lte, lt, or } from 'drizzle-orm';
+import { and, eq, isNull, lte, lt, or, sql } from 'drizzle-orm';
 import { createDb } from '../db/client.js';
 import { precheckRuns, statusHistory, submissions } from '../db/schema.js';
 
@@ -23,11 +23,30 @@ export async function recoverStaleJobs(config = DEFAULT_WORKER_CONFIG): Promise<
   const { client, db } = createDb();
   try {
     const cutoff = new Date(Date.now() - config.lockTimeoutMs);
-    const rows = await db.update(submissions)
-      .set({ reviewStatus: 'queued', lockedAt: null, lastError: 'Worker restart recovery' })
-      .where(and(eq(submissions.reviewStatus, 'analyzing'), lt(submissions.lockedAt, cutoff)))
-      .returning({ id: submissions.id });
-    return rows.length;
+    const stale = await db.select({ id: submissions.id, attempts: submissions.attempts })
+      .from(submissions)
+      .where(and(eq(submissions.reviewStatus, 'analyzing'), lt(submissions.lockedAt, cutoff)));
+    for (const job of stale) {
+      const status = job.attempts >= config.maxAttempts ? 'error' : 'queued';
+      await db.transaction(async (tx) => {
+        await tx.update(submissions).set({
+          reviewStatus: status,
+          lockedAt: null,
+          nextAttemptAt: status === 'queued' ? new Date() : null,
+          lastError: 'Worker restart recovery',
+          updatedAt: new Date(),
+        }).where(and(eq(submissions.id, job.id), eq(submissions.reviewStatus, 'analyzing')));
+        await tx.insert(statusHistory).values({
+          submissionId: job.id,
+          field: 'review_status',
+          fromValue: 'analyzing',
+          toValue: status,
+          changedBy: null,
+          note: 'Worker restart recovery',
+        });
+      });
+    }
+    return stale.length;
   } finally {
     await client.end();
   }
@@ -37,7 +56,7 @@ export async function processSubmission(submissionId: number, config = DEFAULT_W
   const { client, db } = createDb();
   try {
     const claimed = await db.update(submissions)
-      .set({ reviewStatus: 'analyzing', lockedAt: new Date(), attempts: 1 })
+      .set({ reviewStatus: 'analyzing', lockedAt: new Date(), attempts: sql`${submissions.attempts} + 1` })
       .where(and(eq(submissions.id, submissionId), eq(submissions.reviewStatus, 'queued')))
       .returning();
     const submission = claimed[0];

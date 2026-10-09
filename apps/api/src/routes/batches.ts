@@ -5,7 +5,7 @@ import { customAlphabet } from 'nanoid';
 
 import { BatchProgressSchema } from '@skem/shared';
 import { createDb } from '../db/client.js';
-import { batches, classes, documents, submissions } from '../db/schema.js';
+import { batches, classes, documents, statusHistory, submissions } from '../db/schema.js';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import {
@@ -79,6 +79,14 @@ batchesRouter.post(
             mime: 'application/pdf',
             sizeBytes: item.file.size,
             sha256: item.sha256,
+          });
+          await tx.insert(statusHistory).values({
+            submissionId: submission.id,
+            field: 'review_status',
+            fromValue: null,
+            toValue: 'queued',
+            changedBy: null,
+            note: 'Berkas masuk antrian pre-check',
           });
           result.push({ row: submission, fileName: item.file.originalname });
         }
