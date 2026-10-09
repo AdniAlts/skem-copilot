@@ -2,10 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   AnswerBodySchema,
   ApproveBodySchema,
+  CreditAdjustBodySchema,
   PatchSubmissionBodySchema,
   RejectBodySchema,
   SubmissionDetailSchema,
   SubmitBodySchema,
+  ValidateBodySchema,
+  ValidatorQueueQuerySchema,
+  ValidatorQueueResponseSchema,
+  ValidatorRejectBodySchema,
   VerifierQueueQuerySchema,
   VerifierQueueResponseSchema,
 } from '../src/index.js';
@@ -84,5 +89,48 @@ describe('submission API contracts', () => {
       }],
     });
     expect(parsed.items[0]?.aiStatus).toBe('warning');
+  });
+
+  it('bounds validator credit to 0..3 with at most two decimals and a bounded reason', () => {
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 1.25, reason: 'ok' }).success).toBe(true);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 3, reason: 'ok' }).success).toBe(true);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 3.01, reason: 'ok' }).success).toBe(false);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: -0.01, reason: 'ok' }).success).toBe(false);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 0.125, reason: 'ok' }).success).toBe(false);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 0.1 + 0.2, reason: 'ok' }).success).toBe(true);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 1, reason: '   ' }).success).toBe(false);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 1, reason: 'a'.repeat(1001) }).success).toBe(false);
+    expect(CreditAdjustBodySchema.safeParse({ finalCredit: 1, reason: 'ok', extra: 1 }).success).toBe(false);
+  });
+
+  it('requires a bounded validator reject note and an empty validate body', () => {
+    expect(ValidatorRejectBodySchema.safeParse({ note: '  ' }).success).toBe(false);
+    expect(ValidatorRejectBodySchema.safeParse({ note: 'a'.repeat(1001) }).success).toBe(false);
+    expect(ValidateBodySchema.safeParse({}).success).toBe(true);
+    expect(ValidateBodySchema.safeParse({ finalCredit: 1 }).success).toBe(false);
+  });
+
+  it('parses validator queue query and response', () => {
+    expect(ValidatorQueueQuerySchema.parse({ classId: '2' })).toEqual({ classId: 2 });
+    expect(ValidatorQueueQuerySchema.safeParse({ classId: 'x' }).success).toBe(false);
+    expect(ValidatorQueueQuerySchema.safeParse({ sort: 'newest' }).success).toBe(false);
+    const parsed = ValidatorQueueResponseSchema.parse({
+      summary: { waiting: 1, formFailed: 0 },
+      items: [{
+        publicId: 'SKM-1234ABCD',
+        studentName: 'Student',
+        nrp: null,
+        className: null,
+        activityName: null,
+        categoryLabel: null,
+        level: null,
+        estimatedCredit: 0.5,
+        finalCredit: null,
+        flagCount: 0,
+        finalFormStatus: 'none',
+        submittedAt: null,
+      }],
+    });
+    expect(parsed.items[0]?.finalFormStatus).toBe('none');
   });
 });

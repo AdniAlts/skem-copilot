@@ -347,9 +347,9 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | GET | `/verifier/queue` | verifier | antrian kelasnya (`waiting_verifier`); filter `aiStatus=clean\|warning`, urut `oldest\|newest\|flags` |
 | POST | `/verifier/submissions/:publicId/approve` | verifier kelasnya | Setujui (+e-sign tersimpan, 409 `SIGNATURE_REQUIRED`); hook `onVerifierApproved` setelah commit |
 | POST | `/verifier/submissions/:publicId/reject` | verifier kelasnya | Tolak `{ note }` wajib (zod + CHECK DB) |
-| GET | `/validator/queue` | validator | antrian lintas kelas, filter kelas |
-| POST | `/validator/submissions/:publicId/credit` | validator | ubah kredit final `{ finalCredit, reason }` |
-| POST | `/validator/submissions/:publicId/validate` | validator | Validasi |
+| GET | `/validator/queue` | validator | antrian lintas kelas (`waiting_validator`), filter `classId`, + `finalFormStatus` |
+| POST | `/validator/submissions/:publicId/credit` | validator | ubah kredit final `{ finalCredit (0–3, 2 desimal), reason }`; nilai sama → 400 |
+| POST | `/validator/submissions/:publicId/validate` | validator | Validasi; `final_credit` = hasil `/credit` terakhir atau estimasi |
 | POST | `/validator/submissions/:publicId/reject` | validator | Tolak `{ note }` wajib |
 | POST | `/validator/submissions/:publicId/regenerate-form` | validator | buat ulang PDF final |
 | GET | `/notifications` | semua | notifikasi in-app |
