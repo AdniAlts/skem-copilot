@@ -6,6 +6,7 @@
  * Kode dikunci di @skem/shared ERROR_CODES.
  */
 
+import multer from 'multer';
 import type { NextFunction, Request, Response } from 'express';
 
 import { ERROR_CODES, type ErrorCode } from '@skem/shared';
@@ -37,6 +38,11 @@ export function validationError(message: string, details?: Record<string, unknow
 export function errorHandler(err: unknown, _req: Request, res: Response, next: NextFunction): void {
   if (res.headersSent) {
     next(err);
+    return;
+  }
+  if (err instanceof multer.MulterError) {
+    const code = err.code === 'LIMIT_FILE_SIZE' ? 'PAYLOAD_TOO_LARGE' : err.code === 'LIMIT_FILE_COUNT' ? 'TOO_MANY_FILES' : 'VALIDATION_ERROR';
+    res.status(code === 'PAYLOAD_TOO_LARGE' ? 413 : 400).json({ error: { code, message: 'Upload file tidak valid.' } });
     return;
   }
   if (err instanceof AppError) {
