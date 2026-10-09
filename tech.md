@@ -40,14 +40,15 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 | ESLint, typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-react-refresh, eslint-config-prettier | 10.12.0, 8.71.1, … | MIT | Lint | — |
 | Prettier | 3.9.9 | MIT | Format kode | — |
 | concurrently | 10.0.6 | MIT | Menjalankan API + web bersamaan | — |
-| TODO (menyusul: Drizzle, zod, TanStack Query, pdf-lib, sharp, grammY, …) | | | | |
+| zod | 3.25.76 | MIT | Validasi schema API, keluaran LLM, dan file data (`@skem/shared`) | — |
+| TODO (menyusul: Drizzle, TanStack Query, pdf-lib, sharp, grammY, …) | | | | |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 
 ## Pekerjaan yang dikerjakan selama acara
 | Waktu | Pekerjaan | Oleh |
 |---|---|---|
-| TODO | TODO | TODO |
+| 9 Oktober 2026 | Implementasi @skem/shared (enum, zod schema, labels, tes) untuk issue L-03 | AdniAlts dengan OpenCode (qwen3-coder-flash) |
 
 ## Data
 - Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis.
