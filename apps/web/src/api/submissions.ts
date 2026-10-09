@@ -55,7 +55,8 @@ function createDefaultMockSubmission(publicId: string): SubmissionDetail {
         checkType: 'category',
         result: 'pass',
         confidence: 0.95,
-        message: 'Kategori kegiatan sesuai dengan Komponen 3 (Prestasi dan Lomba Penalaran/Kreativitas).',
+        message:
+          'Kategori kegiatan sesuai dengan Komponen 3 (Prestasi dan Lomba Penalaran/Kreativitas).',
         guidelineRef: {
           id: 'ketentuan-umum-bobot',
           title: 'Kategori Komponen 3',
@@ -172,7 +173,7 @@ export async function getSubmissionDetail(publicId: string): Promise<SubmissionD
  */
 export async function patchSubmission(
   publicId: string,
-  data: PatchSubmissionBody
+  data: PatchSubmissionBody,
 ): Promise<SubmissionDetail> {
   try {
     return await apiClient.patch<SubmissionDetail>(`/api/submissions/${publicId}`, data);
@@ -187,8 +188,12 @@ export async function patchSubmission(
 
     const newCategory = data.skem?.categoryCode ?? current.skem.categoryCode;
     const newLevel = data.skem?.level !== undefined ? data.skem.level : current.skem.level;
-    const newRole = data.skem?.roleInActivity !== undefined ? data.skem.roleInActivity : current.skem.roleInActivity;
-    const newAchievement = data.skem?.achievement !== undefined ? data.skem.achievement : current.skem.achievement;
+    const newRole =
+      data.skem?.roleInActivity !== undefined
+        ? data.skem.roleInActivity
+        : current.skem.roleInActivity;
+    const newAchievement =
+      data.skem?.achievement !== undefined ? data.skem.achievement : current.skem.achievement;
 
     // Recompute estimated credit from official credit table
     const calc = calculateEstimatedCredit({
@@ -223,11 +228,11 @@ export async function patchSubmission(
  * Mendapatkan URL signed berkas sertifikat PDF.
  */
 export async function getCertificateUrl(
-  publicId: string
+  publicId: string,
 ): Promise<{ url: string; expiresIn: number }> {
   try {
     return await apiClient.get<{ url: string; expiresIn: number }>(
-      `/api/submissions/${publicId}/certificate`
+      `/api/submissions/${publicId}/certificate`,
     );
   } catch {
     // Fallback URL for preview
@@ -243,13 +248,10 @@ export async function getCertificateUrl(
  */
 export async function answerQuestion(
   publicId: string,
-  data: AnswerBody
+  data: AnswerBody,
 ): Promise<SubmissionDetail> {
   try {
-    return await apiClient.post<SubmissionDetail>(
-      `/api/submissions/${publicId}/answers`,
-      data
-    );
+    return await apiClient.post<SubmissionDetail>(`/api/submissions/${publicId}/answers`, data);
   } catch {
     // Fallback simulation for mock demo
     const current = mockStore[publicId] || createDefaultMockSubmission(publicId);
@@ -261,13 +263,29 @@ export async function answerQuestion(
     const answerLower = data.answer.toLowerCase();
 
     // Map answer value to level if it is a level question
-    if (answerLower === 'national' || answerLower.includes('3 provinsi') || answerLower === 'nasional') {
+    if (
+      answerLower === 'national' ||
+      answerLower.includes('3 provinsi') ||
+      answerLower === 'nasional'
+    ) {
       updatedLevel = 'Nasional';
-    } else if (answerLower === 'international' || answerLower.includes('3 negara') || answerLower === 'internasional') {
+    } else if (
+      answerLower === 'international' ||
+      answerLower.includes('3 negara') ||
+      answerLower === 'internasional'
+    ) {
       updatedLevel = 'Internasional';
-    } else if (answerLower === 'regional' || answerLower.includes('1 provinsi') || answerLower === 'regional') {
+    } else if (
+      answerLower === 'regional' ||
+      answerLower.includes('1 provinsi') ||
+      answerLower === 'regional'
+    ) {
       updatedLevel = 'Regional';
-    } else if (answerLower === 'campus' || answerLower.includes('pens') || answerLower === 'kampus') {
+    } else if (
+      answerLower === 'campus' ||
+      answerLower.includes('pens') ||
+      answerLower === 'kampus'
+    ) {
       updatedLevel = 'Kampus';
     } else if (answerLower.startsWith('k')) {
       // If it is a category code like K3-B01
@@ -288,7 +306,7 @@ export async function answerQuestion(
     }
 
     const updatedQuestions = current.questions.map((q) =>
-      q.id === data.questionId ? { ...q, answer: data.answer } : q
+      q.id === data.questionId ? { ...q, answer: data.answer } : q,
     );
 
     const updatedSubmission: SubmissionDetail = {
@@ -309,12 +327,17 @@ export async function answerQuestion(
   }
 }
 
+export interface SubmitResult {
+  submitted: string[];
+  skipped: { publicId: string; reason: string }[];
+}
+
 /**
  * Mengajukan berkas ke Verifikator.
  */
-export async function submitToVerifier(publicIds: string[]): Promise<void> {
+export async function submitToVerifier(publicIds: string[]): Promise<SubmitResult> {
   try {
-    await apiClient.post('/api/submissions/submit', { publicIds });
+    return await apiClient.post<SubmitResult>('/api/submissions/submit', { publicIds });
   } catch {
     // If mock mode, update status to waiting_verifier
     publicIds.forEach((id) => {
@@ -336,5 +359,10 @@ export async function submitToVerifier(publicIds: string[]): Promise<void> {
         };
       }
     });
+
+    return {
+      submitted: publicIds,
+      skipped: [],
+    };
   }
 }

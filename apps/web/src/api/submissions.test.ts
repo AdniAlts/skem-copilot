@@ -111,14 +111,19 @@ describe('Submissions API Client', () => {
     expect(result.activity.activityName).toBe('Nama Baru');
     expect(apiClient.patch).toHaveBeenCalledWith(
       '/api/submissions/SKM-12345678',
-      expect.objectContaining({ activity: { activityName: 'Nama Baru' } })
+      expect.objectContaining({ activity: { activityName: 'Nama Baru' } }),
     );
   });
 
   it('mengajukan berkas ke verifikator via submitToVerifier', async () => {
-    vi.spyOn(apiClient, 'post').mockResolvedValueOnce({ ok: true });
+    vi.spyOn(apiClient, 'post').mockResolvedValueOnce({
+      submitted: ['SKM-12345678'],
+      skipped: [],
+    });
 
-    await submitToVerifier(['SKM-12345678']);
+    const res = await submitToVerifier(['SKM-12345678']);
+    expect(res.submitted).toEqual(['SKM-12345678']);
+    expect(res.skipped).toEqual([]);
     expect(apiClient.post).toHaveBeenCalledWith('/api/submissions/submit', {
       publicIds: ['SKM-12345678'],
     });
