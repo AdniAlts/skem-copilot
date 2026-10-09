@@ -31,14 +31,17 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 ## Library, framework, template, boilerplate
 | Nama | Versi | Lisensi | Dipakai untuk | Template/boilerplate? |
 |---|---|---|---|---|
-| TODO (diisi saat L-01 dan seterusnya: React, Vite, Express, Drizzle, zod, TanStack Query, pdf-lib, sharp, grammY, Vitest, …) | | | | |
+| zod | 3.23.x | MIT | Validasi schema API, LLM output, dan data file | Bukan template |
+| TypeScript | 5.6.x | Apache-2.0 | Bahasa pemrograman utama | Bukan template |
+| Vitest | 2.1.x | MIT | Testing framework | Bukan template |
+| Node.js | ≥22 | MIT | Runtime | Bukan template |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 
 ## Pekerjaan yang dikerjakan selama acara
 | Waktu | Pekerjaan | Oleh |
 |---|---|---|
-| TODO | TODO | TODO |
+| 9 Oktober 2026 | Setup monorepo minimal (root package.json, tsconfig) dan implementasi @skem/shared (enum, zod schema, labels, tes) untuk issue L-03 | AdniAlts dengan OpenCode (qwen3-coder-flash) |
 
 ## Data
 - Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis.

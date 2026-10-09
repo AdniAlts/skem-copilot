@@ -74,7 +74,7 @@ Isi `findings`, `skem.candidates`, dan `guidelineRef` final ditetapkan di L-03.
 
 ## Endpoint
 
-Format tiap entri: **peran** · request · response · error khusus. `TODO(L-03)` = dilengkapi issue L-03.
+Format tiap entri: **peran** · request · response · error khusus.
 
 ### Sistem & sesi
 | Endpoint | Ringkas |
@@ -86,7 +86,7 @@ Format tiap entri: **peran** · request · response · error khusus. `TODO(L-03)
 | `GET /me` | semua · → `{ id, name, nrp, role, angkatan, programStudi, departemen, className, verifierName, jabatan, hasSignature, telegramLinked }` |
 | `PUT /me/signature` | student, verifier · multipart `file` (PNG ≤ 1 MB) **atau** `{ "dataUrl": "data:image/png;base64,…" }` → `{ hasSignature: true }` |
 | `GET /me/signature` | student, verifier · → `image/png` milik sendiri · 404 jika belum ada |
-| `GET /me/progress` | student · → `{ komponen: [{ komponen: 1, target: 1.25, earned: 1.25 }, …], total, target: 3.0, fulfilled }` · TODO(L-03): sumber riwayat K1/K2 dummy |
+| `GET /me/progress` | student · → `Progress` (komponen per kategori + total menuju 3,0) · sumber riwayat dari pengajuan `approved` |
 
 ### Unggah & pengajuan (mahasiswa)
 | Endpoint | Ringkas |
@@ -127,5 +127,5 @@ Format tiap entri: **peran** · request · response · error khusus. `TODO(L-03)
 | `GET /notifications` | → `[{ id, title, body, submissionPublicId, channel, readAt, createdAt }]` |
 | `POST /notifications/:id/read` | → 204 |
 | `POST /me/telegram/link` | → `{ deepLink: "https://t.me/<bot>?start=<token>" }` (Should) |
-| `GET /unit/summary` | unit, validator → rekap per status/kelas/jenis temuan (Could) · TODO(L-03) |
+| `GET /unit/summary` | unit, validator → `UnitSummary` (rekap per status/kelas/jenis temuan) (Could) |
 | `GET /stats/tokens` | validator, unit → `{ totalCalls, promptTokens, completionTokens, perSubmissionAvg, byPurpose }` |
