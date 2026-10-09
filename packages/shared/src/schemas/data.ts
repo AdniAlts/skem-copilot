@@ -9,26 +9,66 @@ import { REVIEW_STATUS } from '../enums.js';
 
 // ── credit_table.json ─────────────────────────────────────────────────────
 
-/** Satu baris tabel bobot kredit. */
+/** Bidang Komponen 3 di Lampiran Pedoman. Komponen 1 dan 2 tidak punya bidang. */
+export const CREDIT_TABLE_BIDANG = ['A', 'B', 'C', 'D'] as const;
+
+/**
+ * Satu baris tabel bobot kredit.
+ * `level` dan `role` bernilai null jika kolomnya kosong di Lampiran
+ * (mis. Komponen 1–2 tanpa tingkat, bidang D tanpa jabatan).
+ */
 export const CreditTableEntrySchema = z.object({
-  id: z.string(),
+  id: z.string().min(1),
   komponen: z.number().int().min(1).max(3),
-  bidang: z.enum(['A', 'B', 'C']),
-  categoryCode: z.string(),
-  categoryLabel: z.string(),
-  level: z.string(),
-  role: z.string(),
+  bidang: z.enum(CREDIT_TABLE_BIDANG).nullable(),
+  categoryCode: z.string().min(1),
+  categoryLabel: z.string().min(1),
+  level: z.string().min(1).nullable(),
+  role: z.string().min(1).nullable(),
   credit: z.number().min(0),
-  basis: z.string(),
-  ref: z.string(),
+  basis: z.string().min(1),
+  ref: z.string().min(1),
 });
 export type CreditTableEntry = z.infer<typeof CreditTableEntrySchema>;
 
-/** Schema lengkap credit_table.json. */
-export const CreditTableSchema = z.object({
-  version: z.string(),
-  entries: z.array(CreditTableEntrySchema),
-});
+/** Schema lengkap credit_table.json, termasuk keunikan id dan kombinasi lookup. */
+export const CreditTableSchema = z
+  .object({
+    version: z.string().min(1),
+    entries: z.array(CreditTableEntrySchema).min(1),
+  })
+  .superRefine((table, ctx) => {
+    const ids = new Set<string>();
+    const combos = new Set<string>();
+    table.entries.forEach((entry, index) => {
+      if (ids.has(entry.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['entries', index, 'id'],
+          message: `Duplicate id: ${entry.id}`,
+        });
+      }
+      ids.add(entry.id);
+
+      const combo = JSON.stringify([entry.categoryCode, entry.level, entry.role]);
+      if (combos.has(combo)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['entries', index],
+          message: `Duplicate (categoryCode, level, role): ${combo}`,
+        });
+      }
+      combos.add(combo);
+
+      if ((entry.komponen === 3) !== (entry.bidang !== null)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['entries', index, 'bidang'],
+          message: 'bidang is required for komponen 3 and must be null otherwise',
+        });
+      }
+    });
+  });
 export type CreditTable = z.infer<typeof CreditTableSchema>;
 
 // ── guideline_sections.json ───────────────────────────────────────────────
