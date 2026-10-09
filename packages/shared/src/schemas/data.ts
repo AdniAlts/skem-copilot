@@ -136,8 +136,15 @@ export const RulesSchema = z.object({
     maxAttempts: z.number().int().min(1),
   }),
   dateRules: z.object({
+    /** Angkatan pertama yang wajib SKEM (Ketentuan Peralihan poin 1). Di bawahnya → fail. */
+    minAngkatan: z.number().int(),
     angkatan2024MinDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     angkatan2025PlusWindowYears: z.number().int().min(1),
+    /**
+     * Perkiraan awal masa studi (MM-DD di tahun angkatan). Kegiatan sebelum tanggal ini
+     * hanya diberi peringatan (Ketentuan Umum SKEM poin 8), bukan ditolak.
+     */
+    studyStartMonthDay: z.string().regex(/^\d{2}-\d{2}$/),
   }),
   maxQuestionsPerSubmission: z.number().int().min(1).max(3),
 });
