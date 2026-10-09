@@ -16,7 +16,10 @@ export function createDb() {
   const client = postgres(env.DATABASE_URL, {
     prepare: false, // aman untuk semua mode pooler Supabase
   });
-  return { client, db: drizzle(client, { schema }) };
+  const db = drizzle(client, { schema });
+  return { client, db };
 }
+
+export type DbClient = ReturnType<typeof createDb>;
 
 export type Db = ReturnType<typeof createDb>['db'];
