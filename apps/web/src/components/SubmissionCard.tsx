@@ -1,4 +1,5 @@
-import { FileText, AlertTriangle, HelpCircle, RefreshCw, X, Upload } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { FileText, AlertTriangle, HelpCircle, RefreshCw, X, Upload, ExternalLink } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { Button } from './Button';
 import type { SubmissionCard as SubmissionCardType } from '@skem/shared';
@@ -174,11 +175,18 @@ export function SubmissionCard({
             </Button>
           )}
 
-          {isReady && (
-            <Button variant="primary" size="sm" disabled>
-              Ajukan (Coming Soon)
-            </Button>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            <Link to={`/mahasiswa/detail/${publicId}`}>
+              <Button
+                variant={isReady ? 'primary' : 'outline'}
+                size="sm"
+                className="flex items-center gap-1.5"
+              >
+                <span>{isReady ? 'Buka Detail & Ajukan' : 'Lihat Detail'}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

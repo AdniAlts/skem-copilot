@@ -72,6 +72,14 @@ export function App() {
           }
         />
         <Route
+          path="/mahasiswa/pengajuan/:id"
+          element={
+            <MahasiswaGuard>
+              <MahasiswaDetailRoute />
+            </MahasiswaGuard>
+          }
+        />
+        <Route
           path="/mahasiswa/profil"
           element={
             <MahasiswaGuard>

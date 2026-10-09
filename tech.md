@@ -59,6 +59,7 @@ Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis 
 | 9 Oktober 2026 | Implementasi @skem/shared (enum, zod schema, labels, tes) untuk issue L-03 | AdniAlts dengan OpenCode (qwen3-coder-flash) |
 | 9 Oktober 2026 | Scaffold web: routing per peran, layout, klien API, TanStack Query, komponen dasar, tema untuk issue FE-01 (#5) | AdniAlts |
 | 9 Oktober 2026 | Test set: 10 PDF sertifikat sintetis + answer_key.json + validasi untuk issue T-01 (#12) | AdniAlts |
+| 10 Oktober 2026 | Halaman detail pengajuan (pratinjau PDF, pratinjau FM.MHS.PENGAJUANSKEM, panel metadata editable, modal Kenapa?, peringatan) untuk issue FE-04 (#18) | AdniAlts |
 
 ## Data
 - Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis (fiktif).
