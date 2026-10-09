@@ -316,7 +316,7 @@ Aturan:
 - Ambang (`data/rules.json`): `confidenceThreshold` awal 0,7; `nameMatch.warnMin` 0,8 (`pass` = sama persis setelah normalisasi gelar/tanda baca; skor ≥ 0,8 → `warn`; di bawahnya → `fail`; dikalibrasi dengan test set).
 - Aturan tanggal (`data/rules.json`): angkatan ≤ 2024 → `activity_end_date ≥ 2024-01-01`; angkatan ≥ 2025 → `[submissionDate − 1 tahun, submissionDate]` inklusif; tanggal masa depan selalu tidak valid. `submissionDate` = hari ini saat analisis/cek ulang.
 
-Catatan domain untuk `credit_table.json`: kolom "Tingkat" di Lampiran tidak selalu cakupan peserta (ada "Program Studi (Hima)", "UKM / Tim Kompetisi", "Lanjut/Menengah", "Perseroan Terbatas"; Komponen 1–2 tanpa tingkat). Karena itu `level` di tabel adalah string kode per baris, sedangkan pertanyaan cakupan peserta hanya dipakai untuk baris bertingkat Internasional/Nasional/Regional/Kampus.
+Catatan domain untuk `credit_table.json` (182 baris; rincian di `data/credit_table.NOTES.md`): kolom "Tingkat" di Lampiran tidak selalu cakupan peserta (ada "Program Studi (Hima)", "UKM / Tim Kompetisi", "Lanjut/Menengah", "Perseroan Terbatas (PT)", dll.). Karena itu `level` adalah string per baris, sedangkan pertanyaan cakupan peserta hanya dipakai untuk baris bertingkat Internasional/Nasional/Regional/Kampus. `level` dan `role` bernilai `null` bila kolomnya kosong di tabel (Komponen 1–2 tanpa tingkat; bidang D tanpa tingkat dan jabatan), dan `bidang` (`A`–`D`) hanya diisi untuk Komponen 3. `lookup_credit_table` harus mencocokkan `null` secara eksplisit, bukan sebagai wildcard.
 
 ## 9. API
 

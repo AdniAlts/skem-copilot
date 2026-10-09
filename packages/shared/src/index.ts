@@ -172,6 +172,7 @@ export type {
 
 // ── Schema: Data files ────────────────────────────────────────────────────
 export {
+  CREDIT_TABLE_BIDANG,
   CreditTableEntrySchema,
   CreditTableSchema,
   GuidelineSectionEntrySchema,

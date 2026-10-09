@@ -6,7 +6,7 @@
 Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claude (Anthropic, antarmuka chat)**: ide dan konsep MVP, PRD (`docs/PRD.md`), deck presentasi, prompt desain UI (`docs/design-prompts/`), rencana kerja 20 jam, dan template README/`tech.md`. Tidak ada kode aplikasi yang ditulis sebelum acara.
 
 - Persiapan repo (dokumen `AGENTS.md`, `CLAUDE.md`, `ARCHITECTURE.md`, `docs/API.md`, template issue/PR, `.env.example`, `.gitignore`, label, milestone, dan issue) disusun dengan **Claude Code** (model Claude Opus) berdasarkan PRD. Semua isinya dokumen dan konfigurasi, tanpa kode aplikasi.
-- Tabel bobot dan pecahan Pedoman dalam bentuk JSON: TODO (sebutkan jika dikerjakan sebelum acara dan oleh siapa; rencana saat ini: dikerjakan saat acara, issue D-01 dan D-02).
+- Tabel bobot dalam bentuk JSON (`data/credit_table.json`) dikerjakan saat acara (issue D-01): ditranskripsi dari teks Pedoman dan dicocokkan otomatis dengan PDF memakai pypdf (alat lokal, bukan dependensi repo). Pecahan Pedoman bertag: TODO (issue D-02).
 
 ## AI coding assistant
 | Alat | Model | Dipakai untuk | Catatan |
