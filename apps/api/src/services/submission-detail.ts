@@ -134,7 +134,7 @@ export async function getSubmissionDetail(db: Db, publicId: string) {
       id: review.id,
       stage: review.stage,
       decision: review.decision,
-      note: review.note,
+      note: review.decision === 'adjust_credit' ? review.adjustReason : review.note,
       reviewerName,
       createdAt: review.createdAt.toISOString(),
     })),

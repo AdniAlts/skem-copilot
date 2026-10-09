@@ -45,6 +45,7 @@ submissionsRouter.get(
       if (!allowed) throw new AppError('NOT_FOUND', 'Pengajuan tidak ditemukan.');
       const detail = await getSubmissionDetail(db, String(req.params.publicId));
       if (!detail) throw new AppError('NOT_FOUND', 'Pengajuan tidak ditemukan.');
+      if (user.role === 'student' && detail.status !== 'approved') detail.skem.finalCredit = null;
       res.json(detail);
     } finally {
       await client.end();
