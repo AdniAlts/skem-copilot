@@ -1,0 +1,241 @@
+{
+  "version": "pedoman-skem-reguler-2026-06-02",
+  "sections": [
+    {
+      "id": "istilah-bukti-kegiatan",
+      "title": "Bukti Kegiatan",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum, Istilah dan Definisi poin 5, hlm. 9",
+      "text": "5. Bukti Kegiatan adalah dokumen atau data pendukung yang menunjukkan keikutsertaan dan peran mahasiswa dalam suatu kegiatan SKEM, seperti sertifikat, surat keterangan, surat tugas, surat keputusan, laporan kegiatan, atau bentuk dokumen sah lainnya.",
+      "tags": ["check:completeness", "topic:bukti"]
+    },
+    {
+      "id": "istilah-verifikasi-validasi",
+      "title": "Verifikasi dan Validasi",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum, Istilah dan Definisi poin 6–9, hlm. 9",
+      "text": "6. Verifikasi adalah proses pemeriksaan substansi kegiatan dan keabsahan bukti oleh verifikator untuk memastikan kesesuaian pengajuan SKEM dengan ketentuan yang berlaku. 7. Validasi adalah proses pemeriksaan administratif dan teknis oleh validator sebelum penetapan nilai kredit SKEM secara final. 8. Verifikator adalah petugas yang diberi kewenangan untuk melakukan verifikasi pengajuan SKEM mahasiswa sesuai ketentuan institusi. 9. Validator adalah petugas yang ditunjuk oleh institusi untuk melakukan validasi administratif, pengelolaan sistem, dan rekapitulasi data SKEM.",
+      "tags": ["topic:peran"]
+    },
+    {
+      "id": "istilah-tingkat-kegiatan",
+      "title": "Tingkat Kegiatan",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum, Istilah dan Definisi poin 12, hlm. 10",
+      "text": "12. Tingkat Kegiatan adalah klasifikasi skala kegiatan yang ditentukan berdasarkan cakupan peserta, bukan lokasi penyelenggaraan, dengan ketentuan sebagai berikut: • Tingkat Internasional: peserta kegiatan berasal dari sekurang-kurangnya 3 negara. • Tingkat Nasional: peserta kegiatan berasal dari sekurang-kurangnya 3 provinsi di Indonesia. • Tingkat Regional: peserta kegiatan berasal dari sekurang-kurangnya 1 provinsi (3 kota/kabupaten). • Tingkat Kampus: peserta kegiatan berasal dari lingkungan PENS.",
+      "tags": ["check:level", "topic:tingkat"]
+    },
+    {
+      "id": "ketentuan-umum-total-kredit",
+      "title": "Total SKEM Minimal",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum SKEM poin 3, hlm. 10",
+      "text": "3. Total SKEM yang harus dipenuhi oleh mahasiswa Diploma Tiga (D3) dan Sarjana Terapan (STr) ditetapkan sebanyak minimal 3,0 satuan kredit SKEM.",
+      "tags": ["topic:total-kredit"]
+    },
+    {
+      "id": "ketentuan-umum-bukti-sah",
+      "title": "Bukti Kegiatan yang Sah",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum SKEM poin 4, hlm. 10",
+      "text": "4. Kegiatan yang dapat diakui sebagai SKEM harus disertai bukti kegiatan yang sah, seperti sertifikat, surat keterangan, atau bentuk dokumen resmi lainnya.",
+      "tags": ["check:completeness", "topic:bukti"]
+    },
+    {
+      "id": "ketentuan-umum-bobot",
+      "title": "Besaran SKEM dari Lampiran",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum SKEM poin 5, hlm. 10",
+      "text": "5. Besaran SKEM yang diberikan pada setiap kegiatan ditentukan berdasarkan bobot kegiatan sebagaimana tercantum dalam lampiran pedoman ini.",
+      "tags": ["check:credit"]
+    },
+    {
+      "id": "ketentuan-umum-satu-kali",
+      "title": "Satu Kegiatan Satu Pengajuan",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum SKEM poin 6, hlm. 10",
+      "text": "6. Setiap kegiatan hanya dapat diajukan satu kali untuk memperoleh pengakuan SKEM.",
+      "tags": ["topic:pengajuan"]
+    },
+    {
+      "id": "ketentuan-umum-masa-studi",
+      "title": "Kegiatan Selama Masa Studi Aktif",
+      "ref": "Pedoman SKEM, B. Ketentuan Umum SKEM poin 8, hlm. 10",
+      "text": "8. Pengakuan SKEM hanya diberikan terhadap kegiatan yang dilaksanakan selama masa studi aktif mahasiswa.",
+      "tags": ["check:deadline"]
+    },
+    {
+      "id": "struktur-bobot",
+      "title": "Bobot SKEM",
+      "ref": "Pedoman SKEM, C. Struktur SKEM, Penjelasan Umum, hlm. 11",
+      "text": "Setiap kegiatan memiliki bobot SKEM yang menunjukkan tingkat kontribusi kegiatan tersebut terhadap capaian pengembangan diri mahasiswa. Bobot tersebut ditetapkan berdasarkan jenis kegiatan, skala kegiatan, tingkat keterlibatan, serta peran mahasiswa di dalamnya. Untuk dapat dinyatakan lulus, mahasiswa diwajibkan memenuhi total bobot SKEM minimum, yaitu 3,0 SKEM bagi program Diploma Tiga (D3) dan program Sarjana Terapan (STr). Daftar kegiatan beserta bobot SKEM secara rinci tercantum dalam lampiran.",
+      "tags": ["check:credit", "check:role"]
+    },
+    {
+      "id": "komponen-skem",
+      "title": "Komponen SKEM",
+      "ref": "Pedoman SKEM, C. Struktur SKEM, Komponen SKEM, hlm. 11",
+      "text": "Ruang lingkup kegiatan SKEM terdiri atas tiga komponen utama. Dua komponen pertama bersifat wajib dan bentuk kegiatannya telah ditentukan oleh kampus, sedangkan komponen ketiga bersifat wajib untuk dipenuhi, namun mahasiswa diberikan kebebasan untuk memilih sendiri jenis kegiatan yang sesuai dengan minat, bakat, dan pengembangan dirinya. Adapun tiga komponen SKEM tersebut terdiri atas:",
+      "tags": ["check:category", "topic:komponen"]
+    },
+    {
+      "id": "komponen-1",
+      "title": "Komponen 1: Pengembangan Kemampuan Interpersonal dan Manajerial",
+      "ref": "Pedoman SKEM, C. Struktur SKEM, Komponen SKEM poin 1, hlm. 11",
+      "text": "1. Komponen 1: Pengembangan Kemampuan Interpersonal dan Manajerial. Mahasiswa wajib mengikuti Pengenalan Kehidupan Kampus bagi Mahasiswa Baru (PKKMB), Orientasi Pengenalan Prodi (OPP), Latihan Keterampilan Manajemen Mahasiswa (LKMM) Pra-TD dan LKMM TD untuk melatih kepemimpinan, komunikasi, serta keterampilan manajerial.",
+      "tags": ["check:category", "topic:komponen"],
+      "categoryCodes": ["K1-01", "K1-02", "K1-03", "K1-04"]
+    },
+    {
+      "id": "komponen-2",
+      "title": "Komponen 2: Pengembangan Spiritual",
+      "ref": "Pedoman SKEM, C. Struktur SKEM, Komponen SKEM poin 2, hlm. 11",
+      "text": "2. Komponen 2: Pengembangan Spiritual Mahasiswa wajib mengikuti kegiatan mentoring keagamaan untuk memperkuat nilai spiritual dan etika.",
+      "tags": ["check:category", "topic:komponen"],
+      "categoryCodes": ["K2-01"]
+    },
+    {
+      "id": "komponen-3",
+      "title": "Komponen 3: Pengembangan Minat, Bakat, Organisasi, dan Kompetisi",
+      "ref": "Pedoman SKEM, C. Struktur SKEM, Komponen SKEM poin 3, hlm. 11",
+      "text": "3. Komponen 3: Pengembangan Minat, Bakat, Organisasi, dan Kompetisi. Mahasiswa dapat memilih kegiatan sesuai minat, bakat, organisasi, atau kompetisi untuk mengembangkan potensi diri. Setiap kegiatan harus dibuktikan dengan sertifikat, piagam, atau surat keterangan resmi. Rincian kegiatan beserta bobot SKEM tercantum dalam lampiran panduan ini.",
+      "tags": ["check:category", "check:completeness", "topic:komponen"],
+      "categoryCodes": [
+        "K3-A01",
+        "K3-A02",
+        "K3-A03",
+        "K3-B01",
+        "K3-B02",
+        "K3-B03",
+        "K3-B04",
+        "K3-B05",
+        "K3-B06",
+        "K3-B07",
+        "K3-B08",
+        "K3-B09",
+        "K3-B10",
+        "K3-C01",
+        "K3-C02",
+        "K3-C03",
+        "K3-D01",
+        "K3-D02",
+        "K3-D03",
+        "K3-D04",
+        "K3-D05"
+      ]
+    },
+    {
+      "id": "mekanisme-batas-waktu",
+      "title": "Batas Waktu Pengajuan",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Mekanisme Umum poin 4, hlm. 12",
+      "text": "4. Pengajuan SKEM dilakukan paling lama 1 (satu) tahun sejak kegiatan dilaksanakan. Kegiatan yang melebihi batas waktu tersebut tidak dapat diajukan untuk memperoleh pengakuan SKEM.",
+      "tags": ["check:deadline"]
+    },
+    {
+      "id": "sistem-peran-kegiatan",
+      "title": "Peran dalam Kegiatan",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Sistem SKEM huruf d, hlm. 15",
+      "text": "d. Peran dalam Kegiatan, mencakup keterangan jabatan, prestasi, atau bentuk partisipasi mahasiswa dalam kegiatan tersebut.",
+      "tags": ["check:role"]
+    },
+    {
+      "id": "panduan-persiapan",
+      "title": "Persiapan Pengajuan",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Panduan Mahasiswa poin 1, hlm. 16",
+      "text": "1. Persiapan Pengajuan SKEM Sebelum melakukan pengajuan SKEM, mahasiswa wajib memastikan bahwa: a. Kegiatan yang diikuti termasuk dalam kategori kegiatan SKEM sesuai ketentuan yang berlaku. b. Mahasiswa telah menyelesaikan kegiatan dan memperoleh bukti partisipasi resmi. c. Bukti kegiatan telah disiapkan dalam bentuk digital dengan format PDF.",
+      "tags": ["check:completeness", "topic:bukti"]
+    },
+    {
+      "id": "panduan-ketentuan-waktu",
+      "title": "Ketentuan Waktu Pengajuan",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Panduan Mahasiswa poin 4 huruf a, b, d, hlm. 16",
+      "text": "a. Kegiatan SKEM yang dapat diajukan adalah kegiatan yang dilaksanakan paling lama 1 (satu) tahun ke belakang terhitung sejak tanggal pengajuan. b. Pengajuan SKEM dapat dilakukan kapan saja selama kegiatan yang diajukan masih berada dalam masa berlaku sebagaimana dimaksud pada poin (a). d. Pengajuan yang melewati batas waktu ketentuan sebagaimana dimaksud pada poin (a) tidak dapat diproses dan tidak dihitung sebagai nilai SKEM.",
+      "tags": ["check:deadline"]
+    },
+    {
+      "id": "kesalahan-umum-1",
+      "title": "Salah memilih kategori",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Kesalahan Umum Pengisian poin 1, hlm. 20",
+      "text": "1. Salah memilih kategori — Pastikan kegiatan dipilih sesuai kategori yang tepat. Contoh: kompetisi robot didaftarkan di kategori Kompetisi, bukan Organisasi.",
+      "tags": ["check:category"]
+    },
+    {
+      "id": "kesalahan-umum-2",
+      "title": "Salah menentukan tingkat",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Kesalahan Umum Pengisian poin 2, hlm. 20",
+      "text": "2. Salah menentukan tingkat — Tingkat kegiatan ditentukan berdasarkan lingkup peserta, bukan lokasi penyelenggaraan. Contoh: lomba yang pesertanya dari seluruh Indonesia termasuk tingkat Nasional meskipun diselenggarakan di Surabaya.",
+      "tags": ["check:level", "topic:tingkat"]
+    },
+    {
+      "id": "kesalahan-umum-3",
+      "title": "Nama kegiatan disingkat",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Kesalahan Umum Pengisian poin 3, hlm. 20",
+      "text": "3. Nama kegiatan disingkat — Tulis nama lengkap kegiatan. Contoh: tulis \"Kontes Robot Indonesia (KRI) Divisi Kontes Robot ABU Indonesia\", bukan \"KRI ABU\".",
+      "tags": ["check:activity_name"]
+    },
+    {
+      "id": "kesalahan-umum-4",
+      "title": "Dokumen tidak lengkap",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Kesalahan Umum Pengisian poin 4, hlm. 20",
+      "text": "4. Dokumen tidak lengkap — Pastikan seluruh dokumen yang disyaratkan telah diunggah, termasuk bukti kegiatan dan formulir verifikasi yang telah ditandatangani dosen wali.",
+      "tags": ["check:completeness"]
+    },
+    {
+      "id": "kesalahan-umum-5",
+      "title": "Nama pada sertifikat tidak sesuai",
+      "ref": "Pedoman SKEM, D. Pelaksanaan SKEM, Kesalahan Umum Pengisian poin 5, hlm. 20",
+      "text": "5. Nama pada sertifikat tidak sesuai — Nama pada sertifikat atau bukti kegiatan harus sama persis dengan nama pada data akademik mahasiswa. Apabila terdapat perbedaan, mahasiswa wajib menyertakan surat keterangan dari penyelenggara.",
+      "tags": ["check:name_match"]
+    },
+    {
+      "id": "ketentuan-peralihan",
+      "title": "Ketentuan Peralihan",
+      "ref": "Pedoman SKEM, E. Ketentuan Khusus, Ketentuan Peralihan poin 1–2, hlm. 21",
+      "text": "1. Panduan dan ketentuan Satuan Kredit Ekstrakurikuler Mahasiswa (SKEM) ini berlaku bagi mahasiswa Politeknik Elektronika Negeri Surabaya (PENS) angkatan tahun 2024 dan setelahnya. 2. Ketentuan batas waktu pengajuan 1 (satu) tahun sebagaimana dimaksud dalam Mekanisme Umum tidak berlaku bagi kegiatan yang dilaksanakan sebelum tanggal penetapan panduan ini. Seluruh kegiatan yang dilaksanakan sejak awal masa studi hingga tanggal penetapan panduan ini tetap dapat diajukan untuk memperoleh pengakuan SKEM, dengan tetap menyertakan bukti keikutsertaan yang sah.",
+      "tags": ["check:deadline", "topic:angkatan"]
+    },
+    {
+      "id": "lampiran-pengurus-inti-lain",
+      "title": "Pengurus Inti Lain",
+      "ref": "Pedoman SKEM, Lampiran Daftar Kegiatan SKEM PENS, Keterangan, hlm. 33",
+      "text": "● Pengurus inti lain : Jabatan struktural dalam kepengurusan selain Ketua dan Wakil Ketua, meliputi antara lain Sekretaris, Bendahara, dan Kepala/Koordinator Divisi atau Departemen.",
+      "tags": ["check:role"]
+    },
+    {
+      "id": "lampiran-bidang-a",
+      "title": "Komponen 3 bidang A: Kegiatan Pilihan Bidang Organisasi dan Kepemimpinan",
+      "ref": "Pedoman SKEM, Lampiran Daftar Kegiatan SKEM PENS, Daftar Kegiatan Kredit 3 bagian A, hlm. 25–27",
+      "text": "A. Kegiatan Pilihan Bidang Organisasi dan Kepemimpinan: 1. Pengurus Organisasi; 2. Panitia Dalam Suatu Kegiatan Kemahasiswaan atau kegiatan sosial; 3. Mengikuti Pelatihan LKMM.",
+      "tags": ["check:category", "topic:bidang-a"],
+      "categoryCodes": ["K3-A01", "K3-A02", "K3-A03"]
+    },
+    {
+      "id": "lampiran-bidang-b",
+      "title": "Komponen 3 bidang B: Kegiatan Bidang Penalaran, Kreativitas dan Kewirausahaan",
+      "ref": "Pedoman SKEM, Lampiran Daftar Kegiatan SKEM PENS, Daftar Kegiatan Kredit 3 bagian B, hlm. 27–31",
+      "text": "B. Kegiatan Bidang Penalaran, Kreativitas dan Kewirausahaan: 1. Memperoleh prestasi dalam Lomba Karya Ilmiah / Lingkungan Hidup / Kreativitas / Inovatif / Pemikiran Kritis / Entrepreneurship / Business Plan yang diselenggarakan oleh badan yang kredibel; 2. Mendapatkan pendanaan proposal (Penelitian, Kewirausahaan, atau Pengabdian Masyarakat); 3. Mengikuti Kegiatan / Forum Ilmiah Seminar; 4. Mengikuti Kegiatan / Forum Ilmiah Pelatihan atau Workshop; 5. Menghasilkan temuan inovasi yang terdaftar hak cipta (IPTEK); 6. Menghasilkan temuan inovasi yang dipatenkan (desain industri, paten, paten sederhana); 7. Menghasilkan karya ilmiah yang dipublikasikan dalam jurnal ilmiah; 8. Menghasilkan karya ilmiah yang dipresentasikan dalam konferensi ilmiah; 9. Mahasiswa Berprestasi (Mawapres); 10. Wirausaha Mandiri.",
+      "tags": ["check:category", "topic:bidang-b"],
+      "categoryCodes": [
+        "K3-B01",
+        "K3-B02",
+        "K3-B03",
+        "K3-B04",
+        "K3-B05",
+        "K3-B06",
+        "K3-B07",
+        "K3-B08",
+        "K3-B09",
+        "K3-B10"
+      ]
+    },
+    {
+      "id": "lampiran-bidang-c",
+      "title": "Komponen 3 bidang C: Kegiatan Bidang Minat dan Bakat",
+      "ref": "Pedoman SKEM, Lampiran Daftar Kegiatan SKEM PENS, Daftar Kegiatan Kredit 3 bagian C, hlm. 31–32",
+      "text": "C. Kegiatan Bidang Minat dan Bakat: 1. Memperoleh prestasi dalam kegiatan Minat dan Bakat (Olah raga, Seni, Kerohanian, dll.); 2. Menjadi Pelatih / Pembimbing kegiatan Minat dan Bakat; 3. Menghasilkan karya seni (konser, pameran seni, puisi, fotografi, teater, dll.).",
+      "tags": ["check:category", "topic:bidang-c"],
+      "categoryCodes": ["K3-C01", "K3-C02", "K3-C03"]
+    },
+    {
+      "id": "lampiran-bidang-d",
+      "title": "Komponen 3 bidang D: Kegiatan Lainnya",
+      "ref": "Pedoman SKEM, Lampiran Daftar Kegiatan SKEM PENS, Daftar Kegiatan Kredit 3 bagian D, hlm. 33",
+      "text": "D. Kegiatan Lainnya: 1. Upacara Bendera; 2. Tim PPK PENS; 3. Pemandu LKMM; 4. Asisten Peneliti / Asisten Laboratorium; 5. Mentor Keagamaan.",
+      "tags": ["check:category", "topic:bidang-d"],
+      "categoryCodes": ["K3-D01", "K3-D02", "K3-D03", "K3-D04", "K3-D05"]
+    }
+  ]
+}

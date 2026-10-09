@@ -27,8 +27,8 @@ Seluruh proses online. Keputusan akhir selalu di staf; sistem tidak mengirim pes
 ## 3. Sumber data dan komponen simulasi
 | Item | Sumber | Status |
 |---|---|---|
-| Tabel bobot kredit | Lampiran Pedoman Pelaksanaan SKEM, didigitalkan ke `data/credit_table.json` | Nyata (TODO: jumlah baris) |
-| Bagian Pedoman | Pedoman dipecah per bagian dan diberi tag (`data/guideline_sections.json`) | Nyata |
+| Tabel bobot kredit | Lampiran Pedoman Pelaksanaan SKEM, didigitalkan ke `data/credit_table.json` | Nyata (182 baris; lihat `data/credit_table.NOTES.md`) |
+| Bagian Pedoman | Pedoman dipecah per bagian dan diberi tag (`data/guideline_sections.json`) | Nyata (28 bagian; lihat `data/guideline_sections.NOTES.md`) |
 | Aturan tanggal per angkatan | Pedoman (Ketentuan Waktu & Peralihan), ditafsirkan tim; `data/rules.json` | Nyata (tafsiran tim) |
 | Sertifikat dan data mahasiswa | Dibuat sendiri (sintetis) | **Simulasi** |
 | Kelas, dosen wali, akun | Data seed | **Simulasi** |

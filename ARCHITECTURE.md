@@ -303,7 +303,7 @@ Agent adalah **orkestrasi tetap** (bukan loop tool-calling bebas): urutan tool d
 | `read_document` | LLM (via reader) | `{ sha256, pdf }` | `ExtractedFields` |
 | `match_name` | murni | `{ certificateName, accountName }` | `{ result: 'pass'|'warn'|'fail', score: number }` |
 | `check_deadline` | murni | `{ activityEndDate, angkatan, submissionDate }` | `{ result, validFrom, validTo, message }` |
-| `get_relevant_sections` | murni | `{ tags: string[], categoryCode?: string }` | `{ sections: { id, title, ref, text }[] }` |
+| `get_relevant_sections` | murni | `{ tags: string[], categoryCode?: string }` | `{ sections: { id, title, ref, text }[] }`, maks. 3 bagian dan ≤ 1.500 karakter; skor = tag cocok + kecocokan `categoryCodes` (detail: `data/guideline_sections.NOTES.md`) |
 | `classify_activity` | LLM | `{ fields, candidates, sections }` | `{ category: Cand[], level: Cand[], role: Cand[], achievement: Cand[], activity_name_full?: {value, confidence}, missing: string[] }` dengan `Cand = { code, confidence }`, top-3 |
 | `lookup_credit_table` | murni | `{ komponen, categoryCode, level, role, achievement? }` | `{ found: true, entryId, credit, ref } | { found: false, reason }` |
 | `ask_student` | murni (templat) | `{ field, context }` | `{ field, question, options }` |
@@ -316,7 +316,7 @@ Aturan:
 - Ambang (`data/rules.json`): `confidenceThreshold` awal 0,7; `nameMatch.warnMin` 0,8 (`pass` = sama persis setelah normalisasi gelar/tanda baca; skor ≥ 0,8 → `warn`; di bawahnya → `fail`; dikalibrasi dengan test set).
 - Aturan tanggal (`data/rules.json`): angkatan ≤ 2024 → `activity_end_date ≥ 2024-01-01`; angkatan ≥ 2025 → `[submissionDate − 1 tahun, submissionDate]` inklusif; tanggal masa depan selalu tidak valid. `submissionDate` = hari ini saat analisis/cek ulang.
 
-Catatan domain untuk `credit_table.json`: kolom "Tingkat" di Lampiran tidak selalu cakupan peserta (ada "Program Studi (Hima)", "UKM / Tim Kompetisi", "Lanjut/Menengah", "Perseroan Terbatas"; Komponen 1–2 tanpa tingkat). Karena itu `level` di tabel adalah string kode per baris, sedangkan pertanyaan cakupan peserta hanya dipakai untuk baris bertingkat Internasional/Nasional/Regional/Kampus.
+Catatan domain untuk `credit_table.json` (182 baris; rincian di `data/credit_table.NOTES.md`): kolom "Tingkat" di Lampiran tidak selalu cakupan peserta (ada "Program Studi (Hima)", "UKM / Tim Kompetisi", "Lanjut/Menengah", "Perseroan Terbatas (PT)", dll.). Karena itu `level` adalah string per baris, sedangkan pertanyaan cakupan peserta hanya dipakai untuk baris bertingkat Internasional/Nasional/Regional/Kampus. `level` dan `role` bernilai `null` bila kolomnya kosong di tabel (Komponen 1–2 tanpa tingkat; bidang D tanpa tingkat dan jabatan), dan `bidang` (`A`–`D`) hanya diisi untuk Komponen 3. `lookup_credit_table` harus mencocokkan `null` secara eksplisit, bukan sebagai wildcard.
 
 ## 9. API
 

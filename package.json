@@ -17,11 +17,11 @@
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit -p scripts",
     "db:generate": "drizzle-kit generate --config apps/api/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config apps/api/drizzle.config.ts",
     "seed": "tsx apps/api/src/db/seed.ts",
-    "data:validate": "node scripts/not-implemented.mjs data:validate D-01",
+    "data:validate": "tsx scripts/validate-data.ts",
     "eval": "node scripts/not-implemented.mjs eval T-02"
   },
   "devDependencies": {

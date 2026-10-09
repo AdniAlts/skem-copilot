@@ -6,7 +6,7 @@
 Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claude (Anthropic, antarmuka chat)**: ide dan konsep MVP, PRD (`docs/PRD.md`), deck presentasi, prompt desain UI (`docs/design-prompts/`), rencana kerja 20 jam, dan template README/`tech.md`. Tidak ada kode aplikasi yang ditulis sebelum acara.
 
 - Persiapan repo (dokumen `AGENTS.md`, `CLAUDE.md`, `ARCHITECTURE.md`, `docs/API.md`, template issue/PR, `.env.example`, `.gitignore`, label, milestone, dan issue) disusun dengan **Claude Code** (model Claude Opus) berdasarkan PRD. Semua isinya dokumen dan konfigurasi, tanpa kode aplikasi.
-- Tabel bobot dan pecahan Pedoman dalam bentuk JSON: TODO (sebutkan jika dikerjakan sebelum acara dan oleh siapa; rencana saat ini: dikerjakan saat acara, issue D-01 dan D-02).
+- Tabel bobot dalam bentuk JSON (`data/credit_table.json`) dikerjakan saat acara (issue D-01): ditranskripsi dari teks Pedoman dan dicocokkan otomatis dengan PDF memakai pypdf (alat lokal, bukan dependensi repo). Pecahan Pedoman bertag (`data/guideline_sections.json`, issue D-02) dikerjakan saat acara dengan cara yang sama: kutipan verbatim dari teks Pedoman, halaman dicocokkan otomatis ke PDF.
 
 ## AI coding assistant
 | Alat | Model | Dipakai untuk | Catatan |
@@ -41,7 +41,12 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 | Prettier | 3.9.9 | MIT | Format kode | — |
 | concurrently | 10.0.6 | MIT | Menjalankan API + web bersamaan | — |
 | zod | 3.25.76 | MIT | Validasi schema API, keluaran LLM, dan file data (`@skem/shared`) | — |
-| TODO (menyusul: Drizzle, TanStack Query, pdf-lib, sharp, grammY, …) | | | | |
+| react-router-dom | 7.18.4 | MIT | Routing per peran di aplikasi web | — |
+| @tanstack/react-query | 5.104.1 | MIT | State management & caching API di web | — |
+| tailwindcss, postcss, autoprefixer | 3.4.19, 8.5.29, 10.6.1 | MIT | Styling & sistem tema warna web | — |
+| lucide-react | 1.54.0 | ISC | Ikon garis antarmuka web | — |
+| clsx, tailwind-merge | 2.1.1, 3.7.0 | MIT | Utility penggabungan kelas styling (`cn`) | — |
+| TODO (menyusul: Drizzle, pdf-lib, sharp, grammY, …) | | | | |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 
@@ -49,6 +54,7 @@ Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis 
 | Waktu | Pekerjaan | Oleh |
 |---|---|---|
 | 9 Oktober 2026 | Implementasi @skem/shared (enum, zod schema, labels, tes) untuk issue L-03 | AdniAlts dengan OpenCode (qwen3-coder-flash) |
+| 9 Oktober 2026 | Scaffold web: routing per peran, layout, klien API, TanStack Query, komponen dasar, tema untuk issue FE-01 (#5) | AdniAlts |
 
 ## Data
 - Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis.
