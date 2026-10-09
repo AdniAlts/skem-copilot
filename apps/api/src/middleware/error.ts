@@ -34,7 +34,11 @@ export function validationError(message: string, details?: Record<string, unknow
 }
 
 /** Handler terakhir di chain Express — pasang setelah semua route. */
-export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
+export function errorHandler(err: unknown, _req: Request, res: Response, next: NextFunction): void {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
   if (err instanceof AppError) {
     res.status(err.httpStatus).json({
       error: { code: err.code, message: err.message, ...(err.details ? { details: err.details } : {}) },
