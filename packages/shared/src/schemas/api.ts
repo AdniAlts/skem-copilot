@@ -89,14 +89,14 @@ export const SubmissionDetailSchema = z.object({
     })
     .nullable(),
   activity: z.object({
-    activityName: z.string(),
-    activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    locationPlatform: z.string(),
-    organizer: z.string(),
-    attachmentType: z.string(),
+    activityName: z.string().nullable(),
+    activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+    locationPlatform: z.string().nullable(),
+    organizer: z.string().nullable(),
+    attachmentType: z.string().nullable(),
   }),
   skem: z.object({
-    komponen: z.number().int().min(1).max(3),
+    komponen: z.number().int().min(1).max(3).nullable(),
     categoryCode: z.string().nullable(),
     level: z.string().nullable(),
     roleInActivity: z.string().nullable(),
@@ -202,31 +202,36 @@ export type Progress = z.infer<typeof ProgressSchema>;
 export const PatchSubmissionBodySchema = z.object({
   activity: z
     .object({
-      activityName: z.string().optional(),
-      activityDate: z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/)
-        .optional(),
-      locationPlatform: z.string().optional(),
-      organizer: z.string().optional(),
-      attachmentType: z.string().optional(),
+      activityName: z.string().nullable().optional(),
+      activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      locationPlatform: z.string().nullable().optional(),
+      organizer: z.string().nullable().optional(),
+      attachmentType: z.string().nullable().optional(),
     })
+    .strict()
     .optional(),
   skem: z
     .object({
-      categoryCode: z.string().optional(),
-      level: z.string().optional(),
-      roleInActivity: z.string().optional(),
-      achievement: z.string().optional(),
+      categoryCode: z.string().nullable().optional(),
+      level: z.string().nullable().optional(),
+      roleInActivity: z.string().nullable().optional(),
+      achievement: z.string().nullable().optional(),
     })
+    .strict()
     .optional(),
-});
+})
+  .strict()
+  .refine(
+    (body) => Object.values(body.activity ?? {}).some((value) => value !== undefined)
+      || Object.values(body.skem ?? {}).some((value) => value !== undefined),
+    'Minimal satu field wajib diisi.',
+  );
 export type PatchSubmissionBody = z.infer<typeof PatchSubmissionBodySchema>;
 
 /** Body untuk POST /submissions/:publicId/answers. */
 export const AnswerBodySchema = z.object({
   questionId: z.number().int().positive(),
-  answer: z.string().trim().min(1, 'Jawaban wajib diisi.'),
+  answer: z.string().trim().min(1, 'Jawaban wajib diisi.').max(500, 'Jawaban maksimal 500 karakter.'),
 });
 export type AnswerBody = z.infer<typeof AnswerBodySchema>;
 
@@ -235,7 +240,8 @@ export const SubmitBodySchema = z.object({
   publicIds: z
     .array(z.string().regex(/^SKM-[A-Z0-9]{8}$/))
     .min(1, 'Minimal 1 pengajuan.')
-    .max(10, 'Maksimal 10 pengajuan.'),
+    .max(10, 'Maksimal 10 pengajuan.')
+    .refine((publicIds) => new Set(publicIds).size === publicIds.length, 'ID pengajuan tidak boleh duplikat.'),
 });
 export type SubmitBody = z.infer<typeof SubmitBodySchema>;
 

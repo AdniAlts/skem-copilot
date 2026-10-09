@@ -94,9 +94,9 @@ Format tiap entri: **peran** · request · response · error khusus.
 | `POST /batches` | multipart `files[]` 1–10 PDF → 201 `{ batch: { publicId, fileCount }, submissions: SubmissionCard[] }` · 400 `TOO_MANY_FILES`, 415 bukan PDF (sebut nama file), 413 > 10 MB |
 | `GET /batches/:publicId` | → `{ batch, progress: { total, done, counts: { queued, analyzing, ready, needs_fix, problem, error } }, submissions: SubmissionCard[] }` |
 | `GET /submissions` | query `status?`, `reviewStatus?` → `SubmissionCard[]` milik sendiri |
-| `GET /submissions/:publicId` | → `SubmissionDetail` |
-| `PATCH /submissions/:publicId` | `{ activity?: {...}, skem?: { categoryCode?, level?, roleInActivity?, achievement? } }` → `SubmissionDetail` (cek ulang deterministik, tanpa LLM) · 409 jika bukan `draft` atau sedang `analyzing` · identitas tidak bisa diubah |
-| `POST /submissions/:publicId/answers` | `{ "questionId": 12, "answer": "national" }` → `SubmissionDetail` · 400 opsi tidak valid |
+| `GET /submissions/:publicId` | → `SubmissionDetail`; metadata kegiatan/SKEM nullable selama ekstraksi belum lengkap |
+| `PATCH /submissions/:publicId` | `{ activity?: {...}, skem?: { categoryCode?, level?, roleInActivity?, achievement? } }` → `SubmissionDetail` (cek ulang deterministik, tanpa LLM) · 400 body kosong/field tidak dikenal/identitas · 409 jika bukan `draft`, sedang `queued`/`analyzing`, atau `cancelled` · metadata boleh dikosongkan dengan `null` |
+| `POST /submissions/:publicId/answers` | `{ "questionId": 12, "answer": "national" }` → `SubmissionDetail` · opsi harus cocok; hanya `activity_name` menerima teks bebas, `activity_date` harus `YYYY-MM-DD` · 400 jawaban tidak valid · 409 jika bukan `draft` atau sedang `queued`/`analyzing`/`cancelled` |
 | `POST /submissions/:publicId/cancel` | → 204 · 409 jika bukan `draft` |
 | `POST /submissions/:publicId/reupload` | multipart `file` → `SubmissionCard` (`queued`) |
 | `POST /submissions/:publicId/retry` | → `SubmissionCard` (`queued`) · 409 jika bukan `error` |
