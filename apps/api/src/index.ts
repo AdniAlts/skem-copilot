@@ -1,13 +1,8 @@
 import { createApp } from './app';
+import { loadEnv } from './env';
 
-// Validasi env lengkap (zod) menyusul di BE-01.
-const DEFAULT_PORT = 3000;
-const port = Number(process.env.PORT ?? DEFAULT_PORT);
+const env = loadEnv();
 
-if (!Number.isInteger(port) || port <= 0) {
-  throw new Error(`Invalid PORT: ${process.env.PORT}`);
-}
-
-createApp().listen(port, () => {
-  console.log(`API listening on http://localhost:${port}`);
+createApp().listen(env.PORT, () => {
+  console.log(`API listening on http://localhost:${env.PORT}`);
 });
