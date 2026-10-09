@@ -60,7 +60,7 @@ export const SubmissionCardSchema = z.object({
     z.object({
       code: z.string(),
       message: z.string(),
-    })
+    }),
   ),
   openQuestionCount: z.number().int().min(0),
   lastError: z.string().nullable(),
@@ -111,7 +111,7 @@ export const SubmissionDetailSchema = z.object({
             code: z.string(),
             label: z.string(),
             confidence: z.number(),
-          })
+          }),
         ),
       })
       .optional(),
@@ -129,7 +129,7 @@ export const SubmissionDetailSchema = z.object({
     z.object({
       code: z.string(),
       message: z.string(),
-    })
+    }),
   ),
   questions: z.array(AgentQuestionSchema),
   finalForm: z.object({
@@ -143,7 +143,7 @@ export const SubmissionDetailSchema = z.object({
       note: z.string().nullable(),
       reviewerName: z.string(),
       createdAt: z.string().datetime(),
-    })
+    }),
   ),
   timeline: z.array(
     z.object({
@@ -153,7 +153,7 @@ export const SubmissionDetailSchema = z.object({
       at: z.string().datetime(),
       by: z.string().nullable(),
       note: z.string().nullable(),
-    })
+    }),
   ),
   tokenUsage: z
     .object({
@@ -188,7 +188,7 @@ export const ProgressSchema = z.object({
       komponen: z.number().int().min(1).max(3),
       target: z.number(),
       earned: z.number(),
-    })
+    }),
   ),
   total: z.number(),
   target: z.number(),
@@ -203,7 +203,10 @@ export const PatchSubmissionBodySchema = z.object({
   activity: z
     .object({
       activityName: z.string().optional(),
-      activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      activityDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
       locationPlatform: z.string().optional(),
       organizer: z.string().optional(),
       attachmentType: z.string().optional(),
@@ -292,7 +295,7 @@ export const SubmitResponseSchema = z.object({
     z.object({
       publicId: z.string(),
       reason: z.string(),
-    })
+    }),
   ),
 });
 export type SubmitResponse = z.infer<typeof SubmitResponseSchema>;

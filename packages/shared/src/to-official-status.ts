@@ -14,9 +14,7 @@ import type { SubmissionStatus, OfficialStatus } from './enums.js';
  * Mengembalikan official_status dari submission_status.
  * `draft` mengembalikan `null` karena pengajuan belum diajukan.
  */
-export function toOfficialStatus(
-  status: SubmissionStatus
-): OfficialStatus | null {
+export function toOfficialStatus(status: SubmissionStatus): OfficialStatus | null {
   switch (status) {
     case 'draft':
       return null;

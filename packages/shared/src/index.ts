@@ -72,11 +72,7 @@ export {
   DocumentKindSchema,
   ExtractedFieldsSchema,
 } from './schemas/extraction.js';
-export type {
-  ExtractedField,
-  DocumentKind,
-  ExtractedFields,
-} from './schemas/extraction.js';
+export type { ExtractedField, DocumentKind, ExtractedFields } from './schemas/extraction.js';
 
 // ── Schema: Precheck (klasifikasi, temuan, pertanyaan) ────────────────────
 export {

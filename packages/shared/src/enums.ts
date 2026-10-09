@@ -72,12 +72,7 @@ export type NotificationStatus = (typeof NOTIFICATION_STATUS)[number];
 // ── Enum non-DB (hanya di shared) ─────────────────────────────────────────
 
 /** Cakupan peserta — jawaban pertanyaan agent untuk field `level`. */
-export const PARTICIPANT_SCOPE = [
-  'campus',
-  'regional',
-  'national',
-  'international',
-] as const;
+export const PARTICIPANT_SCOPE = ['campus', 'regional', 'national', 'international'] as const;
 export type ParticipantScope = (typeof PARTICIPANT_SCOPE)[number];
 
 /** Status resmi pengajuan (tampilan di UI mahasiswa). */

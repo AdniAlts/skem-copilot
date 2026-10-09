@@ -281,9 +281,7 @@ describe('SubmitBody validation', () => {
   });
 
   it('menerima 10 publicIds', () => {
-    const ids = Array.from({ length: 10 }, (_, i) =>
-      `SKM-${String(i).padStart(8, 'A')}`
-    );
+    const ids = Array.from({ length: 10 }, (_, i) => `SKM-${String(i).padStart(8, 'A')}`);
     const result = SubmitBodySchema.safeParse({ publicIds: ids });
     expect(result.success).toBe(true);
   });
@@ -294,9 +292,7 @@ describe('SubmitBody validation', () => {
   });
 
   it('menolak 11 publicIds', () => {
-    const ids = Array.from({ length: 11 }, (_, i) =>
-      `SKM-${String(i).padStart(8, 'A')}`
-    );
+    const ids = Array.from({ length: 11 }, (_, i) => `SKM-${String(i).padStart(8, 'A')}`);
     const result = SubmitBodySchema.safeParse({ publicIds: ids });
     expect(result.success).toBe(false);
   });
@@ -340,9 +336,7 @@ describe('Labels (Bahasa Indonesia)', () => {
 
   it('SUBMISSION_STATUS_LABELS lengkap', () => {
     expect(Object.keys(SUBMISSION_STATUS_LABELS)).toHaveLength(5);
-    expect(SUBMISSION_STATUS_LABELS.waiting_verifier).toBe(
-      'Menunggu Verifikator'
-    );
+    expect(SUBMISSION_STATUS_LABELS.waiting_verifier).toBe('Menunggu Verifikator');
   });
 
   it('OFFICIAL_STATUS_LABELS lengkap', () => {

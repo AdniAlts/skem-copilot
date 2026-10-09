@@ -5,10 +5,7 @@
  */
 
 import { z } from 'zod';
-import {
-  CHECK_TYPE,
-  FINDING_RESULT,
-} from '../enums.js';
+import { CHECK_TYPE, FINDING_RESULT } from '../enums.js';
 
 // ── Klasifikasi aktivitas ─────────────────────────────────────────────────
 
@@ -152,9 +149,7 @@ export type GuidelineSection = z.infer<typeof GuidelineSectionSchema>;
 export const GetRelevantSectionsResultSchema = z.object({
   sections: z.array(GuidelineSectionSchema),
 });
-export type GetRelevantSectionsResult = z.infer<
-  typeof GetRelevantSectionsResultSchema
->;
+export type GetRelevantSectionsResult = z.infer<typeof GetRelevantSectionsResultSchema>;
 
 /**
  * Hasil ask_student (templat kode, bukan LLM).

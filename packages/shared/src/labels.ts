@@ -5,12 +5,7 @@
  * Acuan: docs/ui-spec.md §3.
  */
 
-import type {
-  ReviewStatus,
-  SubmissionStatus,
-  OfficialStatus,
-  FinalFormStatus,
-} from './enums.js';
+import type { ReviewStatus, SubmissionStatus, OfficialStatus, FinalFormStatus } from './enums.js';
 
 // ── review_status (kartu analisis) ────────────────────────────────────────
 

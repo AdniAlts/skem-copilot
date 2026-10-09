@@ -42,9 +42,7 @@ export const GuidelineSectionEntrySchema = z.object({
   tags: z.array(z.string()),
   categoryCodes: z.array(z.string()).optional(),
 });
-export type GuidelineSectionEntry = z.infer<
-  typeof GuidelineSectionEntrySchema
->;
+export type GuidelineSectionEntry = z.infer<typeof GuidelineSectionEntrySchema>;
 
 /** Schema lengkap guideline_sections.json. */
 export const GuidelineSectionsSchema = z.object({
