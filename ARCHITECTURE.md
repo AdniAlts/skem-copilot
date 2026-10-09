@@ -313,7 +313,7 @@ Aturan:
 - `classify_activity` hanya boleh memilih `code` dari `candidates` (diambil dari `credit_table.json`); kode di luar daftar = invalid.
 - Pertanyaan dari **templat kode**, maks. 3 per kartu (`CHECK seq ≤ 3`). Pertanyaan tingkat selalu berupa pilihan cakupan peserta (`PARTICIPANT_SCOPE` + "Saya tidak tahu"). Jawaban dipetakan ke field lalu aturan deterministik dijalankan ulang **tanpa LLM**.
 - Panggilan LLM: `temperature: 0`, `response_format: { type: 'json_object' }`, timeout 45 s. JSON invalid → satu kali percobaan perbaikan (kirim error zod, minta JSON saja); gagal lagi → error transien (retry antrian).
-- Ambang (`data/rules.json`): `confidenceThreshold` awal 0,7; `nameMatch.warn` 0,85, `nameMatch.fail` 0,6 (dikalibrasi dengan test set).
+- Ambang (`data/rules.json`): `confidenceThreshold` awal 0,7; `nameMatch.warnMin` 0,8 (`pass` = sama persis setelah normalisasi gelar/tanda baca; skor ≥ 0,8 → `warn`; di bawahnya → `fail`; dikalibrasi dengan test set).
 - Aturan tanggal (`data/rules.json`): angkatan ≤ 2024 → `activity_end_date ≥ 2024-01-01`; angkatan ≥ 2025 → `[submissionDate − 1 tahun, submissionDate]` inklusif; tanggal masa depan selalu tidak valid. `submissionDate` = hari ini saat analisis/cek ulang.
 
 Catatan domain untuk `credit_table.json`: kolom "Tingkat" di Lampiran tidak selalu cakupan peserta (ada "Program Studi (Hima)", "UKM / Tim Kompetisi", "Lanjut/Menengah", "Perseroan Terbatas"; Komponen 1–2 tanpa tingkat). Karena itu `level` di tabel adalah string kode per baris, sedangkan pertanyaan cakupan peserta hanya dipakai untuk baris bertingkat Internasional/Nasional/Regional/Kampus.
