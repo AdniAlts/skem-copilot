@@ -352,7 +352,7 @@ export function MahasiswaDetailRoute() {
           <AgentQuestion
             question={activeQuestion}
             fileName={`${submission.publicId}.pdf`}
-            activityName={submission.activity.activityName}
+            activityName={submission.activity.activityName ?? undefined}
             isSubmitting={answerMutation.isPending}
             onSubmit={async (questionId, answer) => {
               await answerMutation.mutateAsync({ questionId, answer });
@@ -558,7 +558,7 @@ export function MahasiswaDetailRoute() {
         submissionsToSubmit={[
           {
             publicId: submission.publicId,
-            activityName: submission.activity.activityName,
+            activityName: submission.activity.activityName ?? undefined,
             fileName: `${submission.publicId}.pdf`,
             estimatedCredit: submission.skem.estimatedCredit,
             hasWarning: hasNameMismatchWarning,

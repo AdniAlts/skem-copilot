@@ -329,19 +329,19 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | POST | `/auth/mock-login` | publik | `{ userId }` → cookie sesi |
 | POST | `/auth/logout` | semua | hapus sesi |
 | GET | `/me` | semua | profil, kelas, dosen wali, `hasSignature`, `telegramLinked` |
-| PUT | `/me/signature` | student, verifier | simpan/ganti tanda tangan (PNG) |
-| GET | `/me/signature` | student, verifier | gambar tanda tangan **milik sendiri** |
-| GET | `/me/progress` | student | progres kredit per komponen menuju 3,0 |
+| PUT | `/me/signature` | student, verifier | simpan/ganti PNG ≤ 1 MB di bucket privat (`multipart file` atau `dataUrl`) |
+| GET | `/me/signature` | student, verifier | gambar tanda tangan **milik sendiri**, tanpa signed URL |
+| GET | `/me/progress` | student | jumlah `final_credit` dari pengajuan `approved`, per komponen menuju 3,0 |
 | POST | `/batches` | student | unggah 1–10 PDF |
 | GET | `/batches/:publicId` | student pemilik | progres + kartu |
 | GET | `/submissions` | student | daftar pengajuan sendiri |
-| GET | `/submissions/:publicId` | pemilik, verifier kelasnya, validator, unit | detail |
-| PATCH | `/submissions/:publicId` | student pemilik | edit metadata kegiatan → cek ulang deterministik |
-| POST | `/submissions/:publicId/answers` | student pemilik | jawab pertanyaan agent |
+| GET | `/submissions/:publicId` | pemilik, verifier kelasnya, validator, unit | detail; metadata kegiatan/SKEM boleh `null` selama pre-check belum lengkap |
+| PATCH | `/submissions/:publicId` | student pemilik | edit metadata kegiatan/SKEM nullable → cek ulang deterministik tanpa LLM; identitas ditolak; konflik saat `queued`/`analyzing`/`cancelled` |
+| POST | `/submissions/:publicId/answers` | student pemilik | jawab pertanyaan agent; opsi harus cocok; teks bebas hanya untuk `activity_name`, `activity_date` wajib `YYYY-MM-DD`; konflik saat `queued`/`analyzing`/`cancelled` |
 | POST | `/submissions/:publicId/cancel` | student pemilik | batalkan kartu |
 | POST | `/submissions/:publicId/reupload` | student pemilik | ganti file → antre ulang |
 | POST | `/submissions/:publicId/retry` | student pemilik | coba lagi (dari `error`) |
-| POST | `/submissions/submit` | student | `{ publicIds }` ajukan satu/banyak yang `ready` |
+| POST | `/submissions/submit` | student | `{ publicIds }` ajukan satu/banyak yang `ready`; wajib tanda tangan; transaksi status/history + notifikasi in-app Verifikator |
 | GET | `/submissions/:publicId/certificate` | pemilik, verifier kelasnya, validator | signed URL bukti (TTL 60 s) |
 | GET | `/submissions/:publicId/final-form` | pemilik, verifier kelasnya, validator | signed URL PDF final |
 | GET | `/verifier/queue` | verifier | antrian kelasnya |

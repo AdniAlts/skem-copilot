@@ -21,6 +21,18 @@ describe('recheck', () => {
     expect(result.findings.find((finding) => finding.checkType === 'credit')?.result).toBe('pass');
   });
 
+  it('retains deterministic deadline bounds in the latest finding', () => {
+    const result = recheck({
+      documentKind: 'certificate', recipientName: 'Budi Santoso', accountName: 'Budi Santoso', angkatan: 2025,
+      activityName: 'Seminar Teknologi', activityEndDate: '2026-09-01', komponen: 1,
+      categoryCode: 'K1-03', level: null, role: 'Peserta', achievement: null,
+      answers: {}, today: '2026-10-09',
+    }, deps);
+    const deadline = result.findings.find((finding) => finding.checkType === 'deadline');
+    expect(deadline?.data).toMatchObject({ validTo: '2026-10-09' });
+    expect(deadline?.data?.validFrom).toBe('2025-10-09');
+  });
+
   it('does not infer a level when student selects unknown scope', () => {
     const result = recheck({
       documentKind: 'certificate', recipientName: 'Budi Santoso', accountName: 'Budi Santoso', angkatan: 2025,

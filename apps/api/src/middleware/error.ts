@@ -40,6 +40,10 @@ export function errorHandler(err: unknown, _req: Request, res: Response, next: N
     next(err);
     return;
   }
+  if (err instanceof Error && 'type' in err && err.type === 'entity.too.large') {
+    res.status(413).json({ error: { code: 'PAYLOAD_TOO_LARGE', message: 'Ukuran request melebihi batas.' } });
+    return;
+  }
   if (err instanceof multer.MulterError) {
     const code = err.code === 'LIMIT_FILE_SIZE' ? 'PAYLOAD_TOO_LARGE' : err.code === 'LIMIT_FILE_COUNT' ? 'TOO_MANY_FILES' : 'VALIDATION_ERROR';
     res.status(code === 'PAYLOAD_TOO_LARGE' ? 413 : 400).json({ error: { code, message: 'Upload file tidak valid.' } });

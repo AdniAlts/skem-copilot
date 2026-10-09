@@ -88,11 +88,11 @@ export function MetadataPanel({
 
   // Form State: Informasi Kegiatan
   const [prevPublicId, setPrevPublicId] = useState(submission.publicId);
-  const [activityName, setActivityName] = useState(submission.activity.activityName);
-  const [activityDate, setActivityDate] = useState(submission.activity.activityDate);
-  const [locationPlatform, setLocationPlatform] = useState(submission.activity.locationPlatform);
-  const [organizer, setOrganizer] = useState(submission.activity.organizer);
-  const [attachmentType, setAttachmentType] = useState(submission.activity.attachmentType);
+  const [activityName, setActivityName] = useState(submission.activity.activityName ?? '');
+  const [activityDate, setActivityDate] = useState(submission.activity.activityDate ?? '');
+  const [locationPlatform, setLocationPlatform] = useState(submission.activity.locationPlatform ?? '');
+  const [organizer, setOrganizer] = useState(submission.activity.organizer ?? '');
+  const [attachmentType, setAttachmentType] = useState(submission.activity.attachmentType ?? '');
 
   // Form State: Data SKEM
   const [categoryCode, setCategoryCode] = useState(submission.skem.categoryCode || 'K3-B01');
@@ -103,11 +103,11 @@ export function MetadataPanel({
   // Sinkronisasi jika prop submission berganti
   if (submission.publicId !== prevPublicId) {
     setPrevPublicId(submission.publicId);
-    setActivityName(submission.activity.activityName);
-    setActivityDate(submission.activity.activityDate);
-    setLocationPlatform(submission.activity.locationPlatform);
-    setOrganizer(submission.activity.organizer);
-    setAttachmentType(submission.activity.attachmentType);
+    setActivityName(submission.activity.activityName ?? '');
+    setActivityDate(submission.activity.activityDate ?? '');
+    setLocationPlatform(submission.activity.locationPlatform ?? '');
+    setOrganizer(submission.activity.organizer ?? '');
+    setAttachmentType(submission.activity.attachmentType ?? '');
 
     setCategoryCode(submission.skem.categoryCode || 'K3-B01');
     setLevel(submission.skem.level || '');
@@ -134,11 +134,11 @@ export function MetadataPanel({
   // Deteksi perubahan (dirty state)
   const isDirty = useMemo(() => {
     return (
-      activityName !== submission.activity.activityName ||
-      activityDate !== submission.activity.activityDate ||
-      locationPlatform !== submission.activity.locationPlatform ||
-      organizer !== submission.activity.organizer ||
-      attachmentType !== submission.activity.attachmentType ||
+      activityName !== (submission.activity.activityName ?? '') ||
+      activityDate !== (submission.activity.activityDate ?? '') ||
+      locationPlatform !== (submission.activity.locationPlatform ?? '') ||
+      organizer !== (submission.activity.organizer ?? '') ||
+      attachmentType !== (submission.activity.attachmentType ?? '') ||
       categoryCode !== (submission.skem.categoryCode || '') ||
       level !== (submission.skem.level || '') ||
       roleInActivity !== (submission.skem.roleInActivity || '') ||
@@ -159,11 +159,11 @@ export function MetadataPanel({
 
   // Handle Reset Form
   const handleReset = () => {
-    setActivityName(submission.activity.activityName);
-    setActivityDate(submission.activity.activityDate);
-    setLocationPlatform(submission.activity.locationPlatform);
-    setOrganizer(submission.activity.organizer);
-    setAttachmentType(submission.activity.attachmentType);
+    setActivityName(submission.activity.activityName ?? '');
+    setActivityDate(submission.activity.activityDate ?? '');
+    setLocationPlatform(submission.activity.locationPlatform ?? '');
+    setOrganizer(submission.activity.organizer ?? '');
+    setAttachmentType(submission.activity.attachmentType ?? '');
 
     setCategoryCode(submission.skem.categoryCode || 'K3-B01');
     setLevel(submission.skem.level || '');
@@ -178,11 +178,11 @@ export function MetadataPanel({
 
     const payload: PatchSubmissionBody = {
       activity: {
-        activityName,
-        activityDate,
-        locationPlatform,
-        organizer,
-        attachmentType,
+        activityName: activityName || null,
+        activityDate: activityDate || null,
+        locationPlatform: locationPlatform || null,
+        organizer: organizer || null,
+        attachmentType: attachmentType || null,
       },
       skem: {
         categoryCode,
