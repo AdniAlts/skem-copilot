@@ -344,9 +344,9 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | POST | `/submissions/submit` | student | `{ publicIds }` ajukan satu/banyak yang `ready`; wajib tanda tangan; transaksi status/history + notifikasi in-app Verifikator |
 | GET | `/submissions/:publicId/certificate` | pemilik, verifier kelasnya, validator | signed URL bukti (TTL 60 s) |
 | GET | `/submissions/:publicId/final-form` | pemilik, verifier kelasnya, validator | signed URL PDF final |
-| GET | `/verifier/queue` | verifier | antrian kelasnya |
-| POST | `/verifier/submissions/:publicId/approve` | verifier kelasnya | Setujui (+e-sign) |
-| POST | `/verifier/submissions/:publicId/reject` | verifier kelasnya | Tolak `{ note }` wajib |
+| GET | `/verifier/queue` | verifier | antrian kelasnya (`waiting_verifier`); filter `aiStatus=clean\|warning`, urut `oldest\|newest\|flags` |
+| POST | `/verifier/submissions/:publicId/approve` | verifier kelasnya | Setujui (+e-sign tersimpan, 409 `SIGNATURE_REQUIRED`); hook `onVerifierApproved` setelah commit |
+| POST | `/verifier/submissions/:publicId/reject` | verifier kelasnya | Tolak `{ note }` wajib (zod + CHECK DB) |
 | GET | `/validator/queue` | validator | antrian lintas kelas, filter kelas |
 | POST | `/validator/submissions/:publicId/credit` | validator | ubah kredit final `{ finalCredit, reason }` |
 | POST | `/validator/submissions/:publicId/validate` | validator | Validasi |
