@@ -4,3 +4,5 @@ coverage
 handoff
 package-lock.json
 *.md
+# Dibuat otomatis oleh drizzle-kit; jangan diformat manual
+apps/api/src/db/migrations
