@@ -31,12 +31,14 @@ declare module 'express-serve-static-core' {
 
 export function createSessionToken(userId: number): string {
   const payload = Buffer.from(JSON.stringify({ userId })).toString('base64url');
-  return sign(loadEnv().SESSION_SECRET, payload);
+  // cookie-signature: sign(val, secret)
+  return sign(payload, loadEnv().SESSION_SECRET);
 }
 
 export function parseSessionToken(token: string | undefined): number | null {
   if (!token) return null;
-  const payload = unsign(loadEnv().SESSION_SECRET, token);
+  // cookie-signature: unsign(input, secret)
+  const payload = unsign(token, loadEnv().SESSION_SECRET);
   if (!payload) return null;
   try {
     const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString()) as { userId?: unknown };
