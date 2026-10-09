@@ -80,7 +80,7 @@ npm workspaces. Node.js ≥ 22. TypeScript strict di semua paket.
 │  ├─ seed/                   # data dummy kelas & pengguna (Simulasi)
 │  └─ testset/                # cases/*.pdf + answer_key.json (split tuning/heldout)
 ├─ scripts/                   # eval.ts, validate-data.ts
-└─ docs/                      # PRD, API, design-prompts, rencana kerja
+└─ docs/                      # PRD, API, ui-spec (layar), design-prompts, rencana kerja
 ```
 
 Aturan ketergantungan: `web → shared`, `api → shared`, `api/rules` tidak mengimpor `db`, `llm`, atau Express (murni, mudah dites). `agent` memanggil `reader`, `rules`, `llm`.

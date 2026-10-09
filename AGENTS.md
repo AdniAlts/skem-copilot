@@ -30,7 +30,7 @@ apps/api          @skem/api    Express; routes/ services/ agent/ rules/ llm/ rea
 packages/shared   @skem/shared enum, zod schema, tipe API (sumber kebenaran kontrak)
 data/             credit_table.json, guideline_sections.json, rules.json, seed/, testset/
 scripts/          eval.ts, validate-data.ts
-docs/             PRD.md, API.md, design-prompts/ (acuan layar, v8 terbaru)
+docs/             PRD.md, API.md, ui-spec.md (acuan layar final), design-prompts/ (riwayat)
 ```
 | Perintah | Fungsi |
 |---|---|
