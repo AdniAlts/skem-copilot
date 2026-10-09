@@ -1,0 +1,197 @@
+{
+  "cases": [
+    {
+      "id": "c001",
+      "file": "cases/c001_juara2_lomba_desain.pdf",
+      "split": "tuning",
+      "account": {
+        "name": "Budi Santoso",
+        "angkatan": 2025
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {
+        "level": "national"
+      },
+      "expected": {
+        "review_status_before_answer": "needs_fix",
+        "review_status": "ready",
+        "category_code": "K3-B01",
+        "level": "Nasional",
+        "role": "Juara II",
+        "credit_entry_id": "K3-B01-NAS-JUARA2",
+        "errors": ["level"]
+      }
+    },
+    {
+      "id": "c002",
+      "file": "cases/c002_nama_orang_lain.pdf",
+      "split": "tuning",
+      "account": {
+        "name": "Ahmad Fauzi",
+        "angkatan": 2024
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "problem",
+        "category_code": "K3-B03",
+        "level": "Nasional",
+        "role": "Peserta Daring",
+        "credit_entry_id": "K3-B03-NAS-PESERTADARING",
+        "errors": ["name_mismatch"]
+      }
+    },
+    {
+      "id": "c003",
+      "file": "cases/c003_beda_ejaan_nama.pdf",
+      "split": "tuning",
+      "account": {
+        "name": "Rizky Pratama",
+        "angkatan": 2024
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "ready",
+        "category_code": "K1-03",
+        "level": "",
+        "role": "Peserta",
+        "credit_entry_id": "K1-03-PESERTA",
+        "errors": []
+      }
+    },
+    {
+      "id": "c004",
+      "file": "cases/c004_nama_kegiatan_singkat.pdf",
+      "split": "tuning",
+      "account": {
+        "name": "Siti Nurhaliza",
+        "angkatan": 2024
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "ready",
+        "category_code": "K3-A02",
+        "level": "Kampus",
+        "role": "Anggota Panitia",
+        "credit_entry_id": "K3-A02-KMP-ANGGOTA",
+        "errors": []
+      }
+    },
+    {
+      "id": "c005",
+      "file": "cases/c005_tanggal_kadaluarsa.pdf",
+      "split": "tuning",
+      "account": {
+        "name": "Dimas Anggara",
+        "angkatan": 2025
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "problem",
+        "category_code": "K3-B04",
+        "level": "Regional",
+        "role": "Peserta Luring",
+        "credit_entry_id": "K3-B04-REG-PESERTALURING",
+        "errors": ["deadline"]
+      }
+    },
+    {
+      "id": "c006",
+      "file": "cases/c006_kombinasi_tidak_ada_di_tabel.pdf",
+      "split": "tuning",
+      "account": {
+        "name": "Farhan Ramadhan",
+        "angkatan": 2024
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "needs_fix",
+        "category_code": "K3-C02",
+        "level": "Internasional",
+        "role": "Pelatih",
+        "credit_entry_id": "",
+        "errors": ["credit"]
+      }
+    },
+    {
+      "id": "c007",
+      "file": "cases/c007_foto_hp_miring.pdf",
+      "split": "heldout",
+      "account": {
+        "name": "Dewi Anggraini",
+        "angkatan": 2024
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "ready",
+        "category_code": "K3-C01",
+        "level": "Regional",
+        "role": "Juara I",
+        "credit_entry_id": "K3-C01-REG-JUARA1",
+        "errors": []
+      }
+    },
+    {
+      "id": "c008",
+      "file": "cases/c008_scan_tanpa_teks.pdf",
+      "split": "heldout",
+      "account": {
+        "name": "Muhammad Ilham",
+        "angkatan": 2024
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "ready",
+        "category_code": "K2-01",
+        "level": "",
+        "role": "Peserta",
+        "credit_entry_id": "K2-01-PESERTA",
+        "errors": []
+      }
+    },
+    {
+      "id": "c009",
+      "file": "cases/c009_bukan_sertifikat.pdf",
+      "split": "tuning",
+      "account": {
+        "name": "Bayu Saputra",
+        "angkatan": 2025
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "problem",
+        "category_code": "",
+        "level": "",
+        "role": "",
+        "credit_entry_id": "",
+        "errors": ["category"]
+      }
+    },
+    {
+      "id": "c010",
+      "file": "cases/c010_kasus_benar_lengkap.pdf",
+      "split": "heldout",
+      "account": {
+        "name": "Anisa Putri",
+        "angkatan": 2024
+      },
+      "submissionDate": "2026-10-09",
+      "answers": {},
+      "expected": {
+        "review_status": "ready",
+        "category_code": "K3-D01",
+        "level": "",
+        "role": "",
+        "credit_entry_id": "K3-D01",
+        "errors": []
+      }
+    }
+  ]
+}
