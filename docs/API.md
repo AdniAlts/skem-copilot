@@ -115,10 +115,10 @@ Format tiap entri: **peran** · request · response · error khusus.
 ### Validator
 | Endpoint | Ringkas |
 |---|---|
-| `GET /validator/queue` | query `classId?` → items + `finalFormStatus` |
-| `POST /validator/submissions/:publicId/credit` | `{ "finalCredit": 0.5, "reason": "wajib" }` → `{ previousCredit, finalCredit, review }` · 400 alasan kosong / nilai sama |
-| `POST /validator/submissions/:publicId/validate` | `{}` → `{ status: "approved", finalCredit }` |
-| `POST /validator/submissions/:publicId/reject` | `{ "note": "wajib" }` → `{ status: "rejected" }` |
+| `GET /validator/queue` | query `classId?` → `{ summary: { waiting, formFailed }, items: [{ publicId, studentName, nrp, className, activityName, categoryLabel, level, estimatedCredit, finalCredit, flagCount, finalFormStatus, submittedAt }] }` — lintas kelas, `status=waiting_validator`, urut `submittedAt` naik; `finalCredit` terisi jika sudah diubah lewat `/credit` · 400 query tidak dikenal |
+| `POST /validator/submissions/:publicId/credit` | `{ "finalCredit": 0.5, "reason": "wajib, ≤ 1000" }` → `{ previousCredit, finalCredit, review }` · `finalCredit` 0–3, maks. dua desimal · 400 alasan kosong / nilai sama dengan nilai saat ini · 409 bukan `waiting_validator`. Menulis `submissions.final_credit` + `reviews(adjust_credit, previous_credit, adjusted_credit, adjust_reason)`; mahasiswa baru melihat `finalCredit` setelah `approved` |
+| `POST /validator/submissions/:publicId/validate` | `{}` (body lain → 400) → `{ status: "approved", finalCredit }` · `finalCredit` = hasil `/credit` terakhir atau `estimated_credit` · 409 bukan `waiting_validator`; `reviews(approve)`, `status_history`, notifikasi in-app mahasiswa |
+| `POST /validator/submissions/:publicId/reject` | `{ "note": "wajib, ≤ 1000" }` → `{ status: "rejected" }` · 409 bukan `waiting_validator`; `reviews(reject)`, `status_history` (catatan = alasan), notifikasi in-app mahasiswa |
 | `POST /validator/submissions/:publicId/regenerate-form` | → `{ finalForm: { status } }` |
 
 ### Notifikasi, Telegram, monitoring

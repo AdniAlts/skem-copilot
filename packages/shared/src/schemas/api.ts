@@ -268,17 +268,29 @@ export const VerifierQueueQuerySchema = z.object({
 }).strict();
 export type VerifierQueueQuery = z.infer<typeof VerifierQueueQuerySchema>;
 
-/** Body untuk POST /validator/submissions/:publicId/credit. */
+/** Body untuk POST /validator/submissions/:publicId/credit. Kredit 0–3, maksimal dua desimal. */
 export const CreditAdjustBodySchema = z.object({
-  finalCredit: z.number().min(0),
-  reason: z.string().trim().min(1, 'Alasan perubahan kredit wajib diisi.'),
-});
+  finalCredit: z.number().min(0).max(3)
+    .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-6, 'Kredit maksimal dua desimal.')
+    .transform((value) => Math.round(value * 100) / 100),
+  reason: z.string().trim().min(1, 'Alasan perubahan kredit wajib diisi.').max(1000, 'Alasan maksimal 1000 karakter.'),
+}).strict();
 export type CreditAdjustBody = z.infer<typeof CreditAdjustBodySchema>;
+
+/** Body untuk POST /validator/submissions/:publicId/validate. */
+export const ValidateBodySchema = z.object({}).strict();
+export type ValidateBody = z.infer<typeof ValidateBodySchema>;
+
+/** Query untuk GET /validator/queue. */
+export const ValidatorQueueQuerySchema = z.object({
+  classId: z.coerce.number().int().positive().optional(),
+}).strict();
+export type ValidatorQueueQuery = z.infer<typeof ValidatorQueueQuerySchema>;
 
 /** Body untuk POST /validator/submissions/:publicId/reject. */
 export const ValidatorRejectBodySchema = z.object({
-  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.'),
-});
+  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.').max(1000, 'Alasan maksimal 1000 karakter.'),
+}).strict();
 export type ValidatorRejectBody = z.infer<typeof ValidatorRejectBodySchema>;
 
 /** Body untuk POST /auth/mock-login. */
@@ -374,6 +386,29 @@ export const ValidateResponseSchema = z.object({
   finalCredit: z.number(),
 });
 export type ValidateResponse = z.infer<typeof ValidateResponseSchema>;
+
+/** Response untuk GET /validator/queue. `finalCredit` terisi jika Validator sudah mengubah kredit. */
+export const ValidatorQueueResponseSchema = z.object({
+  summary: z.object({
+    waiting: z.number().int().min(0),
+    formFailed: z.number().int().min(0),
+  }),
+  items: z.array(z.object({
+    publicId: z.string().regex(/^SKM-[A-Z0-9]{8}$/),
+    studentName: z.string(),
+    nrp: z.string().nullable(),
+    className: z.string().nullable(),
+    activityName: z.string().nullable(),
+    categoryLabel: z.string().nullable(),
+    level: z.string().nullable(),
+    estimatedCredit: z.number().nullable(),
+    finalCredit: z.number().nullable(),
+    flagCount: z.number().int().min(0),
+    finalFormStatus: z.enum(FINAL_FORM_STATUS),
+    submittedAt: z.string().datetime().nullable(),
+  })),
+});
+export type ValidatorQueueResponse = z.infer<typeof ValidatorQueueResponseSchema>;
 
 /** Response untuk POST /validator/submissions/:publicId/reject. */
 export const ValidatorRejectResponseSchema = z.object({
