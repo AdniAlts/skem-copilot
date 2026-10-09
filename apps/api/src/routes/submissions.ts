@@ -3,7 +3,7 @@ import { Router } from 'express';
 import multer from 'multer';
 
 import { createDb } from '../db/client.js';
-import { documents, submissions } from '../db/schema.js';
+import { documents, statusHistory, submissions } from '../db/schema.js';
 import { requireAuth } from '../middleware/auth.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import { certificatePath, validatePdfFile } from '../services/batch-upload.js';
@@ -28,6 +28,7 @@ submissionsRouter.post(
       if (current.submission.status !== 'draft') throw new AppError('CONFLICT', 'Pengajuan tidak dapat dibatalkan pada status ini.');
       await db.transaction(async (tx) => {
         await tx.update(submissions).set({ reviewStatus: 'cancelled', lockedAt: null, updatedAt: new Date() }).where(eq(submissions.id, current.submission.id));
+        await tx.insert(statusHistory).values({ submissionId: current.submission.id, field: 'review_status', fromValue: current.submission.reviewStatus, toValue: 'cancelled', changedBy: req.sessionUser!.id, note: 'Pengajuan dibatalkan mahasiswa' });
       });
       if (current.document) await removeObject(bucketCertificates(), current.document.filePath);
       res.status(204).send();
@@ -50,6 +51,7 @@ submissionsRouter.post(
       if (current.submission.reviewStatus !== 'error') throw new AppError('CONFLICT', 'Hanya pengajuan error yang dapat dicoba lagi.');
       const [updated] = await db.update(submissions).set({ reviewStatus: 'queued', attempts: 0, lastError: null, nextAttemptAt: null, updatedAt: new Date() }).where(and(eq(submissions.id, current.submission.id), eq(submissions.reviewStatus, 'error'))).returning();
       if (!updated) throw new AppError('CONFLICT', 'Status pengajuan berubah.');
+      await db.insert(statusHistory).values({ submissionId: current.submission.id, field: 'review_status', fromValue: 'error', toValue: 'queued', changedBy: req.sessionUser!.id, note: 'Mahasiswa mencoba ulang analisis' });
       res.json(toSubmissionCard(updated, current.document?.fileName ?? ''));
     } finally {
       await client.end();
@@ -76,6 +78,7 @@ submissionsRouter.post(
       await db.transaction(async (tx) => {
         await tx.update(submissions).set({ reviewStatus: 'queued', attempts: 0, lockedAt: null, nextAttemptAt: null, lastError: null, updatedAt: new Date() }).where(eq(submissions.id, current.submission.id));
         await tx.update(documents).set({ filePath: uploadedPath!, fileName: validated.file.originalname, mime: 'application/pdf', sizeBytes: validated.file.size, sha256: validated.sha256 }).where(eq(documents.submissionId, current.submission.id));
+        await tx.insert(statusHistory).values({ submissionId: current.submission.id, field: 'review_status', fromValue: current.submission.reviewStatus, toValue: 'queued', changedBy: req.sessionUser!.id, note: 'Berkas diunggah ulang' });
       });
       res.json(toSubmissionCard({ ...current.submission, reviewStatus: 'queued', attempts: 0, lockedAt: null, nextAttemptAt: null, lastError: null, updatedAt: new Date() }, validated.file.originalname));
     } catch (error) {
