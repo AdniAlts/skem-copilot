@@ -10,3 +10,7 @@ export * from './Table';
 export * from './EmptyState';
 export * from './ErrorState';
 export * from './LoadingSteps';
+export * from './Dropzone';
+export * from './SubmissionCard';
+export * from './ProgressTracker';
+export * from './RoleGuard';
