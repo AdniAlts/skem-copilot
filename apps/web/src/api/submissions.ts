@@ -1,15 +1,17 @@
 import { apiClient } from './client';
 import { calculateEstimatedCredit } from '../lib/credit-calc';
-import type { SubmissionDetail, PatchSubmissionBody } from '@skem/shared';
+import type { SubmissionDetail, PatchSubmissionBody, AnswerBody } from '@skem/shared';
+export { cancelSubmission, reuploadSubmission } from './batch';
 
 // In-memory demo store for realistic frontend behavior when API returns 404 or in mock mode
 const mockStore: Record<string, SubmissionDetail> = {};
 
 function createDefaultMockSubmission(publicId: string): SubmissionDetail {
+  const isNeedsFix = publicId === 'SKM-8P3L0E2B';
   return {
     publicId,
     status: 'draft',
-    reviewStatus: 'ready',
+    reviewStatus: isNeedsFix ? 'needs_fix' : 'ready',
     officialStatus: 'dalam_proses',
     student: {
       name: 'Budi Santoso',
@@ -24,7 +26,9 @@ function createDefaultMockSubmission(publicId: string): SubmissionDetail {
       jabatan: 'Dosen Wali Kelas 2 D3 IT B',
     },
     activity: {
-      activityName: 'Lomba Desain Poster Nasional 2026',
+      activityName: isNeedsFix
+        ? 'Seminar Nasional Teknologi Kampus'
+        : 'Lomba Desain Poster Nasional 2026',
       activityDate: '2026-05-15',
       locationPlatform: 'Surabaya / Daring',
       organizer: 'BEM Politeknik Elektronika Negeri Surabaya',
@@ -33,11 +37,11 @@ function createDefaultMockSubmission(publicId: string): SubmissionDetail {
     skem: {
       komponen: 3,
       categoryCode: 'K3-B01',
-      level: 'Nasional',
+      level: isNeedsFix ? null : 'Nasional',
       roleInActivity: 'Juara II',
       achievement: 'Juara II Kategori Desain Poster',
-      creditEntryId: 'K3-B01-NAS-JUARA2',
-      estimatedCredit: 1.1,
+      creditEntryId: isNeedsFix ? null : 'K3-B01-NAS-JUARA2',
+      estimatedCredit: isNeedsFix ? null : 1.1,
       finalCredit: null,
     },
     deadline: {
@@ -60,9 +64,11 @@ function createDefaultMockSubmission(publicId: string): SubmissionDetail {
       },
       {
         checkType: 'level',
-        result: 'pass',
-        confidence: 0.92,
-        message: 'Tingkat kegiatan adalah Nasional (peserta mencakup lebih dari 3 provinsi).',
+        result: isNeedsFix ? 'warn' : 'pass',
+        confidence: isNeedsFix ? 0.65 : 0.92,
+        message: isNeedsFix
+          ? 'Tingkat kegiatan belum dapat dipastikan dari teks sertifikat. Diperlukan klarifikasi asal peserta.'
+          : 'Tingkat kegiatan adalah Nasional (peserta mencakup lebih dari 3 provinsi).',
         guidelineRef: {
           id: 'istilah-tingkat-kegiatan',
           title: 'Tingkat Kegiatan',
@@ -83,13 +89,38 @@ function createDefaultMockSubmission(publicId: string): SubmissionDetail {
       },
       {
         checkType: 'credit',
-        result: 'pass',
-        confidence: 1.0,
-        message: 'Bobot kredit terhitung 1,10 poin berdasarkan tabel Lampiran Pedoman SKEM.',
+        result: isNeedsFix ? 'warn' : 'pass',
+        confidence: isNeedsFix ? 0.6 : 1.0,
+        message: isNeedsFix
+          ? 'Estimasi kredit menunggu penentuan tingkat kegiatan yang valid.'
+          : 'Bobot kredit terhitung 1,10 poin berdasarkan tabel Lampiran Pedoman SKEM.',
       },
     ],
-    warnings: [],
-    questions: [],
+    warnings: isNeedsFix
+      ? [
+          {
+            code: 'level_clarification',
+            message: 'Tingkat kegiatan memerlukan jawaban klarifikasi dari peserta.',
+          },
+        ]
+      : [],
+    questions: isNeedsFix
+      ? [
+          {
+            id: 1,
+            seq: 1,
+            field: 'level',
+            question: 'Peserta kegiatan ini berasal dari mana?',
+            options: [
+              { value: 'campus', label: 'Hanya lingkungan internal PENS' },
+              { value: 'regional', label: 'Satu provinsi (minimal 3 kota/kabupaten)' },
+              { value: 'national', label: 'Minimal 3 provinsi di Indonesia' },
+              { value: 'international', label: 'Minimal 3 negara' },
+              { value: 'unknown', label: 'Saya tidak tahu' },
+            ],
+          },
+        ]
+      : [],
     finalForm: {
       status: 'none',
     },
@@ -204,6 +235,77 @@ export async function getCertificateUrl(
       url: `/data/testset/cases/c001_juara2_lomba_desain.pdf`,
       expiresIn: 60,
     };
+  }
+}
+
+/**
+ * Menjawab pertanyaan agent pada kartu pengajuan.
+ */
+export async function answerQuestion(
+  publicId: string,
+  data: AnswerBody
+): Promise<SubmissionDetail> {
+  try {
+    return await apiClient.post<SubmissionDetail>(
+      `/api/submissions/${publicId}/answers`,
+      data
+    );
+  } catch {
+    // Fallback simulation for mock demo
+    const current = mockStore[publicId] || createDefaultMockSubmission(publicId);
+
+    let updatedLevel = current.skem.level;
+    let updatedCategory = current.skem.categoryCode;
+    let updatedReviewStatus = current.reviewStatus;
+
+    const answerLower = data.answer.toLowerCase();
+
+    // Map answer value to level if it is a level question
+    if (answerLower === 'national' || answerLower.includes('3 provinsi') || answerLower === 'nasional') {
+      updatedLevel = 'Nasional';
+    } else if (answerLower === 'international' || answerLower.includes('3 negara') || answerLower === 'internasional') {
+      updatedLevel = 'Internasional';
+    } else if (answerLower === 'regional' || answerLower.includes('1 provinsi') || answerLower === 'regional') {
+      updatedLevel = 'Regional';
+    } else if (answerLower === 'campus' || answerLower.includes('pens') || answerLower === 'kampus') {
+      updatedLevel = 'Kampus';
+    } else if (answerLower.startsWith('k')) {
+      // If it is a category code like K3-B01
+      updatedCategory = data.answer;
+    }
+
+    // Recompute credit
+    const calc = calculateEstimatedCredit({
+      komponen: current.skem.komponen,
+      categoryCode: updatedCategory,
+      level: updatedLevel,
+      role: current.skem.roleInActivity,
+    });
+
+    // If valid combination found and answer provided, promote status to 'ready'
+    if (calc.found && answerLower !== 'unknown' && answerLower !== 'saya tidak tahu') {
+      updatedReviewStatus = 'ready';
+    }
+
+    const updatedQuestions = current.questions.map((q) =>
+      q.id === data.questionId ? { ...q, answer: data.answer } : q
+    );
+
+    const updatedSubmission: SubmissionDetail = {
+      ...current,
+      reviewStatus: updatedReviewStatus,
+      skem: {
+        ...current.skem,
+        categoryCode: updatedCategory,
+        level: updatedLevel,
+        creditEntryId: calc.entryId,
+        estimatedCredit: calc.credit,
+      },
+      questions: updatedQuestions,
+    };
+
+    mockStore[publicId] = updatedSubmission;
+    return updatedSubmission;
   }
 }
 
