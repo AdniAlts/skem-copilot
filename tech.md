@@ -46,7 +46,9 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 | tailwindcss, postcss, autoprefixer | 3.4.19, 8.5.29, 10.6.1 | MIT | Styling & sistem tema warna web | — |
 | lucide-react | 1.54.0 | ISC | Ikon garis antarmuka web | — |
 | clsx, tailwind-merge | 2.1.1, 3.7.0 | MIT | Utility penggabungan kelas styling (`cn`) | — |
-| TODO (menyusul: Drizzle, pdf-lib, sharp, grammY, …) | | | | |
+| pdf-lib | 1.17.9 | MIT | Pembuatan PDF sintetis untuk test set dan formulir | — |
+| Pillow (PIL, Python) | bawaan env | HPND | Pembuatan citra sintetis raster scan dan foto HP miring untuk test set | — |
+| TODO (menyusul: Drizzle, sharp, grammY, …) | | | | |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 
@@ -55,8 +57,10 @@ Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis 
 |---|---|---|
 | 9 Oktober 2026 | Implementasi @skem/shared (enum, zod schema, labels, tes) untuk issue L-03 | AdniAlts dengan OpenCode (qwen3-coder-flash) |
 | 9 Oktober 2026 | Scaffold web: routing per peran, layout, klien API, TanStack Query, komponen dasar, tema untuk issue FE-01 (#5) | AdniAlts |
+| 9 Oktober 2026 | Test set: 10 PDF sertifikat sintetis + answer_key.json + validasi untuk issue T-01 (#12) | AdniAlts |
 
 ## Data
-- Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis.
+- Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis (fiktif).
 - Tabel bobot dan bagian Pedoman berasal dari Pedoman Pelaksanaan SKEM PENS (dokumen institusi); file PDF Pedoman tidak disertakan di repo.
+- Data test set 10 kasus di `data/testset/` dibuat menggunakan generator skrip lokal (`pdf-lib` dan Python Pillow).
 - TODO: sebutkan jika ada data publik atau dataset panitia yang dipakai.
