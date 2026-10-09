@@ -1,0 +1,17 @@
+{
+  "confidenceThreshold": 0.7,
+  "nameMatch": {
+    "warnMin": 0.8
+  },
+  "worker": {
+    "concurrency": 1,
+    "maxAttempts": 3
+  },
+  "dateRules": {
+    "minAngkatan": 2024,
+    "angkatan2024MinDate": "2024-01-01",
+    "angkatan2025PlusWindowYears": 1,
+    "studyStartMonthDay": "08-01"
+  },
+  "maxQuestionsPerSubmission": 3
+}
