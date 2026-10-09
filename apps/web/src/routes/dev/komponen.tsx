@@ -30,7 +30,6 @@ import { Sparkles } from 'lucide-react';
 export function DevKomponenRoute() {
   const { showToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalSize, setModalSize] = useState<'sm' | 'md' | 'lg'>('md');
 
   const demoSteps: StepItem[] = [
     { id: '1', label: 'Membaca dokumen sertifikat (Vision LLM)', status: 'completed' },
@@ -212,7 +211,6 @@ export function DevKomponenRoute() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setModalSize('md');
                     setIsModalOpen(true);
                   }}
                 >
@@ -222,7 +220,6 @@ export function DevKomponenRoute() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setModalSize('sm');
                     setIsModalOpen(true);
                   }}
                 >
@@ -350,11 +347,17 @@ export function DevKomponenRoute() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        size={modalSize}
         title="Contoh Dialog Konfirmasi"
-        description="Semua keputusan dan perubahan data akan dicatat pada riwayat audit sistem."
-        footer={
-          <>
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Semua keputusan dan perubahan data akan dicatat pada riwayat audit sistem.
+          </p>
+          <p className="text-sm text-slate-600">
+            Ini adalah isi modal. Seluruh teks antarmuka menggunakan Bahasa Indonesia sesuai dengan
+            aturan domain sistem SKEM AI Co-Pilot.
+          </p>
+          <div className="flex items-center gap-3 justify-end">
             <Button variant="secondary" size="sm" onClick={() => setIsModalOpen(false)}>
               Batal
             </Button>
@@ -368,13 +371,8 @@ export function DevKomponenRoute() {
             >
               Konfirmasi & Simpan
             </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600">
-          Ini adalah isi modal. Seluruh teks antarmuka menggunakan Bahasa Indonesia sesuai dengan
-          aturan domain sistem SKEM AI Co-Pilot.
-        </p>
+          </div>
+        </div>
       </Modal>
     </div>
   );
