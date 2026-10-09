@@ -2,7 +2,8 @@
  * Tes integrasi auth & guard (BE-01).
  *
  * Butuh DB seeded (npm run db:migrate && npm run seed) dan .env lengkap —
- * memakai akun seed asli lewat /auth/mock-users.
+ * memakai akun seed asli lewat /auth/mock-users. Tanpa DATABASE_URL (mis. CI),
+ * blok yang butuh DB dilewati; "Format error seragam" tetap jalan.
  */
 
 import request from 'supertest';
@@ -11,6 +12,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
 import { createDb } from '../src/db/client';
 import { users as users_table } from '../src/db/schema';
+import { HAS_DATABASE } from './db-available';
 
 interface MockUser {
   id: number;
@@ -26,6 +28,7 @@ let nonexistentUserId: number;
 
 beforeAll(async () => {
   app = createApp();
+  if (!HAS_DATABASE) return;
   const res = await request(app).get('/api/auth/mock-users').expect(200);
   users = res.body as MockUser[];
   expect(users.length).toBeGreaterThanOrEqual(14);
@@ -41,7 +44,7 @@ async function loginAs(userId: number): Promise<string[]> {
   return [String(cookie)];
 }
 
-describe('GET /api/me', () => {
+describe.skipIf(!HAS_DATABASE)('GET /api/me', () => {
   it('401 tanpa cookie sesi', async () => {
     const res = await request(app).get('/api/me');
     expect(res.status).toBe(401);
@@ -71,7 +74,7 @@ describe('GET /api/me', () => {
   });
 });
 
-describe('POST /api/auth/mock-login', () => {
+describe.skipIf(!HAS_DATABASE)('POST /api/auth/mock-login', () => {
   it('400 body tidak valid', async () => {
     const res = await request(app).post('/api/auth/mock-login').send({});
     expect(res.status).toBe(400);
@@ -94,7 +97,7 @@ describe('POST /api/auth/mock-login', () => {
   });
 });
 
-describe('POST /api/auth/logout', () => {
+describe.skipIf(!HAS_DATABASE)('POST /api/auth/logout', () => {
   it('401 tanpa sesi', async () => {
     const res = await request(app).post('/api/auth/logout');
     expect(res.status).toBe(401);
@@ -119,7 +122,7 @@ describe('Format error seragam', () => {
 });
 
 // Smoke: koneksi DB yang sama dipakai seluruh tes
-describe('DB sanity', () => {
+describe.skipIf(!HAS_DATABASE)('DB sanity', () => {
   it('createDb terhubung dan users terisi seed', async () => {
     const { client, db } = createDb();
     try {
