@@ -7,6 +7,7 @@ import { createDb } from '../db/client.js';
 import { documents, precheckRuns, statusHistory, submissions, users, findings, agentQuestions } from '../db/schema.js';
 import { runPrecheck } from '../agent/precheck.js';
 import { createDocumentReader } from '../reader/index.js';
+import { InvalidDocumentError } from '../reader/errors.js';
 import { creditTable, guidelineSections, rules } from '../rules/config.js';
 import { bucketCertificates, downloadObject } from '../services/storage.js';
 import type { PrecheckResult } from '../agent/precheck.js';
@@ -14,8 +15,8 @@ import type { PrecheckResult } from '../agent/precheck.js';
 export type WorkerConfig = { concurrency: number; maxAttempts: number; pollMs: number; lockTimeoutMs: number };
 
 export const DEFAULT_WORKER_CONFIG: WorkerConfig = {
-  concurrency: 1,
-  maxAttempts: 3,
+  concurrency: Math.min(2, rules.worker.concurrency),
+  maxAttempts: rules.worker.maxAttempts,
   pollMs: 2000,
   lockTimeoutMs: 5 * 60 * 1000,
 };
@@ -127,6 +128,7 @@ export async function processSubmission(submissionId: number, config = DEFAULT_W
             data: item.data ?? null,
           })));
         }
+        await tx.delete(agentQuestions).where(eq(agentQuestions.submissionId, submission.id));
         if (result.questions.length) {
           await tx.insert(agentQuestions).values(result.questions.map((question) => ({
             submissionId: submission.id,
@@ -143,7 +145,7 @@ export async function processSubmission(submissionId: number, config = DEFAULT_W
       });
     } catch (error) {
       const attempts = submission.attempts;
-      const permanent = error instanceof LlmError && error.kind === 'permanent';
+      const permanent = error instanceof InvalidDocumentError || (error instanceof LlmError && error.kind === 'permanent');
       const retry = !permanent && attempts < config.maxAttempts;
       const safeError = error instanceof LlmError ? error.message : error instanceof Error ? error.name : 'Pre-check gagal';
       const nextStatus = retry ? 'queued' : 'error';
