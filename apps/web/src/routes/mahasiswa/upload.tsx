@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileText, AlertCircle } from 'lucide-react';
+import { FileText, AlertCircle, Send } from 'lucide-react';
 import { Card } from '../../components/Card';
 import { Dropzone } from '../../components/Dropzone';
 import { SubmissionCard } from '../../components/SubmissionCard';
@@ -10,6 +10,10 @@ import { EmptyState } from '../../components/EmptyState';
 import { LoadingSteps } from '../../components/LoadingSteps';
 import { ErrorState } from '../../components/ErrorState';
 import { Button } from '../../components/Button';
+import { SignatureModal } from '../../components/SignatureModal';
+import { SubmitDialog } from '../../components/SubmitDialog';
+import { useAuth } from '../../api/auth-context';
+import { useToast } from '../../components/ToastContext';
 import {
   uploadBatch,
   getBatchProgress,
@@ -17,18 +21,27 @@ import {
   reuploadSubmission,
   retrySubmission,
 } from '../../api/batch';
+import { submitToVerifier } from '../../api/submissions';
 import type { BatchProgress } from '@skem/shared';
 
 type FilterType = 'all' | 'ready' | 'needs_attention' | 'problem';
 
 export function MahasiswaUploadRoute() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { showToast } = useToast();
+
   const [currentBatchId, setCurrentBatchId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>('all');
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [reuploadModalOpen, setReuploadModalOpen] = useState(false);
   const [reuploadFile, setReuploadFile] = useState<File | null>(null);
+
+  // E-Sign and Submission Dialog State
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
+  const [submissionsToSubmitIds, setSubmissionsToSubmitIds] = useState<string[]>([]);
 
   // Query untuk batch progress (dengan polling)
   const {
@@ -42,8 +55,9 @@ export function MahasiswaUploadRoute() {
     refetchInterval: (query) => {
       const data = query.state.data;
       if (!data) return false;
-      
-      const hasActive = (data.progress.counts.queued ?? 0) > 0 || (data.progress.counts.analyzing ?? 0) > 0;
+
+      const hasActive =
+        (data.progress.counts.queued ?? 0) > 0 || (data.progress.counts.analyzing ?? 0) > 0;
       return hasActive ? 2000 : false; // Poll setiap 2 detik jika masih ada yang diproses
     },
   });
@@ -87,11 +101,26 @@ export function MahasiswaUploadRoute() {
     },
   });
 
+  // Mutation untuk submit pengajuan ke Verifikator
+  const submitMutation = useMutation({
+    mutationFn: (publicIds: string[]) => submitToVerifier(publicIds),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['batch', currentBatchId] });
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      setIsSubmitDialogOpen(false);
+      const count = data.submitted.length;
+      showToast(`${count} pengajuan terkirim ke Verifikator`, 'success');
+    },
+    onError: () => {
+      showToast('Gagal mengajukan berkas. Silakan coba lagi.', 'error');
+    },
+  });
+
   const handleFilesSelected = useCallback(
     (files: File[]) => {
       uploadMutation.mutate(files);
     },
-    [uploadMutation]
+    [uploadMutation],
   );
 
   const handleCancel = useCallback((publicId: string) => {
@@ -110,15 +139,12 @@ export function MahasiswaUploadRoute() {
     setReuploadModalOpen(true);
   }, []);
 
-  const handleReuploadFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        setReuploadFile(file);
-      }
-    },
-    []
-  );
+  const handleReuploadFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReuploadFile(file);
+    }
+  }, []);
 
   const confirmReupload = useCallback(() => {
     if (selectedSubmission && reuploadFile) {
@@ -130,8 +156,41 @@ export function MahasiswaUploadRoute() {
     (publicId: string) => {
       retryMutation.mutate(publicId);
     },
-    [retryMutation]
+    [retryMutation],
   );
+
+  // Mulai alur pengajuan: cek apakah tanda tangan sudah ada
+  const startSubmitProcess = useCallback(
+    (publicIds: string[]) => {
+      setSubmissionsToSubmitIds(publicIds);
+      if (!user?.hasSignature) {
+        setIsSignatureModalOpen(true);
+      } else {
+        setIsSubmitDialogOpen(true);
+      }
+    },
+    [user?.hasSignature],
+  );
+
+  // Ajukan satu kartu
+  const handleSingleSubmit = useCallback(
+    (publicId: string) => {
+      startSubmitProcess([publicId]);
+    },
+    [startSubmitProcess],
+  );
+
+  // Ajukan semua berkas yang Ready
+  const readySubmissions = useMemo(
+    () => batchProgress?.submissions.filter((s) => s.reviewStatus === 'ready') || [],
+    [batchProgress?.submissions],
+  );
+
+  const handleStartSubmitAllReady = useCallback(() => {
+    const readyIds = readySubmissions.map((s) => s.publicId);
+    if (readyIds.length === 0) return;
+    startSubmitProcess(readyIds);
+  }, [readySubmissions, startSubmitProcess]);
 
   // Filter submissions
   const filteredSubmissions = batchProgress?.submissions.filter((sub) => {
@@ -149,14 +208,48 @@ export function MahasiswaUploadRoute() {
 
   const filterCounts = {
     all: batchProgress?.submissions.length ?? 0,
-    ready: batchProgress?.submissions.filter((s) => s.reviewStatus === 'ready').length ?? 0,
+    ready: readySubmissions.length,
     needs_attention:
       batchProgress?.submissions.filter((s) => s.reviewStatus === 'needs_fix').length ?? 0,
     problem:
       batchProgress?.submissions.filter(
-        (s) => s.reviewStatus === 'problem' || s.reviewStatus === 'error'
+        (s) => s.reviewStatus === 'problem' || s.reviewStatus === 'error',
       ).length ?? 0,
   };
+
+  // Data rincian untuk SubmitDialog
+  const submissionsForDialog =
+    batchProgress?.submissions
+      .filter((s) => submissionsToSubmitIds.includes(s.publicId))
+      .map((s) => ({
+        publicId: s.publicId,
+        activityName: s.activityName || undefined,
+        fileName: s.fileName,
+        estimatedCredit: s.estimatedCredit,
+        hasWarning: s.warnings.length > 0,
+      })) || [];
+
+  const skippedSubmissionsForDialog =
+    batchProgress?.submissions
+      .filter((s) => !submissionsToSubmitIds.includes(s.publicId))
+      .map((s) => {
+        let reason = 'Belum siap diajukan';
+        if (s.reviewStatus === 'needs_fix') {
+          reason = 'Perlu perbaikan (pertanyaan belum dijawab)';
+        } else if (s.reviewStatus === 'problem') {
+          reason = 'Bermasalah';
+        } else if (s.reviewStatus === 'error') {
+          reason = 'Gagal dianalisis';
+        } else if (s.reviewStatus === 'queued' || s.reviewStatus === 'analyzing') {
+          reason = 'Masih dianalisis';
+        }
+        return {
+          publicId: s.publicId,
+          activityName: s.activityName || undefined,
+          fileName: s.fileName,
+          reason,
+        };
+      }) || [];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -170,10 +263,7 @@ export function MahasiswaUploadRoute() {
 
       {/* Dropzone */}
       <Card className="p-0 overflow-hidden">
-        <Dropzone
-          onFilesSelected={handleFilesSelected}
-          disabled={uploadMutation.isPending}
-        />
+        <Dropzone onFilesSelected={handleFilesSelected} disabled={uploadMutation.isPending} />
       </Card>
 
       {/* Upload Error */}
@@ -214,28 +304,40 @@ export function MahasiswaUploadRoute() {
         <>
           <ProgressTracker progress={batchProgress.progress} />
 
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-2 border-b border-slate-200">
-            {(['all', 'ready', 'needs_attention', 'problem'] as FilterType[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-2 text-sm font-medium transition-colors relative ${
-                  filter === f
-                    ? 'text-brand-teal'
-                    : 'text-slate-600 hover:text-slate-800'
-                }`}
+          {/* Filter Tabs & "Ajukan semua yang Ready" Button */}
+          <div className="flex items-center justify-between flex-wrap gap-3 border-b border-slate-200 pb-1">
+            <div className="flex items-center gap-1 sm:gap-2">
+              {(['all', 'ready', 'needs_attention', 'problem'] as FilterType[]).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors relative ${
+                    filter === f ? 'text-brand-teal' : 'text-slate-600 hover:text-slate-800'
+                  }`}
+                >
+                  {f === 'all' && 'Semua'}
+                  {f === 'ready' && 'Siap'}
+                  {f === 'needs_attention' && 'Perlu Perhatian'}
+                  {f === 'problem' && 'Bermasalah'}
+                  <span className="ml-1 text-xs">({filterCounts[f]})</span>
+                  {filter === f && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-teal" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {readySubmissions.length > 0 && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleStartSubmitAllReady}
+                className="gap-1.5 shadow-xs shrink-0"
               >
-                {f === 'all' && 'Semua'}
-                {f === 'ready' && 'Siap'}
-                {f === 'needs_attention' && 'Perlu Perhatian'}
-                {f === 'problem' && 'Bermasalah'}
-                <span className="ml-1.5 text-xs">({filterCounts[f]})</span>
-                {filter === f && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-teal" />
-                )}
-              </button>
-            ))}
+                <Send className="w-3.5 h-3.5" />
+                <span>Ajukan semua yang Ready ({readySubmissions.length})</span>
+              </Button>
+            )}
           </div>
 
           {/* Submissions List */}
@@ -248,6 +350,7 @@ export function MahasiswaUploadRoute() {
                   onCancel={handleCancel}
                   onReupload={handleReupload}
                   onRetry={handleRetry}
+                  onOpenSubmit={handleSingleSubmit}
                 />
               ))}
             </div>
@@ -292,11 +395,7 @@ export function MahasiswaUploadRoute() {
             <Button variant="outline" onClick={() => setCancelModalOpen(false)}>
               Tidak
             </Button>
-            <Button
-              variant="danger"
-              onClick={confirmCancel}
-              disabled={cancelMutation.isPending}
-            >
+            <Button variant="danger" onClick={confirmCancel} disabled={cancelMutation.isPending}>
               {cancelMutation.isPending ? 'Membatalkan...' : 'Ya, Batalkan'}
             </Button>
           </div>
@@ -309,24 +408,32 @@ export function MahasiswaUploadRoute() {
         onClose={() => {
           setReuploadModalOpen(false);
           setReuploadFile(null);
-          setSelectedSubmission(null);
         }}
         title="Unggah Ulang Dokumen"
       >
         <div className="space-y-4">
           <p className="text-sm text-slate-600">
-            Pilih file PDF baru untuk menggantikan dokumen yang lama.
+            Pilih file PDF baru untuk menggantikan dokumen yang bermasalah.
           </p>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              File PDF
-            </label>
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-brand-teal transition-colors">
             <input
               type="file"
               accept=".pdf,application/pdf"
               onChange={handleReuploadFileSelect}
-              className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-brand-teal hover:file:bg-teal-100"
+              className="hidden"
+              id="reupload-file-input"
             />
+            <label
+              htmlFor="reupload-file-input"
+              className="cursor-pointer text-sm text-brand-teal hover:underline font-medium block"
+            >
+              {reuploadFile ? reuploadFile.name : 'Pilih file PDF (maks. 10MB)'}
+            </label>
+            {reuploadFile && (
+              <p className="text-xs text-slate-500 mt-2">
+                Ukuran: {(reuploadFile.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-3 justify-end">
             <Button
@@ -334,7 +441,6 @@ export function MahasiswaUploadRoute() {
               onClick={() => {
                 setReuploadModalOpen(false);
                 setReuploadFile(null);
-                setSelectedSubmission(null);
               }}
             >
               Batal
@@ -344,11 +450,34 @@ export function MahasiswaUploadRoute() {
               onClick={confirmReupload}
               disabled={!reuploadFile || reuploadMutation.isPending}
             >
-              {reuploadMutation.isPending ? 'Mengunggah...' : 'Unggah'}
+              {reuploadMutation.isPending ? 'Mengunggah...' : 'Unggah Ulang'}
             </Button>
           </div>
         </div>
       </Modal>
+
+      {/* Modal Siapkan Tanda Tangan */}
+      <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onSuccess={() => {
+          setIsSignatureModalOpen(false);
+          setIsSubmitDialogOpen(true);
+        }}
+      />
+
+      {/* Dialog Konfirmasi Tanda Tangani dan Kirim Pengajuan */}
+      <SubmitDialog
+        isOpen={isSubmitDialogOpen}
+        onClose={() => setIsSubmitDialogOpen(false)}
+        submissionsToSubmit={submissionsForDialog}
+        skippedSubmissions={skippedSubmissionsForDialog}
+        verifierName={user?.verifierName || undefined}
+        onSubmit={async () => {
+          await submitMutation.mutateAsync(submissionsToSubmitIds);
+        }}
+        isSubmitting={submitMutation.isPending}
+      />
     </div>
   );
 }

@@ -1,6 +1,9 @@
 /**
  * GET /me — profil + kelas + dosen wali + hasSignature + telegramLinked
  * (skema MeSchema di @skem/shared).
+ * PUT /me/signature — unggah atau simpan tanda tangan digital
+ * GET /me/signature — unduh berkas tanda tangan privat milik sendiri
+ * GET /me/progress — progres kredit SKEM yang sudah disetujui
  */
 
 import { eq, sql } from 'drizzle-orm';
