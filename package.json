@@ -18,9 +18,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "db:generate": "node scripts/not-implemented.mjs db:generate BE-01",
-    "db:migrate": "node scripts/not-implemented.mjs db:migrate BE-01",
-    "seed": "node scripts/not-implemented.mjs seed BE-01",
+    "db:generate": "drizzle-kit generate --config apps/api/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config apps/api/drizzle.config.ts",
+    "seed": "tsx apps/api/src/db/seed.ts",
     "data:validate": "node scripts/not-implemented.mjs data:validate D-01",
     "eval": "node scripts/not-implemented.mjs eval T-02"
   },
