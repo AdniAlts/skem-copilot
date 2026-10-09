@@ -31,7 +31,24 @@ describe('DocumentReader', () => {
     });
     const result = await reader.read({ sha256: 'text-hash', pdf: Buffer.from('%PDF text') }, { submissionId: 1, runId: 2 });
     expect(result.strategy).toBe('text');
+    expect(result.llmCalls).toBe(1);
     expect(result.fields).toEqual(extracted);
+  });
+
+  it('counts text extraction plus vision fallback as two model calls', async () => {
+    const incomplete = ExtractedFieldsSchema.parse({
+      ...extracted,
+      recipient_name: { value: null, confidence: 0 },
+    });
+    const reader = new DocumentReader({
+      extractText: async () => incomplete,
+      extractVision: async () => extracted,
+      readCache: async () => null,
+      writeCache: async () => undefined,
+    });
+    const result = await reader.read({ sha256: 'fallback-hash', pdf: Buffer.from('%PDF fallback') }, { submissionId: 1, runId: 2 });
+    expect(result.strategy).toBe('vision');
+    expect(result.llmCalls).toBe(2);
   });
 
   it('uses vision strategy when text is empty', async () => {
@@ -43,6 +60,7 @@ describe('DocumentReader', () => {
     });
     const result = await reader.read({ sha256: 'scan-hash', pdf: Buffer.from('%PDF scan') }, { submissionId: 1, runId: 2 });
     expect(result.strategy).toBe('vision');
+    expect(result.llmCalls).toBe(1);
   });
 
   it('uses cache and skips both extraction strategies', async () => {
@@ -54,6 +72,7 @@ describe('DocumentReader', () => {
     });
     const result = await reader.read({ sha256: 'cached-hash', pdf: Buffer.from('%PDF cached') }, { submissionId: 1, runId: 2 });
     expect(result.strategy).toBe('cache');
+    expect(result.llmCalls).toBe(0);
     expect(result.fields).toEqual(extracted);
   });
 });
