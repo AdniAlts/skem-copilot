@@ -66,7 +66,8 @@ export function recheck(input: RecheckInput, data: RecheckData): RecheckResult {
   const achievement = input.answers.achievement ?? input.achievement;
   const komponen = categoryCode ? data.creditTable.entries.find((entry) => entry.categoryCode === categoryCode)?.komponen ?? input.komponen : input.komponen;
   let level = input.answers.level ?? input.level;
-  if (input.answers.participant_scope) {
+  if (komponen !== 3) level = null;
+  if (komponen === 3 && input.answers.participant_scope) {
     const levelByScope: Record<string, string> = {
       campus: 'Kampus',
       regional: 'Regional',
