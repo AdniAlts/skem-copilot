@@ -146,7 +146,22 @@ export async function callWithClient<T>(
       });
       const raw = response.choices[0]?.message.content;
       if (!raw) throw new LlmError('Gateway returned empty response', 'permanent');
-      const parsed: unknown = JSON.parse(raw);
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        const usage = {
+          promptTokens: response.usage?.prompt_tokens ?? null,
+          completionTokens: response.usage?.completion_tokens ?? null,
+        };
+        const latencyMs = Date.now() - started;
+        await recordAudit({ db, input, purpose: input.purpose, model: env.LLM_MODEL, ...usage, latencyMs, error: 'invalid_json' });
+        if (input.repair) throw new LlmError('Gateway returned invalid JSON after repair', 'invalid_json');
+        const repairPurpose = input.purpose === 'extract_text' || input.purpose === 'extract_vision'
+          ? 'extract_repair'
+          : 'classify_repair';
+        return await callWithClient(openai, db, { ...input, purpose: repairPurpose, messages: makeRepairMessages(input.messages, raw, input.schema), repair: true });
+      }
       const validated = input.schema.safeParse(parsed);
       const usage = {
         promptTokens: response.usage?.prompt_tokens ?? null,
@@ -159,7 +174,9 @@ export async function callWithClient<T>(
       }
       await recordAudit({ db, input, purpose: input.purpose, model: env.LLM_MODEL, ...usage, latencyMs, error: 'invalid_json_shape' });
       if (input.repair) throw new LlmError('Gateway JSON tidak sesuai schema setelah repair', 'invalid_json');
-      const repairPurpose = input.purpose.endsWith('_repair') ? input.purpose : `${input.purpose}_repair` as LlmPurpose;
+      const repairPurpose = input.purpose === 'extract_text' || input.purpose === 'extract_vision'
+          ? 'extract_repair'
+          : 'classify_repair';
       return await callWithClient(openai, db, { ...input, purpose: repairPurpose, messages: makeRepairMessages(input.messages, raw, input.schema), repair: true });
     } catch (error) {
       lastError = error;
