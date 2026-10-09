@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { REVIEW_STATUS } from '../enums.js';
+import { CHECK_TYPE, REVIEW_STATUS } from '../enums.js';
 
 // ── credit_table.json ─────────────────────────────────────────────────────
 
@@ -73,22 +73,54 @@ export type CreditTable = z.infer<typeof CreditTableSchema>;
 
 // ── guideline_sections.json ───────────────────────────────────────────────
 
-/** Satu bagian Pedoman yang dipecah. */
+const GUIDELINE_TAG_PATTERN = /^(check|topic):[a-z0-9_-]+$/;
+const CHECK_TAG_PREFIX = 'check:';
+
+/**
+ * Satu bagian Pedoman yang dipecah.
+ * Tag `check:<check_type>` harus salah satu CHECK_TYPE; tag lain memakai `topic:<slug>`.
+ */
 export const GuidelineSectionEntrySchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  ref: z.string(),
-  text: z.string(),
-  tags: z.array(z.string()),
-  categoryCodes: z.array(z.string()).optional(),
+  id: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'id must be kebab-case'),
+  title: z.string().min(1),
+  ref: z.string().min(1),
+  text: z.string().min(1),
+  tags: z
+    .array(
+      z
+        .string()
+        .regex(GUIDELINE_TAG_PATTERN, 'tag must be check:<type> or topic:<slug>')
+        .refine(
+          (tag) =>
+            !tag.startsWith(CHECK_TAG_PREFIX) ||
+            (CHECK_TYPE as readonly string[]).includes(tag.slice(CHECK_TAG_PREFIX.length)),
+          'check tag must use a CHECK_TYPE value',
+        ),
+    )
+    .min(1),
+  categoryCodes: z.array(z.string().min(1)).optional(),
 });
 export type GuidelineSectionEntry = z.infer<typeof GuidelineSectionEntrySchema>;
 
-/** Schema lengkap guideline_sections.json. */
-export const GuidelineSectionsSchema = z.object({
-  version: z.string(),
-  sections: z.array(GuidelineSectionEntrySchema),
-});
+/** Schema lengkap guideline_sections.json, termasuk keunikan id (dirujuk findings.guideline_ref). */
+export const GuidelineSectionsSchema = z
+  .object({
+    version: z.string().min(1),
+    sections: z.array(GuidelineSectionEntrySchema).min(1),
+  })
+  .superRefine((data, ctx) => {
+    const ids = new Set<string>();
+    data.sections.forEach((section, index) => {
+      if (ids.has(section.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['sections', index, 'id'],
+          message: `Duplicate id: ${section.id}`,
+        });
+      }
+      ids.add(section.id);
+    });
+  });
 export type GuidelineSections = z.infer<typeof GuidelineSectionsSchema>;
 
 // ── rules.json ────────────────────────────────────────────────────────────

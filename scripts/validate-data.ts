@@ -1,7 +1,7 @@
 // Validasi file data/*.json terhadap zod schema di @skem/shared.
-// File baru (guideline_sections.json, rules.json, answer_key.json) didaftarkan oleh issue masing-masing.
+// File baru (rules.json, answer_key.json) didaftarkan oleh issue masing-masing.
 import { readFileSync } from 'node:fs';
-import { CreditTableSchema } from '@skem/shared';
+import { CreditTableSchema, GuidelineSectionsSchema } from '@skem/shared';
 
 // Tipe struktural agar skrip tidak mengimpor zod langsung (versi zod dikunci di @skem/shared).
 type DataSchema = {
@@ -14,6 +14,7 @@ type DataSchema = {
 
 const DATA_FILES: { path: string; schema: DataSchema }[] = [
   { path: 'data/credit_table.json', schema: CreditTableSchema },
+  { path: 'data/guideline_sections.json', schema: GuidelineSectionsSchema },
 ];
 
 let failed = false;

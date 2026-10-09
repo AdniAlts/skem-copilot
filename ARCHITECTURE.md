@@ -303,7 +303,7 @@ Agent adalah **orkestrasi tetap** (bukan loop tool-calling bebas): urutan tool d
 | `read_document` | LLM (via reader) | `{ sha256, pdf }` | `ExtractedFields` |
 | `match_name` | murni | `{ certificateName, accountName }` | `{ result: 'pass'|'warn'|'fail', score: number }` |
 | `check_deadline` | murni | `{ activityEndDate, angkatan, submissionDate }` | `{ result, validFrom, validTo, message }` |
-| `get_relevant_sections` | murni | `{ tags: string[], categoryCode?: string }` | `{ sections: { id, title, ref, text }[] }` |
+| `get_relevant_sections` | murni | `{ tags: string[], categoryCode?: string }` | `{ sections: { id, title, ref, text }[] }`, maks. 3 bagian dan ≤ 1.500 karakter; skor = tag cocok + kecocokan `categoryCodes` (detail: `data/guideline_sections.NOTES.md`) |
 | `classify_activity` | LLM | `{ fields, candidates, sections }` | `{ category: Cand[], level: Cand[], role: Cand[], achievement: Cand[], activity_name_full?: {value, confidence}, missing: string[] }` dengan `Cand = { code, confidence }`, top-3 |
 | `lookup_credit_table` | murni | `{ komponen, categoryCode, level, role, achievement? }` | `{ found: true, entryId, credit, ref } | { found: false, reason }` |
 | `ask_student` | murni (templat) | `{ field, context }` | `{ field, question, options }` |
