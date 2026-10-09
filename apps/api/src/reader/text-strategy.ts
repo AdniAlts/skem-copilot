@@ -4,11 +4,12 @@ import { extractText } from 'unpdf';
 import { ExtractedFieldsSchema, type ExtractedFields } from '@skem/shared';
 import { callLlm, type CallLlmResult } from '../llm/client.js';
 import type { ReaderContext } from './index.js';
+import { buildExtractTextPrompt, EXTRACT_PROMPT_VERSION, EXTRACT_SYSTEM_PROMPT } from '../agent/prompts/extract.js';
 
-export const EXTRACT_PROMPT_VERSION = 'extract-v1';
+export { EXTRACT_PROMPT_VERSION };
 
 export function extractionPrompt(text: string): string {
-  return `Ekstrak field dari sertifikat berikut. Kembalikan JSON sesuai schema. Field yang tidak ditemukan harus bernilai null dengan confidence 0. Normalisasi tanggal ke YYYY-MM-DD. Jangan mengarang data.\n\n${text}`;
+  return `${buildExtractTextPrompt(text)}\n\n${EXTRACT_SYSTEM_PROMPT}`;
 }
 
 export async function extractTextFields(pdf: Buffer, context: ReaderContext): Promise<ExtractedFields> {
