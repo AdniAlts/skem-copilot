@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.10",
     "@supabase/supabase-js": "^2.117.3",
     "cookie-parser": "^1.4.7",
     "cookie-signature": "^1.2.2",
