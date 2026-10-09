@@ -1,14 +1,21 @@
-/** Batch route boundary tests. Invalid requests must fail before DB or Storage access. */
+/**
+ * Batch route boundary tests. Invalid requests must fail before DB or Storage access.
+ *
+ * Butuh DB seeded (npm run db:migrate && npm run seed) dan .env lengkap.
+ * Tanpa DATABASE_URL (mis. CI), test dilewati.
+ */
 
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
+import { HAS_DATABASE } from './db-available';
 
 let app: ReturnType<typeof createApp>;
 let studentId: number;
 let cookie: string[];
 
 beforeAll(async () => {
+  if (!HAS_DATABASE) return;
   app = createApp();
   const users = await request(app).get('/api/auth/mock-users').expect(200);
   const student = (users.body as { id: number; role: string }[]).find((user) => user.role === 'student');
@@ -18,7 +25,7 @@ beforeAll(async () => {
   cookie = [String(login.headers['set-cookie'])];
 });
 
-describe('POST /api/batches validation', () => {
+describe.skipIf(!HAS_DATABASE)('POST /api/batches validation', () => {
   it('401 tanpa session', async () => {
     const response = await request(app).post('/api/batches');
     expect(response.status).toBe(401);
