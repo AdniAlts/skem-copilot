@@ -1,8 +1,22 @@
-import { Link } from 'react-router-dom';
-import { FileText, AlertTriangle, HelpCircle, RefreshCw, X, Upload, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  FileText,
+  AlertTriangle,
+  HelpCircle,
+  RefreshCw,
+  X,
+  Upload,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { Button } from './Button';
-import type { SubmissionCard as SubmissionCardType } from '@skem/shared';
+import { AgentQuestion } from './AgentQuestion';
+import { answerQuestion } from '../api/submissions';
+import type { SubmissionCard as SubmissionCardType, AgentQuestion as AgentQuestionType } from '@skem/shared';
 import { cn } from '../lib/utils';
 
 export interface SubmissionCardProps {
@@ -11,8 +25,23 @@ export interface SubmissionCardProps {
   onReupload?: (publicId: string) => void;
   onRetry?: (publicId: string) => void;
   onAnswer?: (publicId: string) => void;
+  questions?: AgentQuestionType[];
   className?: string;
 }
+
+const DEFAULT_LEVEL_QUESTION: AgentQuestionType = {
+  id: 1,
+  seq: 1,
+  field: 'level',
+  question: 'Peserta kegiatan ini berasal dari mana?',
+  options: [
+    { value: 'campus', label: 'Hanya lingkungan internal PENS' },
+    { value: 'regional', label: 'Satu provinsi (minimal 3 kota/kabupaten)' },
+    { value: 'national', label: 'Minimal 3 provinsi di Indonesia' },
+    { value: 'international', label: 'Minimal 3 negara' },
+    { value: 'unknown', label: 'Saya tidak tahu' },
+  ],
+};
 
 export function SubmissionCard({
   submission,
@@ -20,8 +49,14 @@ export function SubmissionCard({
   onReupload,
   onRetry,
   onAnswer,
+  questions,
   className,
 }: SubmissionCardProps) {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [isAnswering, setIsAnswering] = useState(false);
+  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
+
   const {
     publicId,
     fileName,
@@ -38,6 +73,22 @@ export function SubmissionCard({
   const needsFix = reviewStatus === 'needs_fix';
   const hasProblem = reviewStatus === 'problem';
   const hasError = reviewStatus === 'error';
+
+  const activeQuestion = questions?.[0] || DEFAULT_LEVEL_QUESTION;
+
+  const handleAnswerSubmit = async (questionId: number, answer: string) => {
+    setIsSubmittingAnswer(true);
+    try {
+      await answerQuestion(publicId, { questionId, answer });
+      // Invalidate queries so card and batch progress update without reload
+      await queryClient.invalidateQueries({ queryKey: ['batch'] });
+      await queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      await queryClient.invalidateQueries({ queryKey: ['submission', publicId] });
+      setIsAnswering(false);
+    } finally {
+      setIsSubmittingAnswer(false);
+    }
+  };
 
   return (
     <div
@@ -69,7 +120,7 @@ export function SubmissionCard({
           <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg">
             <span className="text-xs text-emerald-700">Estimasi Kredit:</span>
             <span className="text-sm font-semibold text-emerald-800">
-              {estimatedCredit.toFixed(2)}
+              {estimatedCredit.toFixed(2).replace('.', ',')} Poin
             </span>
           </div>
         )}
@@ -88,15 +139,52 @@ export function SubmissionCard({
           </div>
         )}
 
-        {/* Questions */}
-        {needsFix && openQuestionCount > 0 && (
-          <div className="flex items-start gap-2 p-2 bg-amber-50 rounded-lg">
-            <HelpCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-xs text-amber-800">
-                {openQuestionCount} pertanyaan perlu dijawab
-              </p>
+        {/* Questions Summary Box */}
+        {needsFix && openQuestionCount > 0 && !isAnswering && (
+          <div className="flex items-center justify-between p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-xs">
+            <div className="flex items-center gap-2 text-amber-900">
+              <HelpCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{openQuestionCount} pertanyaan perlu dijawab</span>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (onAnswer) {
+                  onAnswer(publicId);
+                } else {
+                  setIsAnswering(true);
+                }
+              }}
+              className="text-xs font-semibold text-brand-teal hover:underline flex items-center gap-1"
+            >
+              <span>Jawab Sekarang</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Inline Agent Question */}
+        {needsFix && isAnswering && (
+          <div className="pt-1 space-y-2">
+            <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+              <span>Menjawab langsung pada kartu:</span>
+              <button
+                type="button"
+                onClick={() => setIsAnswering(false)}
+                className="text-slate-400 hover:text-slate-600 flex items-center gap-0.5"
+              >
+                <span>Tutup</span>
+                <ChevronUp className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <AgentQuestion
+              question={activeQuestion}
+              fileName={fileName}
+              activityName={activityName || undefined}
+              isSubmitting={isSubmittingAnswer}
+              onSubmit={handleAnswerSubmit}
+              onNavigateToDetail={() => navigate(`/mahasiswa/detail/${publicId}`)}
+            />
           </div>
         )}
 
@@ -126,7 +214,7 @@ export function SubmissionCard({
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-100 flex-wrap">
           {isDraft && onCancel && (
             <Button
               variant="outline"
@@ -163,11 +251,17 @@ export function SubmissionCard({
             </Button>
           )}
 
-          {needsFix && onAnswer && (
+          {needsFix && !isAnswering && (
             <Button
               variant="primary"
               size="sm"
-              onClick={() => onAnswer(publicId)}
+              onClick={() => {
+                if (onAnswer) {
+                  onAnswer(publicId);
+                } else {
+                  setIsAnswering(true);
+                }
+              }}
               className="flex items-center gap-1.5"
             >
               <HelpCircle className="w-3.5 h-3.5" />

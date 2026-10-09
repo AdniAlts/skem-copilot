@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
@@ -8,6 +8,9 @@ import {
   FileCheck2,
   CheckCircle2,
   FileText,
+  Upload,
+  X,
+  FileUp,
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -19,19 +22,41 @@ import { FormPreview } from '../../components/FormPreview';
 import { MetadataPanel } from '../../components/MetadataPanel';
 import { FindingsList } from '../../components/FindingsList';
 import { TokenUsagePanel } from '../../components/TokenUsagePanel';
+import { AgentQuestion } from '../../components/AgentQuestion';
 import {
   getSubmissionDetail,
   patchSubmission,
   getCertificateUrl,
   submitToVerifier,
+  answerQuestion,
+  cancelSubmission,
+  reuploadSubmission,
 } from '../../api/submissions';
-import type { PatchSubmissionBody } from '@skem/shared';
+import type { PatchSubmissionBody, AgentQuestion as AgentQuestionType } from '@skem/shared';
+
+const DEFAULT_LEVEL_QUESTION: AgentQuestionType = {
+  id: 1,
+  seq: 1,
+  field: 'level',
+  question: 'Peserta kegiatan ini berasal dari mana?',
+  options: [
+    { value: 'campus', label: 'Hanya lingkungan internal PENS' },
+    { value: 'regional', label: 'Satu provinsi (minimal 3 kota/kabupaten)' },
+    { value: 'national', label: 'Minimal 3 provinsi di Indonesia' },
+    { value: 'international', label: 'Minimal 3 negara' },
+    { value: 'unknown', label: 'Saya tidak tahu' },
+  ],
+};
 
 export function MahasiswaDetailRoute() {
   const { id = 'SKM-7Q2K9D1A' } = useParams();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isReuploadModalOpen, setIsReuploadModalOpen] = useState(false);
+  const [reuploadFile, setReuploadFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<'pdf' | 'form' | 'metadata'>('metadata');
 
   // Query Detail Submission
@@ -72,6 +97,41 @@ export function MahasiswaDetailRoute() {
     },
   });
 
+  // Mutation Jawab Pertanyaan Agent
+  const answerMutation = useMutation({
+    mutationFn: (data: { questionId: number; answer: string }) =>
+      answerQuestion(id, data),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['submission', id], updated);
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['batch'] });
+    },
+  });
+
+  // Mutation Batalkan Pengajuan
+  const cancelMutation = useMutation({
+    mutationFn: () => cancelSubmission(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['batch'] });
+      setIsCancelModalOpen(false);
+      navigate('/mahasiswa');
+    },
+  });
+
+  // Mutation Unggah Ulang
+  const reuploadMutation = useMutation({
+    mutationFn: (file: File) => reuploadSubmission(id, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submission', id] });
+      queryClient.invalidateQueries({ queryKey: ['submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['batch'] });
+      setIsReuploadModalOpen(false);
+      setReuploadFile(null);
+      refetchCert();
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="py-12 max-w-2xl mx-auto">
@@ -105,6 +165,8 @@ export function MahasiswaDetailRoute() {
   // Tombol Ajukan hanya aktif jika reviewStatus === 'ready' dan status === 'draft'
   const isReadyToSubmit = submission.reviewStatus === 'ready' && submission.status === 'draft';
   const isDraft = submission.status === 'draft';
+  const needsFix = submission.reviewStatus === 'needs_fix';
+  const activeQuestion = submission.questions[0] || DEFAULT_LEVEL_QUESTION;
 
   return (
     <div className="space-y-6">
@@ -145,8 +207,8 @@ export function MahasiswaDetailRoute() {
             </div>
           </div>
 
-          {/* Right Action Section: Credit Score & Submit Button */}
-          <div className="flex items-center gap-3 self-end md:self-center">
+          {/* Right Action Section: Credit Score & Actions */}
+          <div className="flex items-center gap-2.5 self-end md:self-center flex-wrap">
             {submission.skem.estimatedCredit !== null ? (
               <div className="px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-200 text-right">
                 <span className="text-[10px] text-emerald-700 block font-semibold uppercase tracking-wider">
@@ -169,21 +231,45 @@ export function MahasiswaDetailRoute() {
             )}
 
             {isDraft && (
-              <Button
-                variant="primary"
-                size="md"
-                disabled={!isReadyToSubmit || submitMutation.isPending}
-                onClick={() => setIsSubmitModalOpen(true)}
-                className="gap-2 shadow-xs"
-                title={
-                  !isReadyToSubmit
-                    ? 'Pengajuan baru dapat dikirimkan jika status AI Pre-Check sudah Siap (Ready)'
-                    : 'Kirimkan berkas pengajuan ini ke Dosen Wali untuk diverifikasi'
-                }
-              >
-                <Send className="w-4 h-4" />
-                <span>Ajukan ke Verifikator</span>
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => setIsCancelModalOpen(true)}
+                  className="gap-1.5 text-slate-700 hover:text-red-700 hover:border-red-300"
+                  title="Batalkan draf pengajuan ini"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Batalkan</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => setIsReuploadModalOpen(true)}
+                  className="gap-1.5"
+                  title="Unggah ulang berkas PDF sertifikat baru"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Unggah Ulang</span>
+                </Button>
+
+                <Button
+                  variant="primary"
+                  size="md"
+                  disabled={!isReadyToSubmit || submitMutation.isPending}
+                  onClick={() => setIsSubmitModalOpen(true)}
+                  className="gap-2 shadow-xs"
+                  title={
+                    !isReadyToSubmit
+                      ? 'Pengajuan baru dapat dikirimkan jika status AI Pre-Check sudah Siap (Ready)'
+                      : 'Kirimkan berkas pengajuan ini ke Dosen Wali untuk diverifikasi'
+                  }
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Ajukan ke Verifikator</span>
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -241,6 +327,24 @@ export function MahasiswaDetailRoute() {
           </button>
         </div>
       </div>
+
+      {/* ============================================================== */}
+      {/* AGENT QUESTION PROMINENT BANNER (JIKA STATUS NEEDS_FIX)        */}
+      {/* ============================================================== */}
+      {needsFix && (
+        <div className="bg-amber-50/40 rounded-xl border border-amber-300 p-4 shadow-xs animate-fade-in">
+          <AgentQuestion
+            question={activeQuestion}
+            fileName={`${submission.publicId}.pdf`}
+            activityName={submission.activity.activityName}
+            isSubmitting={answerMutation.isPending}
+            onSubmit={async (questionId, answer) => {
+              await answerMutation.mutateAsync({ questionId, answer });
+            }}
+            onNavigateToDetail={() => setActiveTab('metadata')}
+          />
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* 3-COLUMN RESPONSIVE LAYOUT (KIRI: PDF, TENGAH: FORM, KANAN: PANEL) */}
@@ -316,6 +420,112 @@ export function MahasiswaDetailRoute() {
           <TokenUsagePanel tokenUsage={submission.tokenUsage} />
         </div>
       </div>
+
+      {/* ============================================================== */}
+      {/* MODAL BATALKAN PENGAJUAN DRAF                                  */}
+      {/* ============================================================== */}
+      <Modal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        title="Batalkan Pengajuan"
+      >
+        <div className="space-y-4 text-xs text-slate-700">
+          <p className="leading-relaxed">
+            Apakah Anda yakin ingin membatalkan pengajuan{' '}
+            <strong className="text-slate-900">{submission.publicId}</strong>?
+          </p>
+          <p className="text-slate-500">
+            Tindakan ini akan membatalkan status draf pengajuan dan menghapus data terkait dari
+            antrean.
+          </p>
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCancelModalOpen(false)}
+              disabled={cancelMutation.isPending}
+            >
+              Kembali
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => cancelMutation.mutate()}
+              disabled={cancelMutation.isPending}
+            >
+              {cancelMutation.isPending ? 'Membatalkan...' : 'Ya, Batalkan Pengajuan'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ============================================================== */}
+      {/* MODAL UNGGAH ULANG BERKAS SERTIFIKAT                           */}
+      {/* ============================================================== */}
+      <Modal
+        isOpen={isReuploadModalOpen}
+        onClose={() => {
+          setIsReuploadModalOpen(false);
+          setReuploadFile(null);
+        }}
+        title="Unggah Ulang Berkas Sertifikat"
+      >
+        <div className="space-y-4 text-xs text-slate-700">
+          <p className="leading-relaxed">
+            Pilih berkas PDF sertifikat baru untuk menggantikan dokumen sebelumnya. Sistem akan
+            menganalisis ulang berkas baru tersebut secara otomatis.
+          </p>
+
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-5 text-center hover:border-brand-teal transition-colors">
+            <FileUp className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+            <input
+              type="file"
+              accept=".pdf,application/pdf"
+              id="reupload-input"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setReuploadFile(file);
+              }}
+            />
+            <label
+              htmlFor="reupload-input"
+              className="cursor-pointer text-brand-teal font-semibold hover:underline block"
+            >
+              {reuploadFile ? reuploadFile.name : 'Pilih file PDF (maks. 10MB)'}
+            </label>
+            {reuploadFile && (
+              <span className="text-[11px] text-slate-500 block mt-1">
+                {(reuploadFile.size / 1024 / 1024).toFixed(2)} MB
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsReuploadModalOpen(false);
+                setReuploadFile(null);
+              }}
+              disabled={reuploadMutation.isPending}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!reuploadFile || reuploadMutation.isPending}
+              onClick={() => {
+                if (reuploadFile) reuploadMutation.mutate(reuploadFile);
+              }}
+            >
+              {reuploadMutation.isPending ? 'Mengunggah...' : 'Unggah Sekarang'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* ============================================================== */}
       {/* MODAL KONFIRMASI AJUKAN KE VERIFIKATOR                         */}
