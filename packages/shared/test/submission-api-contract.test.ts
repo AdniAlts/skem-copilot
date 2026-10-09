@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { AnswerBodySchema, PatchSubmissionBodySchema, SubmissionDetailSchema, SubmitBodySchema } from '../src/index.js';
+import {
+  AnswerBodySchema,
+  ApproveBodySchema,
+  PatchSubmissionBodySchema,
+  RejectBodySchema,
+  SubmissionDetailSchema,
+  SubmitBodySchema,
+  VerifierQueueQuerySchema,
+  VerifierQueueResponseSchema,
+} from '../src/index.js';
 
 describe('submission API contracts', () => {
   it('allows unextracted activity metadata to be null in detail', () => {
@@ -41,5 +50,39 @@ describe('submission API contracts', () => {
 
   it('rejects duplicate IDs in submit batches', () => {
     expect(SubmitBodySchema.safeParse({ publicIds: ['SKM-12345678', 'SKM-12345678'] }).success).toBe(false);
+  });
+
+  it('defaults verifier queue sort to oldest and rejects unknown filters', () => {
+    expect(VerifierQueueQuerySchema.parse({})).toEqual({ sort: 'oldest' });
+    expect(VerifierQueueQuerySchema.parse({ aiStatus: 'warning', sort: 'flags' })).toEqual({ aiStatus: 'warning', sort: 'flags' });
+    expect(VerifierQueueQuerySchema.safeParse({ aiStatus: 'ready' }).success).toBe(false);
+    expect(VerifierQueueQuerySchema.safeParse({ sort: 'random' }).success).toBe(false);
+  });
+
+  it('requires a non-blank reject note and bounds verifier notes', () => {
+    expect(RejectBodySchema.safeParse({ note: '   ' }).success).toBe(false);
+    expect(RejectBodySchema.safeParse({}).success).toBe(false);
+    expect(RejectBodySchema.safeParse({ note: 'a'.repeat(1001) }).success).toBe(false);
+    expect(ApproveBodySchema.safeParse({ note: 'a'.repeat(1001) }).success).toBe(false);
+    expect(ApproveBodySchema.parse({ note: '  ok  ' })).toEqual({ note: 'ok' });
+  });
+
+  it('parses verifier queue response items', () => {
+    const parsed = VerifierQueueResponseSchema.parse({
+      className: 'D3-IT-A 2024',
+      summary: { waiting: 1, withWarnings: 1 },
+      items: [{
+        publicId: 'SKM-1234ABCD',
+        studentName: 'Student',
+        activityName: null,
+        categoryLabel: null,
+        level: null,
+        estimatedCredit: null,
+        aiStatus: 'warning',
+        flagCount: 1,
+        submittedAt: '2026-10-10T00:00:00.000Z',
+      }],
+    });
+    expect(parsed.items[0]?.aiStatus).toBe('warning');
   });
 });

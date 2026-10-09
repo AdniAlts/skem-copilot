@@ -247,15 +247,26 @@ export type SubmitBody = z.infer<typeof SubmitBodySchema>;
 
 /** Body untuk POST /verifier/submissions/:publicId/approve. */
 export const ApproveBodySchema = z.object({
-  note: z.string().optional(),
-});
+  note: z.string().trim().max(1000, 'Catatan maksimal 1000 karakter.').optional(),
+}).strict();
 export type ApproveBody = z.infer<typeof ApproveBodySchema>;
 
 /** Body untuk POST /verifier/submissions/:publicId/reject. */
 export const RejectBodySchema = z.object({
-  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.'),
-});
+  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.').max(1000, 'Alasan maksimal 1000 karakter.'),
+}).strict();
 export type RejectBody = z.infer<typeof RejectBodySchema>;
+
+/** Status AI ringkas di antrian Verifikator: `warning` jika pengajuan memiliki peringatan. */
+export const VERIFIER_AI_STATUS = ['clean', 'warning'] as const;
+export const VERIFIER_QUEUE_SORT = ['oldest', 'newest', 'flags'] as const;
+
+/** Query untuk GET /verifier/queue. */
+export const VerifierQueueQuerySchema = z.object({
+  aiStatus: z.enum(VERIFIER_AI_STATUS).optional(),
+  sort: z.enum(VERIFIER_QUEUE_SORT).default('oldest'),
+}).strict();
+export type VerifierQueueQuery = z.infer<typeof VerifierQueueQuerySchema>;
 
 /** Body untuk POST /validator/submissions/:publicId/credit. */
 export const CreditAdjustBodySchema = z.object({
@@ -320,6 +331,27 @@ export const RejectResponseSchema = z.object({
   status: z.literal('rejected'),
 });
 export type RejectResponse = z.infer<typeof RejectResponseSchema>;
+
+/** Response untuk GET /verifier/queue. */
+export const VerifierQueueResponseSchema = z.object({
+  className: z.string().nullable(),
+  summary: z.object({
+    waiting: z.number().int().min(0),
+    withWarnings: z.number().int().min(0),
+  }),
+  items: z.array(z.object({
+    publicId: z.string().regex(/^SKM-[A-Z0-9]{8}$/),
+    studentName: z.string(),
+    activityName: z.string().nullable(),
+    categoryLabel: z.string().nullable(),
+    level: z.string().nullable(),
+    estimatedCredit: z.number().nullable(),
+    aiStatus: z.enum(VERIFIER_AI_STATUS),
+    flagCount: z.number().int().min(0),
+    submittedAt: z.string().datetime().nullable(),
+  })),
+});
+export type VerifierQueueResponse = z.infer<typeof VerifierQueueResponseSchema>;
 
 /** Response untuk POST /validator/submissions/:publicId/credit. */
 export const CreditAdjustResponseSchema = z.object({

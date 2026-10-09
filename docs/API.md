@@ -107,10 +107,10 @@ Format tiap entri: **peran** · request · response · error khusus.
 ### Verifikator (baca-saja + keputusan)
 | Endpoint | Ringkas |
 |---|---|
-| `GET /verifier/queue` | query `aiStatus?`, `sort?` → `{ className, summary: { waiting, withWarnings }, items: [{ publicId, studentName, activityName, categoryLabel, level, estimatedCredit, aiStatus, flagCount, submittedAt }] }` — hanya kelasnya, `status=waiting_verifier` |
+| `GET /verifier/queue` | query `aiStatus?` (`clean` \| `warning`), `sort?` (`oldest` default \| `newest` \| `flags`) → `{ className, summary: { waiting, withWarnings }, items: [{ publicId, studentName, activityName, categoryLabel, level, estimatedCredit, aiStatus, flagCount, submittedAt }] }` — hanya kelasnya, `status=waiting_verifier`; `aiStatus=warning` jika `warnings` tidak kosong, `flagCount` = jumlah `warnings`; field metadata boleh `null` · 400 query tidak dikenal |
 | `GET /submissions/:publicId` | detail yang sama (baca-saja); 404 untuk kelas lain |
-| `POST /verifier/submissions/:publicId/approve` | `{ "note": "opsional" }` → `{ status: "waiting_validator", finalForm: { status } }` · 409 `SIGNATURE_REQUIRED` |
-| `POST /verifier/submissions/:publicId/reject` | `{ "note": "wajib" }` → `{ status: "rejected" }` · 400 jika `note` kosong |
+| `POST /verifier/submissions/:publicId/approve` | `{ "note": "opsional, ≤ 1000" }` → `{ status: "waiting_validator", finalForm: { status } }` · 409 `SIGNATURE_REQUIRED` · 409 `INVALID_TRANSITION` jika bukan `waiting_verifier` · 404 kelas lain. Satu transaksi: `reviews(approve, signature_applied=true)`, `status_history`, notifikasi in-app mahasiswa; hook `onVerifierApproved` setelah commit (gagal tidak membatalkan) |
+| `POST /verifier/submissions/:publicId/reject` | `{ "note": "wajib, ≤ 1000" }` → `{ status: "rejected" }` · 400 jika `note` kosong/spasi · 409 `INVALID_TRANSITION` · 404 kelas lain; `reviews(reject)`, `status_history` (catatan = alasan), notifikasi in-app mahasiswa |
 
 ### Validator
 | Endpoint | Ringkas |
