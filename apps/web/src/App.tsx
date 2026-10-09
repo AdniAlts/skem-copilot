@@ -14,6 +14,12 @@ import { DevKomponenRoute } from './routes/dev/komponen';
 import { EmptyState } from './components/EmptyState';
 import { Button } from './components/Button';
 import { Link } from 'react-router-dom';
+import {
+  MahasiswaGuard,
+  VerifikatorGuard,
+  ValidatorGuard,
+  UnitGuard,
+} from './components/RoleGuard';
 
 function NotFound() {
   return (
@@ -37,25 +43,88 @@ export function App() {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Navigate to="/mahasiswa" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginRoute />} />
 
         {/* Rute Mahasiswa */}
-        <Route path="/mahasiswa" element={<MahasiswaDashboardRoute />} />
-        <Route path="/mahasiswa/unggah" element={<MahasiswaUploadRoute />} />
-        <Route path="/mahasiswa/detail/:id" element={<MahasiswaDetailRoute />} />
-        <Route path="/mahasiswa/profil" element={<MahasiswaProfileRoute />} />
+        <Route
+          path="/mahasiswa"
+          element={
+            <MahasiswaGuard>
+              <MahasiswaDashboardRoute />
+            </MahasiswaGuard>
+          }
+        />
+        <Route
+          path="/mahasiswa/unggah"
+          element={
+            <MahasiswaGuard>
+              <MahasiswaUploadRoute />
+            </MahasiswaGuard>
+          }
+        />
+        <Route
+          path="/mahasiswa/detail/:id"
+          element={
+            <MahasiswaGuard>
+              <MahasiswaDetailRoute />
+            </MahasiswaGuard>
+          }
+        />
+        <Route
+          path="/mahasiswa/profil"
+          element={
+            <MahasiswaGuard>
+              <MahasiswaProfileRoute />
+            </MahasiswaGuard>
+          }
+        />
 
         {/* Rute Verifikator (Dosen Wali) */}
-        <Route path="/verifikator" element={<VerifikatorQueueRoute />} />
-        <Route path="/verifikator/detail/:id" element={<VerifikatorDetailRoute />} />
+        <Route
+          path="/verifikator"
+          element={
+            <VerifikatorGuard>
+              <VerifikatorQueueRoute />
+            </VerifikatorGuard>
+          }
+        />
+        <Route
+          path="/verifikator/detail/:id"
+          element={
+            <VerifikatorGuard>
+              <VerifikatorDetailRoute />
+            </VerifikatorGuard>
+          }
+        />
 
         {/* Rute Validator */}
-        <Route path="/validator" element={<ValidatorQueueRoute />} />
-        <Route path="/validator/detail/:id" element={<ValidatorDetailRoute />} />
+        <Route
+          path="/validator"
+          element={
+            <ValidatorGuard>
+              <ValidatorQueueRoute />
+            </ValidatorGuard>
+          }
+        />
+        <Route
+          path="/validator/detail/:id"
+          element={
+            <ValidatorGuard>
+              <ValidatorDetailRoute />
+            </ValidatorGuard>
+          }
+        />
 
         {/* Rute Unit Kemahasiswaan */}
-        <Route path="/unit" element={<UnitMonitoringRoute />} />
+        <Route
+          path="/unit"
+          element={
+            <UnitGuard>
+              <UnitMonitoringRoute />
+            </UnitGuard>
+          }
+        />
 
         {/* Showcase Komponen UI */}
         <Route path="/dev/komponen" element={<DevKomponenRoute />} />
