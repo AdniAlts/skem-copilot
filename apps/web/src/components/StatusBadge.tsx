@@ -46,8 +46,8 @@ export function StatusBadge({ type, status, size = 'md', className, ...props }: 
         icon = <Clock className="w-3.5 h-3.5 text-slate-500" />;
         break;
       case 'analyzing':
-        colorClasses = 'bg-teal-50 text-brand-teal border-teal-200/80';
-        icon = <Loader2 className="w-3.5 h-3.5 text-brand-teal animate-spin" />;
+        colorClasses = 'bg-brand-blue-50 text-brand-blue border-brand-blue-200/80';
+        icon = <Loader2 className="w-3.5 h-3.5 text-brand-blue animate-spin" />;
         break;
       case 'ready':
         colorClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200';
@@ -83,12 +83,12 @@ export function StatusBadge({ type, status, size = 'md', className, ...props }: 
         icon = <FileText className="w-3.5 h-3.5 text-slate-500" />;
         break;
       case 'waiting_verifier':
-        colorClasses = 'bg-teal-50 text-brand-teal border-teal-200';
-        icon = <Clock className="w-3.5 h-3.5 text-brand-teal" />;
+        colorClasses = 'bg-brand-blue-50 text-brand-blue border-brand-blue-200';
+        icon = <Clock className="w-3.5 h-3.5 text-brand-blue" />;
         break;
       case 'waiting_validator':
-        colorClasses = 'bg-teal-50 text-brand-teal border-teal-200';
-        icon = <Clock className="w-3.5 h-3.5 text-brand-teal" />;
+        colorClasses = 'bg-brand-blue-50 text-brand-blue border-brand-blue-200';
+        icon = <Clock className="w-3.5 h-3.5 text-brand-blue" />;
         break;
       case 'approved':
         colorClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200';
@@ -108,8 +108,8 @@ export function StatusBadge({ type, status, size = 'md', className, ...props }: 
 
     switch (offStatus) {
       case 'dalam_proses':
-        colorClasses = 'bg-teal-50 text-brand-teal border-teal-200';
-        icon = <Clock className="w-3.5 h-3.5 text-brand-teal" />;
+        colorClasses = 'bg-brand-blue-50 text-brand-blue border-brand-blue-200';
+        icon = <Clock className="w-3.5 h-3.5 text-brand-blue" />;
         break;
       case 'disetujui':
         colorClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200';

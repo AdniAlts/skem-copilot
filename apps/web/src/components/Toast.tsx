@@ -33,7 +33,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               'pointer-events-auto rounded-card p-4 shadow-lg border flex items-start gap-3 animate-in slide-in-from-bottom-3 duration-200 bg-white',
               toast.type === 'success' && 'border-emerald-200 text-slate-800',
               toast.type === 'error' && 'border-red-200 text-slate-800',
-              toast.type === 'info' && 'border-teal-200 text-slate-800',
+              toast.type === 'info' && 'border-brand-blue-200 text-slate-800',
             )}
           >
             {toast.type === 'success' && (
@@ -42,7 +42,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             {toast.type === 'error' && (
               <AlertCircle className="w-5 h-5 text-brand-terracotta shrink-0 mt-0.5" />
             )}
-            {toast.type === 'info' && <Info className="w-5 h-5 text-brand-teal shrink-0 mt-0.5" />}
+            {toast.type === 'info' && <Info className="w-5 h-5 text-brand-blue shrink-0 mt-0.5" />}
 
             <div className="flex-1 text-sm">
               {toast.title && (

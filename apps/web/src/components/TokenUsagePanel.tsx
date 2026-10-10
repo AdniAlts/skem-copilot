@@ -27,7 +27,7 @@ export function TokenUsagePanel({ tokenUsage, className }: TokenUsagePanelProps)
         className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-slate-100/60 transition-colors"
       >
         <div className="flex items-center gap-2 text-slate-700">
-          <Cpu className="w-3.5 h-3.5 text-brand-teal" />
+          <Cpu className="w-3.5 h-3.5 text-brand-blue" />
           <span className="font-medium">Penggunaan Token AI</span>
           <span className="text-[10px] text-slate-500 font-mono">
             ({totalTokens.toLocaleString('id-ID')} token)
@@ -54,7 +54,7 @@ export function TokenUsagePanel({ tokenUsage, className }: TokenUsagePanelProps)
           </div>
           <div className="p-2 bg-white rounded border border-slate-200">
             <span className="block text-[10px] text-slate-400 uppercase tracking-wider">Cache Hits</span>
-            <span className="font-semibold text-brand-teal font-mono text-sm">{tokenUsage.cacheHits}</span>
+            <span className="font-semibold text-brand-blue font-mono text-sm">{tokenUsage.cacheHits}</span>
           </div>
         </div>
       )}

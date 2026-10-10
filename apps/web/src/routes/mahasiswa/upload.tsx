@@ -312,7 +312,7 @@ export function MahasiswaUploadRoute() {
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors relative ${
-                    filter === f ? 'text-brand-teal' : 'text-slate-600 hover:text-slate-800'
+                    filter === f ? 'text-brand-blue' : 'text-slate-600 hover:text-slate-800'
                   }`}
                 >
                   {f === 'all' && 'Semua'}
@@ -321,7 +321,7 @@ export function MahasiswaUploadRoute() {
                   {f === 'problem' && 'Bermasalah'}
                   <span className="ml-1 text-xs">({filterCounts[f]})</span>
                   {filter === f && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-teal" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-blue" />
                   )}
                 </button>
               ))}
@@ -369,10 +369,10 @@ export function MahasiswaUploadRoute() {
       )}
 
       {/* Info Box */}
-      <div className="p-4 rounded-lg bg-teal-50/50 border border-teal-100 flex items-start gap-3 text-xs text-slate-600">
-        <FileText className="w-4 h-4 text-brand-teal shrink-0 mt-0.5" />
+      <div className="p-4 rounded-lg bg-brand-blue-50/50 border border-brand-blue-100 flex items-start gap-3 text-xs text-slate-600">
+        <FileText className="w-4 h-4 text-brand-blue shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-brand-teal block mb-0.5">
+          <span className="font-semibold text-brand-blue block mb-0.5">
             Petunjuk Format Sertifikat
           </span>
           Pastikan nama Anda tercantum jelas pada sertifikat. Sistem akan memeriksa nama, tanggal
@@ -415,7 +415,7 @@ export function MahasiswaUploadRoute() {
           <p className="text-sm text-slate-600">
             Pilih file PDF baru untuk menggantikan dokumen yang bermasalah.
           </p>
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-brand-teal transition-colors">
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-brand-blue transition-colors">
             <input
               type="file"
               accept=".pdf,application/pdf"
@@ -425,7 +425,7 @@ export function MahasiswaUploadRoute() {
             />
             <label
               htmlFor="reupload-file-input"
-              className="cursor-pointer text-sm text-brand-teal hover:underline font-medium block"
+              className="cursor-pointer text-sm text-brand-blue hover:underline font-medium block"
             >
               {reuploadFile ? reuploadFile.name : 'Pilih file PDF (maks. 10MB)'}
             </label>

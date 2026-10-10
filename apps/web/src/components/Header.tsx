@@ -31,12 +31,12 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 w-full border-b-[3px] border-brand-yellow bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Sisi Kiri: Logo & Navigasi */}
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2 group">
-            <span className="font-serif text-xl font-bold tracking-tight text-brand-dark group-hover:text-brand-teal transition-colors">
+            <span className="font-serif text-xl font-bold tracking-tight text-brand-dark group-hover:text-brand-blue transition-colors">
               SKEM AI Co-Pilot
             </span>
             <SimulasiBadge size="sm" note="Sistem prototipe menggunakan data sintetis" />
@@ -52,7 +52,7 @@ export function Header() {
                     className={cn(
                       'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
                       location.pathname === '/mahasiswa'
-                        ? 'bg-teal-50 text-brand-teal font-semibold'
+                        ? 'bg-brand-blue-50 text-brand-blue font-semibold'
                         : 'text-slate-600 hover:text-brand-dark hover:bg-slate-50',
                     )}
                   >
@@ -63,7 +63,7 @@ export function Header() {
                     className={cn(
                       'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
                       location.pathname.startsWith('/mahasiswa/unggah')
-                        ? 'bg-teal-50 text-brand-teal font-semibold'
+                        ? 'bg-brand-blue-50 text-brand-blue font-semibold'
                         : 'text-slate-600 hover:text-brand-dark hover:bg-slate-50',
                     )}
                   >
@@ -74,7 +74,7 @@ export function Header() {
                     className={cn(
                       'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
                       location.pathname === '/mahasiswa/profil'
-                        ? 'bg-teal-50 text-brand-teal font-semibold'
+                        ? 'bg-brand-blue-50 text-brand-blue font-semibold'
                         : 'text-slate-600 hover:text-brand-dark hover:bg-slate-50',
                     )}
                   >
@@ -87,13 +87,13 @@ export function Header() {
                 <>
                   <Link
                     to="/verifikator"
-                    className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${!location.pathname.startsWith('/verifikator/pengaturan') ? 'bg-teal-50 text-brand-teal' : 'text-slate-600 hover:text-brand-teal'}`}
+                    className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${!location.pathname.startsWith('/verifikator/pengaturan') ? 'bg-brand-blue-50 text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}
                   >
                     Antrian Kelas
                   </Link>
                   <Link
                     to="/verifikator/pengaturan"
-                    className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${location.pathname.startsWith('/verifikator/pengaturan') ? 'bg-teal-50 text-brand-teal' : 'text-slate-600 hover:text-brand-teal'}`}
+                    className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${location.pathname.startsWith('/verifikator/pengaturan') ? 'bg-brand-blue-50 text-brand-blue' : 'text-slate-600 hover:text-brand-blue'}`}
                   >
                     Tanda Tangan
                   </Link>
@@ -103,7 +103,7 @@ export function Header() {
               {location.pathname.startsWith('/validator') && (
                 <Link
                   to="/validator"
-                  className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-teal-50 text-brand-teal"
+                  className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-brand-blue-50 text-brand-blue"
                 >
                   Antrian Lintas Kelas
                 </Link>
@@ -112,7 +112,7 @@ export function Header() {
               {location.pathname.startsWith('/unit') && (
                 <Link
                   to="/unit"
-                  className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-teal-50 text-brand-teal"
+                  className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-brand-blue-50 text-brand-blue"
                 >
                   Monitoring
                 </Link>
@@ -143,7 +143,7 @@ export function Header() {
                 title="Notifikasi dalam aplikasi"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-brand-teal ring-2 ring-white" />
+                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-brand-blue ring-2 ring-white" />
               </button>
 
               {/* User Menu */}
@@ -152,7 +152,7 @@ export function Header() {
                   type="button"
                   className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
                 >
-                  <currentRole.icon className="h-4 w-4 text-brand-teal" />
+                  <currentRole.icon className="h-4 w-4 text-brand-blue" />
                   <span className="hidden sm:inline">{user.name}</span>
                   <span className="sm:hidden">{currentRole.label.split(' ')[0]}</span>
                   <ChevronDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 transition-transform" />
@@ -183,7 +183,7 @@ export function Header() {
                       className={cn(
                         'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs sm:text-sm transition-colors',
                         currentRole.id === role.id
-                          ? 'bg-teal-50 font-semibold text-brand-teal'
+                          ? 'bg-brand-blue-50 font-semibold text-brand-blue'
                           : 'text-slate-700 hover:bg-slate-50 hover:text-brand-dark',
                       )}
                     >
@@ -208,7 +208,7 @@ export function Header() {
           {!isAuthenticated && (
             <Link
               to="/login"
-              className="flex items-center gap-2 rounded-lg bg-brand-teal px-4 py-2 text-sm font-medium text-white hover:bg-brand-teal/90 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 transition-colors"
             >
               Masuk
             </Link>

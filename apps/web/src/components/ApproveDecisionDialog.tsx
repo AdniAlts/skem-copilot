@@ -73,7 +73,7 @@ export function ApproveDecisionDialog({
             onChange={(event) => setNote(event.target.value)}
             maxLength={DECISION_NOTE_MAX_LENGTH}
             rows={3}
-            className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
+            className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
         </div>
 

@@ -23,7 +23,7 @@ export function FormPreview({ submission, className }: FormPreviewProps) {
       {/* Top Banner / Indicator */}
       <div className="bg-slate-100 border-b border-slate-300 px-4 py-2 flex items-center justify-between text-slate-600">
         <div className="flex items-center gap-1.5 font-medium">
-          <FileCheck2 className="w-4 h-4 text-brand-teal" />
+          <FileCheck2 className="w-4 h-4 text-brand-blue" />
           <span>Pratinjau Formulir Resmi</span>
         </div>
         <span className="text-[11px] font-mono text-slate-500">FM.MHS.PENGAJUANSKEM</span>
@@ -144,7 +144,7 @@ export function FormPreview({ submission, className }: FormPreviewProps) {
                 <span className="text-slate-500 font-medium">Keputusan</span>
                 <div className="col-span-2 flex items-center gap-4">
                   <label className="flex items-center gap-1.5 font-medium">
-                    <input type="checkbox" checked={isApproved} readOnly className="rounded text-brand-teal" />
+                    <input type="checkbox" checked={isApproved} readOnly className="rounded text-brand-blue" />
                     <span>Disetujui</span>
                   </label>
                   <label className="flex items-center gap-1.5 font-medium">

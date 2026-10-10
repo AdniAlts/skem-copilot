@@ -35,7 +35,7 @@ export function VerifikatorSettingsRoute() {
   return (
     <div className="space-y-6 max-w-xl">
       <div className="flex items-center gap-2">
-        <Settings className="w-6 h-6 text-brand-teal" />
+        <Settings className="w-6 h-6 text-brand-blue" />
         <h1 className="text-2xl font-serif font-bold text-brand-dark">Pengaturan Tanda Tangan</h1>
       </div>
 

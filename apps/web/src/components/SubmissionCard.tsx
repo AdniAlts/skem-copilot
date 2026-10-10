@@ -161,7 +161,7 @@ export function SubmissionCard({
                   setIsAnswering(true);
                 }
               }}
-              className="text-xs font-semibold text-brand-teal hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-brand-blue hover:underline flex items-center gap-1"
             >
               <span>Jawab Sekarang</span>
               <ChevronDown className="w-3.5 h-3.5" />

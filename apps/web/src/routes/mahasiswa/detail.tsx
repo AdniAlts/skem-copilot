@@ -315,7 +315,7 @@ export function MahasiswaDetailRoute() {
             onClick={() => setActiveTab('metadata')}
             className={`flex-1 py-1.5 text-center font-medium rounded ${
               activeTab === 'metadata'
-                ? 'bg-brand-teal text-white'
+                ? 'bg-brand-blue text-white'
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
@@ -326,7 +326,7 @@ export function MahasiswaDetailRoute() {
             onClick={() => setActiveTab('form')}
             className={`flex-1 py-1.5 text-center font-medium rounded ${
               activeTab === 'form'
-                ? 'bg-brand-teal text-white'
+                ? 'bg-brand-blue text-white'
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
@@ -336,7 +336,7 @@ export function MahasiswaDetailRoute() {
             type="button"
             onClick={() => setActiveTab('pdf')}
             className={`flex-1 py-1.5 text-center font-medium rounded ${
-              activeTab === 'pdf' ? 'bg-brand-teal text-white' : 'text-slate-600 hover:bg-slate-100'
+              activeTab === 'pdf' ? 'bg-brand-blue text-white' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             PDF Sertifikat
@@ -372,7 +372,7 @@ export function MahasiswaDetailRoute() {
         >
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between text-xs text-slate-700 font-semibold">
             <span className="flex items-center gap-1.5">
-              <FileText className="w-4 h-4 text-brand-teal" />
+              <FileText className="w-4 h-4 text-brand-blue" />
               Berkas Sertifikat Asli
             </span>
             <span className="text-[11px] font-normal text-slate-500 font-mono">PDF Terunggah</span>
@@ -394,7 +394,7 @@ export function MahasiswaDetailRoute() {
         >
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between text-xs text-slate-700 font-semibold">
             <span className="flex items-center gap-1.5">
-              <FileCheck2 className="w-4 h-4 text-brand-teal" />
+              <FileCheck2 className="w-4 h-4 text-brand-blue" />
               Formulir FM.MHS.PENGAJUANSKEM
             </span>
             <span className="text-[11px] font-normal text-slate-500">Pratinjau Resmi</span>
@@ -486,7 +486,7 @@ export function MahasiswaDetailRoute() {
             menganalisis ulang berkas baru tersebut secara otomatis.
           </p>
 
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-5 text-center hover:border-brand-teal transition-colors">
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-5 text-center hover:border-brand-blue transition-colors">
             <FileUp className="w-8 h-8 text-slate-400 mx-auto mb-2" />
             <input
               type="file"
@@ -500,7 +500,7 @@ export function MahasiswaDetailRoute() {
             />
             <label
               htmlFor="reupload-input"
-              className="cursor-pointer text-brand-teal font-semibold hover:underline block"
+              className="cursor-pointer text-brand-blue font-semibold hover:underline block"
             >
               {reuploadFile ? reuploadFile.name : 'Pilih file PDF (maks. 10MB)'}
             </label>

@@ -35,7 +35,7 @@ export function ProgressTracker({ progress, className }: ProgressTrackerProps) {
                 ? hasErrors || hasProblems
                   ? 'bg-amber-500'
                   : 'bg-emerald-500'
-                : 'bg-brand-teal'
+                : 'bg-brand-blue'
             )}
             style={{ width: `${percentage}%` }}
           />
@@ -46,11 +46,11 @@ export function ProgressTracker({ progress, className }: ProgressTrackerProps) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Analyzing */}
         {(counts.analyzing ?? 0) > 0 && (
-          <div className="flex items-center gap-2 p-2 bg-teal-50 rounded-lg">
-            <Loader2 className="w-4 h-4 text-brand-teal animate-spin" />
+          <div className="flex items-center gap-2 p-2 bg-brand-blue-50 rounded-lg">
+            <Loader2 className="w-4 h-4 text-brand-blue animate-spin" />
             <div>
-              <div className="text-xs text-teal-700">Dianalisis</div>
-              <div className="text-sm font-semibold text-teal-800">{counts.analyzing}</div>
+              <div className="text-xs text-brand-blue-700">Dianalisis</div>
+              <div className="text-sm font-semibold text-brand-blue-800">{counts.analyzing}</div>
             </div>
           </div>
         )}
