@@ -1,4 +1,4 @@
-import { Bot } from 'grammy';
+import { Bot, webhookCallback } from 'grammy';
 import { eq } from 'drizzle-orm';
 import { loadEnv } from '../env.js';
 import { createDb } from '../db/client.js';
@@ -80,6 +80,13 @@ export function setupBotHandlers(bot: Bot): void {
   bot.catch((err) => {
     console.error('Telegram bot error:', err);
   });
+}
+
+export function telegramWebhookHandler() {
+  const bot = getTelegramBot();
+  if (!bot) return null;
+  const secretToken = loadEnv().TELEGRAM_WEBHOOK_SECRET || undefined;
+  return webhookCallback(bot, 'express', { secretToken });
 }
 
 export function startTelegramBot(): void {
