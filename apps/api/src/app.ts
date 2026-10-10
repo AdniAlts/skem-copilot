@@ -10,6 +10,7 @@ import { batchesRouter } from './routes/batches';
 import { submissionsRouter } from './routes/submissions';
 import { verifierRouter } from './routes/verifier';
 import { validatorRouter } from './routes/validator';
+import { notificationsRouter } from './routes/notifications';
 
 export function createApp(): Express {
   const app = express();
@@ -22,6 +23,7 @@ export function createApp(): Express {
   app.use(API_PREFIX, submissionsRouter);
   app.use(API_PREFIX, verifierRouter);
   app.use(API_PREFIX, validatorRouter);
+  app.use(API_PREFIX, notificationsRouter);
   app.use(errorHandler);
   return app;
 }

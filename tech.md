@@ -49,9 +49,10 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 | clsx, tailwind-merge | 2.1.1, 3.7.0 | MIT | Utility penggabungan kelas styling (`cn`) | — |
 | pdf-lib | 1.17.1 | MIT | Pembuatan PDF sintetis untuk test set dan PDF formulir final FM.MHS.PENGAJUANSKEM (`apps/api/src/pdf/final-form.ts`) | — |
 | Pillow (PIL, Python) | bawaan env | HPND | Pembuatan citra sintetis raster scan dan foto HP miring untuk test set | — |
-|| unpdf | 1.8.1 | MIT | Ekstraksi text layer dan render halaman PDF untuk DocumentReader | — |
-|| sharp | 0.35.5 | Apache-2.0 | Resize/sanitasi PNG halaman PDF untuk vision (maks. 1280px) | — |
-|| @napi-rs/canvas | 1.0.10 | MIT | Canvas native untuk render PDF via unpdf, Windows-compatible | — |
+| unpdf | 1.8.1 | MIT | Ekstraksi text layer dan render halaman PDF untuk DocumentReader | — |
+| sharp | 0.35.5 | Apache-2.0 | Resize/sanitasi PNG halaman PDF untuk vision (maks. 1280px) | — |
+| @napi-rs/canvas | 1.0.10 | MIT | Canvas native untuk render PDF via unpdf, Windows-compatible | — |
+| grammy | 1.46.0 | MIT | Bot Telegram & pengiriman notifikasi keputusan staf (`apps/api/src/telegram/bot.ts`) | — |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 

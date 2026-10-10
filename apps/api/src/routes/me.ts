@@ -11,10 +11,12 @@ import { Router } from 'express';
 import multer from 'multer';
 import sharp from 'sharp';
 
-import { MeSchema, ProgressSchema, SignatureBodySchema, SignatureResponseSchema } from '@skem/shared';
+import { MeSchema, ProgressSchema, SignatureBodySchema, SignatureResponseSchema, TelegramLinkResponseSchema } from '@skem/shared';
+import { nanoid } from 'nanoid';
 
 import { createDb } from '../db/client';
 import { classes, submissions, users } from '../db/schema';
+import { loadEnv } from '../env.js';
 import { AppError, asyncHandler } from '../middleware/error';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { summarizeProgress } from '../rules/progress.js';
@@ -185,6 +187,31 @@ meRouter.get(
         telegramLinked: u.telegramChatId !== null,
       });
       res.json(body);
+    } finally {
+      await client.end();
+    }
+  }),
+);
+
+meRouter.post(
+  '/me/telegram/link',
+  requireAuth(),
+  requireRole('student', 'verifier'),
+  asyncHandler(async (req, res) => {
+    const user = req.sessionUser!;
+    const token = nanoid(24);
+    const { client, db } = createDb();
+    try {
+      await db
+        .update(users)
+        .set({ telegramLinkToken: token })
+        .where(eq(users.id, user.id));
+
+      const env = loadEnv();
+      const botUsername = env.TELEGRAM_BOT_USERNAME || 'skem_copilot_bot';
+      const deepLink = `https://t.me/${botUsername}?start=${token}`;
+
+      res.json(TelegramLinkResponseSchema.parse({ deepLink }));
     } finally {
       await client.end();
     }
