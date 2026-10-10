@@ -268,9 +268,25 @@ function sharedGateway() {
   return gateway;
 }
 
+let usageRecorderOverride: RecordUsage | null = null;
+
+/**
+ * Redirects usage records away from `llm_calls` (e.g. eval runs must not pollute the token log
+ * used for scoring). Returns a function that restores the default recorder.
+ */
+export function overrideLlmUsageRecorder(recorder: RecordUsage): () => void {
+  usageRecorderOverride = recorder;
+  return () => {
+    usageRecorderOverride = null;
+  };
+}
+
 export async function callLlm<T>(input: CallLlmInput<T>): Promise<CallLlmResult<T>> {
   const { openai, options } = sharedGateway();
-  return callWithClient(openai, input, options);
+  return callWithClient(openai, input, {
+    ...options,
+    recordUsage: usageRecorderOverride ?? options.recordUsage,
+  });
 }
 
 /** Closes the shared DB connection (for scripts that must exit). */
