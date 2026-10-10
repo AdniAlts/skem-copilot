@@ -429,16 +429,20 @@ describe.skipIf(!HAS_DATABASE)('GET /api/submissions/:publicId', () => {
       await db.update(submissions).set({ komponen: item.component, finalCredit: item.credit }).where(eq(submissions.id, submissionId));
     }
     const response = await request(app).get('/api/me/progress').set('Cookie', studentCookie).expect(200);
+    const round2 = (value: number) => Math.round(value * 100) / 100;
     const expected = [
-      { komponen: 1, target: 1.25, earned: (baseline.get(1) ?? 0) + 0.5 },
-      { komponen: 2, target: 0.5, earned: (baseline.get(2) ?? 0) + 0.25 },
-      { komponen: 3, target: 1.25, earned: (baseline.get(3) ?? 0) + 0.75 },
+      { komponen: 1, target: 1.25, earned: round2((baseline.get(1) ?? 0) + 0.5) },
+      { komponen: 2, target: 0.5, earned: round2((baseline.get(2) ?? 0) + 0.25) },
+      { komponen: 3, target: 1.25, earned: round2((baseline.get(3) ?? 0) + 0.75) },
     ];
     expect(response.body.komponen).toEqual(expected);
-    const expectedTotal = expected.reduce((total, row) => total + row.earned, 0);
+    const expectedTotal = round2(expected.reduce((total, row) => total + row.earned, 0));
     expect(response.body.total).toBe(expectedTotal);
     expect(response.body.target).toBe(3);
-    expect(response.body.fulfilled).toBe(expectedTotal >= 3);
+    // Terpenuhi butuh total ≥ 3,0 DAN setiap komponen mencapai targetnya (detail di tes rules/progress).
+    expect(response.body.fulfilled).toBe(
+      expectedTotal >= 3 && expected.every((row) => row.earned >= row.target),
+    );
   }, 15000);
 
   it('creates a 60-second certificate URL only for authorized owner', async () => {
