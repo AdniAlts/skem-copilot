@@ -3,6 +3,7 @@
  * POST /validator/submissions/:publicId/credit — ubah kredit final dengan alasan wajib.
  * POST /validator/submissions/:publicId/validate — setujui; kredit final = nilai terakhir.
  * POST /validator/submissions/:publicId/reject — tolak dengan alasan wajib.
+ * POST /validator/submissions/:publicId/regenerate-form — buat ulang PDF final yang belum `ready`.
  */
 
 import { and, asc, eq } from 'drizzle-orm';
@@ -10,6 +11,7 @@ import { Router } from 'express';
 import {
   CreditAdjustBodySchema,
   CreditAdjustResponseSchema,
+  RegenerateFormResponseSchema,
   ValidateBodySchema,
   ValidateResponseSchema,
   ValidatorQueueQuerySchema,
@@ -25,6 +27,8 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import type { SessionUser } from '../middleware/auth.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import { creditTable } from '../rules/config.js';
+import { generateFinalForm } from '../services/final-form.js';
+import { sendStaffDecisionNotification } from '../services/notifications.js';
 
 export const validatorRouter = Router();
 
@@ -42,7 +46,7 @@ async function lockWaiting(tx: DbTx, publicId: string) {
   return row;
 }
 
-async function finish(tx: DbTx, user: SessionUser, row: typeof submissions.$inferSelect, decision: 'approve' | 'reject', note: string | null, finalCredit: number | null) {
+async function finish(tx: DbTx, user: SessionUser, row: typeof submissions.$inferSelect, decision: 'approve' | 'reject', note: string | null, finalCredit: number | null): Promise<number> {
   const toStatus = decision === 'approve' ? 'approved' : 'rejected';
   await tx.update(submissions).set({
     status: toStatus,
@@ -76,6 +80,7 @@ async function finish(tx: DbTx, user: SessionUser, row: typeof submissions.$infe
       : `${activity} ditolak. Alasan: ${note}`,
     status: 'pending',
   });
+  return review!.id;
 }
 
 validatorRouter.get(
@@ -178,17 +183,39 @@ validatorRouter.post(
     const user = req.sessionUser!;
     const { client, db } = createDb();
     try {
-      const finalCredit = await db.transaction(async (tx) => {
+      const { finalCredit, reviewId } = await db.transaction(async (tx) => {
         const row = await lockWaiting(tx, String(req.params.publicId));
         const credit = toNumber(row.finalCredit) ?? toNumber(row.estimatedCredit);
         if (credit === null) throw new AppError('CONFLICT', 'Estimasi kredit belum tersedia.');
-        await finish(tx, user, row, 'approve', null, credit);
-        return credit;
+        const reviewId = await finish(tx, user, row, 'approve', null, credit);
+        return { finalCredit: credit, reviewId };
       });
+      await sendStaffDecisionNotification(reviewId).catch(() => undefined);
       res.json(ValidateResponseSchema.parse({ status: 'approved', finalCredit }));
     } finally {
       await client.end();
     }
+  }),
+);
+
+validatorRouter.post(
+  '/validator/submissions/:publicId/regenerate-form',
+  requireAuth(),
+  requireRole('validator'),
+  asyncHandler(async (req, res) => {
+    const { client, db } = createDb();
+    let submissionId: number;
+    try {
+      submissionId = await db.transaction(async (tx) => {
+        const row = await lockWaiting(tx, String(req.params.publicId));
+        if (row.finalFormStatus === 'ready') throw new AppError('CONFLICT', 'Formulir final sudah tersedia.');
+        return row.id;
+      });
+    } finally {
+      await client.end();
+    }
+    const status = await generateFinalForm(submissionId);
+    res.json(RegenerateFormResponseSchema.parse({ finalForm: { status } }));
   }),
 );
 
@@ -202,10 +229,11 @@ validatorRouter.post(
     const user = req.sessionUser!;
     const { client, db } = createDb();
     try {
-      await db.transaction(async (tx) => {
+      const reviewId = await db.transaction(async (tx) => {
         const row = await lockWaiting(tx, String(req.params.publicId));
-        await finish(tx, user, row, 'reject', parsed.data.note, null);
+        return finish(tx, user, row, 'reject', parsed.data.note, null);
       });
+      await sendStaffDecisionNotification(reviewId).catch(() => undefined);
       res.json(ValidatorRejectResponseSchema.parse({ status: 'rejected' }));
     } finally {
       await client.end();

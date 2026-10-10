@@ -19,7 +19,7 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 ## Model AI di dalam aplikasi
 | Model | Lewat | Fungsi |
 |---|---|---|
-| `deepseek-v4.1-flash` | Gateway LiteLLM CBN (OpenAI-compatible) | Membaca sertifikat (teks atau gambar), ekstraksi field terstruktur, klasifikasi kategori/tingkat/peran. Tidak menghasilkan skor kredit. |
+| `gpt-5.6-luna` | Griphub Router (OpenAI-compatible) | Membaca sertifikat (teks atau gambar), ekstraksi field terstruktur, klasifikasi kategori/tingkat/peran. Vision base64 diverifikasi pada sertifikat scan. Tidak menghasilkan skor kredit. |
 
 ## Layanan pihak ketiga
 | Layanan | Dipakai untuk | Catatan |
@@ -47,11 +47,12 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 | tailwindcss, postcss, autoprefixer | 3.4.19, 8.5.29, 10.6.1 | MIT | Styling & sistem tema warna web | — |
 | lucide-react | 1.54.0 | ISC | Ikon garis antarmuka web | — |
 | clsx, tailwind-merge | 2.1.1, 3.7.0 | MIT | Utility penggabungan kelas styling (`cn`) | — |
-| pdf-lib | 1.17.9 | MIT | Pembuatan PDF sintetis untuk test set dan formulir | — |
+| pdf-lib | 1.17.1 | MIT | Pembuatan PDF sintetis untuk test set dan PDF formulir final FM.MHS.PENGAJUANSKEM (`apps/api/src/pdf/final-form.ts`) | — |
 | Pillow (PIL, Python) | bawaan env | HPND | Pembuatan citra sintetis raster scan dan foto HP miring untuk test set | — |
-|| unpdf | 1.8.1 | MIT | Ekstraksi text layer dan render halaman PDF untuk DocumentReader | — |
-|| sharp | 0.35.5 | Apache-2.0 | Resize/sanitasi PNG halaman PDF untuk vision (maks. 1280px) | — |
-|| @napi-rs/canvas | 1.0.10 | MIT | Canvas native untuk render PDF via unpdf, Windows-compatible | — |
+| unpdf | 1.8.1 | MIT | Ekstraksi text layer dan render halaman PDF untuk DocumentReader | — |
+| sharp | 0.35.5 | Apache-2.0 | Resize/sanitasi PNG halaman PDF untuk vision (maks. 1280px) | — |
+| @napi-rs/canvas | 1.0.10 | MIT | Canvas native untuk render PDF via unpdf, Windows-compatible | — |
+| grammy | 1.46.0 | MIT | Bot Telegram & pengiriman notifikasi keputusan staf (`apps/api/src/telegram/bot.ts`) | — |
 
 Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis di sini dan sebutkan bagian mana yang berasal dari template.
 

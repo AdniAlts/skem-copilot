@@ -119,7 +119,16 @@ export function App() {
           }
         />
         <Route
-          path="/verifikator/detail/:id"
+          path="/verifikator/pengajuan/:publicId"
+          element={
+            <VerifikatorGuard>
+              <VerifikatorDetailRoute />
+            </VerifikatorGuard>
+          }
+        />
+        {/* Legacy path agar backward-compatible */}
+        <Route
+          path="/verifikator/detail/:publicId"
           element={
             <VerifikatorGuard>
               <ErrorBoundary fallbackTitle="Kendala Pemeriksaan Pengajuan">

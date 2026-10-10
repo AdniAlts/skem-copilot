@@ -314,7 +314,7 @@ export function MetadataPanel({
                   'w-full px-3 py-2 text-xs rounded border transition-colors',
                   isFormLocked
                     ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                 )}
                 placeholder="Contoh: Lomba Desain Poster Nasional 2026"
               />
@@ -350,11 +350,11 @@ export function MetadataPanel({
                   'w-full px-3 py-2 text-xs rounded border transition-colors',
                   isFormLocked
                     ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                 )}
               />
-              <div className="mt-1.5 p-2 bg-teal-50/50 rounded border border-teal-100 flex items-start gap-1.5 text-[11px] text-teal-800">
-                <Info className="w-3.5 h-3.5 shrink-0 text-brand-teal mt-0.5" />
+              <div className="mt-1.5 p-2 bg-brand-blue-50/50 rounded border border-brand-blue-100 flex items-start gap-1.5 text-[11px] text-brand-blue-800">
+                <Info className="w-3.5 h-3.5 shrink-0 text-brand-blue mt-0.5" />
                 <span>{angkatanDateGuide}</span>
               </div>
             </div>
@@ -374,7 +374,7 @@ export function MetadataPanel({
                     'w-full px-3 py-2 text-xs rounded border transition-colors',
                     isFormLocked
                       ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                   )}
                   placeholder="Contoh: Surabaya / Daring (Zoom)"
                 />
@@ -393,7 +393,7 @@ export function MetadataPanel({
                     'w-full px-3 py-2 text-xs rounded border transition-colors',
                     isFormLocked
                       ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                   )}
                   placeholder="Contoh: BEM PENS / Kemendikbudristek"
                 />
@@ -413,7 +413,7 @@ export function MetadataPanel({
                   'w-full px-3 py-2 text-xs rounded border transition-colors',
                   isFormLocked
                     ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                 )}
               >
                 {ATTACHMENT_TYPES.map((type) => (
@@ -484,7 +484,7 @@ export function MetadataPanel({
                   'w-full px-3 py-2 text-xs rounded border transition-colors',
                   isFormLocked
                     ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                 )}
               >
                 {CATEGORY_OPTIONS.map((cat) => (
@@ -526,7 +526,7 @@ export function MetadataPanel({
                     'w-full px-3 py-2 text-xs rounded border transition-colors',
                     isFormLocked
                       ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                   )}
                 >
                   {LEVEL_OPTIONS.map((lvl) => (
@@ -566,7 +566,7 @@ export function MetadataPanel({
                     'w-full px-3 py-2 text-xs rounded border transition-colors',
                     isFormLocked
                       ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                      : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                   )}
                 >
                   {ROLE_OPTIONS.map((r) => (
@@ -592,7 +592,7 @@ export function MetadataPanel({
                   'w-full px-3 py-2 text-xs rounded border transition-colors',
                   isFormLocked
                     ? 'bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed'
-                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:border-brand-teal'
+                    : 'border-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue'
                 )}
                 placeholder="Contoh: Juara II Kategori Desain Web"
               />

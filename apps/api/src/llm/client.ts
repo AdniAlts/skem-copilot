@@ -247,30 +247,77 @@ export async function callWithClient<T>(
   );
 }
 
-let gateway: { openai: OpenAI; options: GatewayOptions; db: DbClient } | null = null;
+export type LlmModels = { text: string; vision: string };
+
+/** Model per jenis tugas; LLM_VISION_MODEL kosong = vision memakai LLM_MODEL. */
+export function resolveLlmModels(env: {
+  LLM_MODEL: string;
+  LLM_VISION_MODEL?: string | undefined;
+}): LlmModels {
+  return { text: env.LLM_MODEL, vision: env.LLM_VISION_MODEL ?? env.LLM_MODEL };
+}
+
+/** Label model untuk precheck_runs, mis. "deepseek-v4.1-flash + vision gpt-5.6-luna". */
+export function describeModels(models: LlmModels): string {
+  return models.text === models.vision ? models.text : `${models.text} + vision ${models.vision}`;
+}
+
+/**
+ * Hanya `extract_vision` (berisi gambar) yang memakai model vision; ekstraksi teks dan klasifikasi
+ * memakai model teks. Perbaikan JSON berjalan di panggilan yang sama sehingga memakai model asalnya.
+ */
+export function modelForPurpose(purpose: LlmPurpose, models: LlmModels): string {
+  return purpose === 'extract_vision' ? models.vision : models.text;
+}
+
+let gateway: {
+  openai: OpenAI;
+  options: GatewayOptions;
+  models: LlmModels;
+  db: DbClient;
+} | null = null;
 
 /** Lazily creates one gateway client and one DB connection shared by all calls. */
 function sharedGateway() {
   if (!gateway) {
     const env = loadEnv();
     const db = createDb();
+    const models = resolveLlmModels(env);
     gateway = {
       db,
+      models,
       openai: new OpenAI({
         apiKey: env.LLM_API_KEY,
         baseURL: env.LLM_BASE_URL,
         timeout: LLM_TIMEOUT_MS,
         maxRetries: 0,
       }),
-      options: { model: env.LLM_MODEL, recordUsage: dbUsageRecorder(db.db) },
+      options: { model: models.text, recordUsage: dbUsageRecorder(db.db) },
     };
   }
   return gateway;
 }
 
+let usageRecorderOverride: RecordUsage | null = null;
+
+/**
+ * Redirects usage records away from `llm_calls` (e.g. eval runs must not pollute the token log
+ * used for scoring). Returns a function that restores the default recorder.
+ */
+export function overrideLlmUsageRecorder(recorder: RecordUsage): () => void {
+  usageRecorderOverride = recorder;
+  return () => {
+    usageRecorderOverride = null;
+  };
+}
+
 export async function callLlm<T>(input: CallLlmInput<T>): Promise<CallLlmResult<T>> {
-  const { openai, options } = sharedGateway();
-  return callWithClient(openai, input, options);
+  const { openai, options, models } = sharedGateway();
+  return callWithClient(openai, input, {
+    ...options,
+    model: modelForPurpose(input.purpose, models),
+    recordUsage: usageRecorderOverride ?? options.recordUsage,
+  });
 }
 
 /** Closes the shared DB connection (for scripts that must exit). */

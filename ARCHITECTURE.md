@@ -22,7 +22,7 @@ flowchart LR
   end
   PG[("Supabase Postgres")]
   ST[("Supabase Storage<br/>bucket privat")]
-  LLM["Gateway LLM CBN<br/>deepseek-v4.1-flash"]
+  LLM["Gateway Griphub<br/>gpt-5.6-luna"]
   TG["Telegram Bot API"]
   DATA["data/*.json<br/>tabel bobot, Pedoman bertag, aturan"]
 
@@ -275,7 +275,7 @@ sequenceDiagram
 
 ## 7. DocumentReader (`apps/api/src/reader/`)
 
-`deepseek-v4.1-flash` **sudah dikonfirmasi bisa membaca gambar** (jawaban tim). OCR tidak diimplementasikan; slot strategi disediakan agar bisa ditambah.
+`gpt-5.6-luna` lewat Griphub sudah dikonfirmasi menerima input gambar base64 dan berhasil mengekstrak sertifikat scan. Model dipilih per tugas (`llm/client.ts` → `modelForPurpose`): `extract_vision` memakai `LLM_VISION_MODEL` bila diisi, selain itu `LLM_MODEL`; saat ini keduanya `gpt-5.6-luna` (`LLM_VISION_MODEL` kosong). Cache ekstraksi mencatat model yang membaca berkas; `READER_VERSION` dinaikkan saat model/prompt pembaca berubah. OCR tidak diimplementasikan; slot strategi disediakan agar bisa ditambah.
 
 ```ts
 interface DocumentReader {
@@ -343,7 +343,7 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | POST | `/submissions/:publicId/retry` | student pemilik | coba lagi (dari `error`) |
 | POST | `/submissions/submit` | student | `{ publicIds }` ajukan satu/banyak yang `ready`; wajib tanda tangan; transaksi status/history + notifikasi in-app Verifikator |
 | GET | `/submissions/:publicId/certificate` | pemilik, verifier kelasnya, validator | signed URL bukti (TTL 60 s) |
-| GET | `/submissions/:publicId/final-form` | pemilik, verifier kelasnya, validator | signed URL PDF final |
+| GET | `/submissions/:publicId/final-form` | pemilik, verifier kelasnya, validator | signed URL PDF final (TTL 60 s), hanya jika `final_form_status=ready` |
 | GET | `/verifier/queue` | verifier | antrian kelasnya (`waiting_verifier`); filter `aiStatus=clean\|warning`, urut `oldest\|newest\|flags` |
 | POST | `/verifier/submissions/:publicId/approve` | verifier kelasnya | Setujui (+e-sign tersimpan, 409 `SIGNATURE_REQUIRED`); hook `onVerifierApproved` setelah commit |
 | POST | `/verifier/submissions/:publicId/reject` | verifier kelasnya | Tolak `{ note }` wajib (zod + CHECK DB) |
@@ -351,7 +351,7 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | POST | `/validator/submissions/:publicId/credit` | validator | ubah kredit final `{ finalCredit (0–3, 2 desimal), reason }`; nilai sama → 400 |
 | POST | `/validator/submissions/:publicId/validate` | validator | Validasi; `final_credit` = hasil `/credit` terakhir atau estimasi |
 | POST | `/validator/submissions/:publicId/reject` | validator | Tolak `{ note }` wajib |
-| POST | `/validator/submissions/:publicId/regenerate-form` | validator | buat ulang PDF final |
+| POST | `/validator/submissions/:publicId/regenerate-form` | validator | buat ulang PDF final (`waiting_validator`, belum `ready`) |
 | GET | `/notifications` | semua | notifikasi in-app |
 | POST | `/notifications/:id/read` | pemilik | tandai dibaca |
 | POST | `/me/telegram/link` | student, verifier | deep link `t.me/<bot>?start=<token>` |
@@ -390,7 +390,7 @@ Kode: `VALIDATION_ERROR` 400, `UNAUTHENTICATED` 401, `FORBIDDEN` 403, `NOT_FOUND
 |---|---|---|
 | Unit | Vitest | `rules/*` (credit, deadline per angkatan & batas tanggal, name-match, status-mapper, guideline), validasi `data/*.json` |
 | Integrasi API | Vitest + Supertest | guard peran/kelas, tolak tanpa alasan → 400, transisi status sah/tidak sah → 409, upload > 10 file → 400 |
-| Eval | `npm run eval` (`scripts/eval.ts`) | membaca `data/testset/answer_key.json`, menjalankan pipeline nyata ke gateway, mencetak akurasi per jenis kesalahan, kategori/tingkat (top-1, top-3), kredit, status, dan token per kasus |
+| Eval | `npm run eval` (`scripts/eval.ts` → `apps/api/src/eval/`) | membaca `data/testset/answer_key.json`, menjalankan pipeline nyata (`runPrecheck`) ke gateway, mencetak akurasi per jenis kesalahan (deteksi + salah alarm), status, kategori top-1/top-3, tingkat, peran, entri kredit, dan token per kasus. **Tidak menulis ke database**: catatan token (bentuk sama dengan `llm_calls`) ditampung di memori lewat `overrideLlmUsageRecorder`, cache ekstraksi di `data/testset/reports/extraction-cache.json`, `precheck_runs` tidak ditulis. Opsi: `--split=tuning|heldout|all` (bawaan `tuning`), `--limit`, `--ids`, `--no-cache`. Laporan JSON di `data/testset/reports/` (di-ignore). |
 
 `answer_key.json`: `{ "cases": [{ "id", "file", "split": "tuning" | "heldout", "account": {name, angkatan}, "expected": { "review_status", "category_code", "level", "role", "credit_entry_id", "errors": [] } }] }`. Angka akhir di README **hanya** dari `--split=heldout`. Tes unit tidak memanggil LLM (pakai fixture).
 

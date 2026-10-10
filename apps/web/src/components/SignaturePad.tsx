@@ -178,7 +178,7 @@ export function SignaturePad({ onSave, onCancel, isSaving = false, className }: 
           className={cn(
             'flex items-center gap-2 py-2.5 px-4 font-medium border-b-2 transition-colors cursor-pointer',
             activeTab === 'draw'
-              ? 'border-brand-teal text-brand-teal font-semibold'
+              ? 'border-brand-blue text-brand-blue font-semibold'
               : 'border-transparent text-slate-500 hover:text-slate-800',
           )}
         >
@@ -191,7 +191,7 @@ export function SignaturePad({ onSave, onCancel, isSaving = false, className }: 
           className={cn(
             'flex items-center gap-2 py-2.5 px-4 font-medium border-b-2 transition-colors cursor-pointer',
             activeTab === 'upload'
-              ? 'border-brand-teal text-brand-teal font-semibold'
+              ? 'border-brand-blue text-brand-blue font-semibold'
               : 'border-transparent text-slate-500 hover:text-slate-800',
           )}
         >
@@ -247,7 +247,7 @@ export function SignaturePad({ onSave, onCancel, isSaving = false, className }: 
       {/* Tab 2: Upload PNG */}
       {activeTab === 'upload' && (
         <div className="space-y-3">
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-5 text-center bg-slate-50/50 hover:border-brand-teal transition-colors">
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-5 text-center bg-slate-50/50 hover:border-brand-blue transition-colors">
             <input
               type="file"
               accept=".png,image/png"
@@ -258,10 +258,10 @@ export function SignaturePad({ onSave, onCancel, isSaving = false, className }: 
             />
             <label htmlFor="signature-file-upload" className="cursor-pointer block space-y-2">
               <div className="p-3 bg-white w-12 h-12 rounded-full border border-slate-200 shadow-2xs mx-auto flex items-center justify-center text-slate-500">
-                <ImageIcon className="w-6 h-6 text-brand-teal" />
+                <ImageIcon className="w-6 h-6 text-brand-blue" />
               </div>
               <div>
-                <span className="font-semibold text-brand-teal hover:underline block text-xs">
+                <span className="font-semibold text-brand-blue hover:underline block text-xs">
                   {uploadedFile ? uploadedFile.name : 'Pilih berkas PNG tanda tangan'}
                 </span>
                 <span className="text-[11px] text-slate-500 block mt-0.5">

@@ -82,12 +82,12 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         if (e.shiftKey) {
           if (document.activeElement === firstElement) {
             e.preventDefault();
-            lastElement.focus();
+            lastElement?.focus();
           }
         } else {
           if (document.activeElement === lastElement) {
             e.preventDefault();
-            firstElement.focus();
+            firstElement?.focus();
           }
         }
       }

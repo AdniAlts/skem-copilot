@@ -1,343 +1,397 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Check,
-  FileCheck2,
-  FileText,
-  MessageSquare,
-  X,
-} from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, Check, X, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { StatusBadge } from '../../components/StatusBadge';
+import { Modal } from '../../components/Modal';
+import { LoadingSteps } from '../../components/LoadingSteps';
 import { ErrorState } from '../../components/ErrorState';
 import { PdfViewer } from '../../components/PdfViewer';
 import { FormPreview } from '../../components/FormPreview';
+import { MetadataPanel } from '../../components/MetadataPanel';
 import { FindingsList } from '../../components/FindingsList';
-import { ReadOnlySubmissionSummary } from '../../components/ReadOnlySubmissionSummary';
-import { RejectDecisionModal } from '../../components/RejectDecisionModal';
-import { ApproveDecisionDialog } from '../../components/ApproveDecisionDialog';
+import { AgentQuestion } from '../../components/AgentQuestion';
 import { SignatureModal } from '../../components/SignatureModal';
 import { useToast } from '../../components/ToastContext';
-import { useAuth } from '../../api/auth-context';
-import { getSignature } from '../../api/signature';
-import {
-  approveSubmission,
-  getVerifierCertificateUrl,
-  getVerifierSubmission,
-  rejectSubmission,
-} from '../../api/verifier';
+import { getStaffCertificateUrl, getStaffSubmission } from '../../api/staff';
 import { ApiClientError } from '../../api/client';
-import {
-  answerLabel,
-  approvalToastMessage,
-  classifyDecisionError,
-  formatCredit,
-  formatDateTimeId,
-} from '../../lib/verifier';
+import { classifyDecisionError } from '../../lib/verifier';
+import { approveSubmission, rejectSubmission } from '../../api/verifier';
+import { getSignature } from '../../api/signature';
+import type { SubmissionDetail } from '@skem/shared';
+import type { StepItem } from '../../components/LoadingSteps';
 
-const VERIFIER_SIGNATURE_DESCRIPTION =
-  'Tanda tangan ini disimpan di akun Anda dan hanya dibubuhkan pada bagian III formulir yang Anda setujui.';
-
+/** Halaman detail baca-saja untuk Verifikator. Tombol Setujui dan Tolak saja — tidak ada edit. */
 export function VerifikatorDetailRoute() {
-  const { id = '' } = useParams();
-  const navigate = useNavigate();
+  const { publicId = 'SKM-7Q2K9D1A' } = useParams();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const [isRejectOpen, setIsRejectOpen] = useState(false);
-  const [isApproveOpen, setIsApproveOpen] = useState(false);
-  const [isSignatureOpen, setIsSignatureOpen] = useState(false);
+  // Modal state
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectNote, setRejectNote] = useState('');
+  const [showSignModal, setShowSignModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
 
-  const submissionQuery = useQuery({
-    queryKey: ['verifier-submission', id],
-    queryFn: () => getVerifierSubmission(id),
-    enabled: !!id,
+  // Fetch submission detail
+  const {
+    data: submission,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<SubmissionDetail>({
+    queryKey: ['submission-detail', publicId],
+    queryFn: () => getStaffSubmission(publicId),
+    refetchOnWindowFocus: true,
     retry: (count, error) =>
       !(error instanceof ApiClientError && error.status === 404) && count < 2,
   });
-  const certificateQuery = useQuery({
-    queryKey: ['verifier-certificate', id],
-    queryFn: () => getVerifierCertificateUrl(id),
-    enabled: submissionQuery.isSuccess,
-  });
-  const signatureQuery = useQuery({
-    queryKey: ['signature'],
-    queryFn: getSignature,
-    enabled: isApproveOpen,
+
+  // Fetch certificate URL for PdfViewer
+  const { data: certData } = useQuery({
+    queryKey: ['certificate-url', publicId],
+    queryFn: () => getStaffCertificateUrl(publicId),
+    enabled: !!submission,
   });
 
-  const afterDecision = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['verifier-queue'] });
-    await queryClient.invalidateQueries({ queryKey: ['verifier-submission', id] });
-    navigate('/verifikator');
-  };
-
-  const handleDecisionError = (error: unknown) => {
+  /** Keputusan gagal: tampilkan alasan sebenarnya; jangan pernah menganggapnya berhasil. */
+  function handleDecisionError(error: unknown) {
     switch (classifyDecisionError(error)) {
       case 'needs_signature':
-        setIsApproveOpen(false);
-        setIsSignatureOpen(true);
-        showToast('Siapkan tanda tangan Anda terlebih dahulu.', 'info');
+        setShowConfirmModal(false);
+        setShowSignModal(true);
+        showToast('Tanda tangan belum tersimpan di server. Siapkan tanda tangan Anda.', 'info');
         return;
       case 'already_decided':
-        setIsApproveOpen(false);
-        setIsRejectOpen(false);
+        setShowConfirmModal(false);
+        setShowRejectModal(false);
         showToast('Pengajuan ini sudah tidak menunggu keputusan Anda.', 'info');
-        void submissionQuery.refetch();
+        void refetch();
         return;
       default:
         showToast(
-          error instanceof Error ? error.message : 'Keputusan gagal dikirim. Silakan coba lagi.',
+          error instanceof Error ? error.message : 'Keputusan gagal dikirim. Coba lagi.',
           'error',
         );
     }
-  };
-
-  const approveMutation = useMutation({
-    mutationFn: (note: string) => approveSubmission(id, note),
-    onSuccess: async (result) => {
-      setIsApproveOpen(false);
-      showToast(approvalToastMessage(result.finalForm.status), 'success');
-      await afterDecision();
-    },
-    onError: handleDecisionError,
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: (note: string) => rejectSubmission(id, note),
-    onSuccess: async () => {
-      setIsRejectOpen(false);
-      showToast('Pengajuan ditolak. Alasan dikirim ke mahasiswa.', 'success');
-      await afterDecision();
-    },
-    onError: handleDecisionError,
-  });
-
-  if (submissionQuery.isLoading) {
-    return <p className="py-12 text-center text-sm text-slate-500">Memuat pengajuan…</p>;
   }
 
-  if (submissionQuery.error || !submissionQuery.data) {
-    const notFound =
-      submissionQuery.error instanceof ApiClientError && submissionQuery.error.status === 404;
+  // Mutation: approve
+  const approveMut = useMutation({
+    mutationFn: () => approveSubmission(publicId),
+    onSuccess: (res) => {
+      void queryClient.invalidateQueries({ queryKey: ['verifier-queue'] });
+      const toastMsg =
+        res.finalForm.status === 'ready'
+          ? 'Disetujui dan diteruskan ke Validator. Formulir final telah dibuat.'
+          : 'Disetujui dan diteruskan ke Validator.';
+      showToast(toastMsg, 'success');
+      setShowConfirmModal(false);
+      navigate('/verifikator');
+    },
+    onError: handleDecisionError,
+  });
+
+  // Mutation: reject
+  const rejectMut = useMutation({
+    mutationFn: () => rejectSubmission(publicId, rejectNote),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['verifier-queue'] });
+      showToast('Pengajuan ditolak dan mahasiswa telah diberitahu.', 'info');
+      setShowRejectModal(false);
+      navigate('/verifikator');
+    },
+    onError: handleDecisionError,
+  });
+
+  /** Tombol Setujui: cek tanda tangan dulu. */
+  async function handleApproveClick() {
+    const sig = await getSignature();
+    if (sig) {
+      setSignatureDataUrl(sig);
+      setShowConfirmModal(true);
+    } else {
+      // Belum punya tanda tangan — buka modal tanda tangan dulu
+      setShowSignModal(true);
+    }
+  }
+
+  /** Setelah tanda tangan disimpan di SignatureModal, tampilkan konfirmasi. */
+  function handleSignatureSaved(dataUrl: string) {
+    setSignatureDataUrl(dataUrl);
+    setShowSignModal(false);
+    setShowConfirmModal(true);
+  }
+
+  if (isLoading) {
+    const loadingSteps: StepItem[] = [
+      { id: 'fetch', label: 'Memuat data pengajuan…', status: 'in_progress' },
+      { id: 'render', label: 'Menyiapkan tampilan…', status: 'pending' },
+    ];
     return (
-      <div className="py-12 max-w-xl mx-auto space-y-4">
-        <ErrorState
-          title={notFound ? 'Pengajuan Tidak Ditemukan' : 'Gagal Memuat Pengajuan'}
-          message={
-            notFound
-              ? 'Pengajuan ini tidak ada atau bukan dari kelas Anda.'
-              : 'Tidak dapat memuat pengajuan. Periksa koneksi lalu coba lagi.'
-          }
-          onRetry={notFound ? undefined : () => submissionQuery.refetch()}
-        />
-        <Link to="/verifikator" className="block text-center text-sm text-brand-teal">
-          Kembali ke antrian
-        </Link>
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <LoadingSteps steps={loadingSteps} />
       </div>
     );
   }
 
-  const submission = submissionQuery.data;
-  const isWaiting = submission.status === 'waiting_verifier';
-  const nameFinding = submission.findings.find((finding) => finding.checkType === 'name_match');
-  const isBusy = approveMutation.isPending || rejectMutation.isPending;
+  if (isError || !submission) {
+    const notFound = error instanceof ApiClientError && error.status === 404;
+    return (
+      <ErrorState
+        message={
+          notFound
+            ? 'Pengajuan tidak ditemukan atau bukan dari kelas Anda.'
+            : 'Gagal memuat detail pengajuan.'
+        }
+        onRetry={notFound ? undefined : () => void refetch()}
+        className="min-h-[40vh]"
+      />
+    );
+  }
+
+  const isPending = submission.status === 'waiting_verifier';
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs space-y-3">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <Link to="/verifikator" title="Kembali ke antrian">
-              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg font-bold font-mono text-brand-dark">
-                  {submission.publicId}
-                </h1>
-                <StatusBadge type="submission" status={submission.status} size="sm" />
-              </div>
-              <p className="text-xs text-slate-600 mt-1">
-                {submission.student.name} ({submission.student.nrp}) ·{' '}
-                {submission.activity.activityName ?? 'Nama kegiatan belum terbaca'}
-              </p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Link to="/verifikator">
+            <Button variant="ghost" size="sm" className="p-2">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-serif font-bold text-brand-dark">
+                Verifikasi {publicId}
+              </h1>
+              <StatusBadge type="submission" status={submission.status} size="sm" />
             </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-200 text-right">
-              <span className="text-[10px] text-emerald-700 block font-semibold uppercase">
-                Estimasi kredit
-              </span>
-              <span className="text-base font-bold font-serif text-emerald-800">
-                {formatCredit(submission.skem.estimatedCredit)}
-              </span>
-            </div>
-            {isWaiting && (
-              <>
-                <Button
-                  variant="danger"
-                  size="md"
-                  className="gap-1.5"
-                  disabled={isBusy}
-                  onClick={() => setIsRejectOpen(true)}
-                >
-                  <X className="w-4 h-4" />
-                  Tolak
-                </Button>
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="gap-1.5"
-                  disabled={isBusy}
-                  onClick={() =>
-                    user?.hasSignature ? setIsApproveOpen(true) : setIsSignatureOpen(true)
-                  }
-                >
-                  <Check className="w-4 h-4" />
-                  Setujui
-                </Button>
-              </>
-            )}
+            <p className="text-xs text-slate-500 mt-0.5">
+              {submission.student.name} ({submission.student.nrp}) · {submission.student.className}
+            </p>
           </div>
         </div>
 
-        <p className="text-xs text-slate-500">
-          Keputusan Anda selalu berlaku, terlepas dari rekomendasi AI.
-        </p>
-
-        {!isWaiting && (
-          <p className="text-xs p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700">
-            Pengajuan ini sudah tidak menunggu keputusan Verifikator.
-          </p>
-        )}
-
-        {nameFinding && nameFinding.result !== 'pass' && (
-          <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold block mb-0.5">Peringatan kesesuaian nama</span>
-              {nameFinding.message}
-            </div>
+        {isPending && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="danger"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setShowRejectModal(true)}
+              disabled={rejectMut.isPending}
+            >
+              <X className="w-4 h-4" />
+              Tolak Pengajuan
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => void handleApproveClick()}
+              disabled={approveMut.isPending}
+            >
+              <Check className="w-4 h-4" />
+              Setujui (E-Sign)
+            </Button>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-4 space-y-3">
-          <h2 className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
-            <FileText className="w-4 h-4 text-brand-teal" /> Sertifikat yang diunggah
-          </h2>
-          {certificateQuery.error ? (
-            <ErrorState
-              title="Sertifikat Tidak Dapat Dimuat"
-              message="Coba muat ulang pratinjau sertifikat."
-              onRetry={() => certificateQuery.refetch()}
-            />
-          ) : (
-            <PdfViewer
-              url={certificateQuery.data?.url ?? ''}
-              fileName={`${submission.publicId}.pdf`}
-              onRefreshUrl={() => certificateQuery.refetch()}
-              className="h-[640px]"
-            />
-          )}
-        </div>
-
-        <div className="lg:col-span-4 space-y-3">
-          <h2 className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
-            <FileCheck2 className="w-4 h-4 text-brand-teal" /> Formulir FM.MHS.PENGAJUANSKEM
-          </h2>
-          <div className="overflow-y-auto max-h-[640px] rounded-lg">
-            <FormPreview submission={submission} />
-          </div>
-        </div>
-
-        <div className="lg:col-span-4 space-y-4">
-          <ReadOnlySubmissionSummary submission={submission} />
-
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
-            <FindingsList findings={submission.findings} />
-          </div>
-
-          <section className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
-            <h3 className="flex items-center gap-1.5 text-sm font-semibold text-slate-800 mb-2">
-              <MessageSquare className="w-4 h-4 text-brand-teal" /> Tanya-jawab agent dengan
-              mahasiswa
-            </h3>
-            {submission.questions.length === 0 ? (
-              <p className="text-xs text-slate-500">Agent tidak mengajukan pertanyaan.</p>
-            ) : (
-              <ol className="space-y-2 text-xs">
-                {submission.questions.map((question) => (
-                  <li key={question.id} className="rounded border border-slate-200 p-2.5">
-                    <p className="text-slate-600">
-                      {question.seq}. {question.question}
-                    </p>
-                    <p className="font-medium text-slate-900 mt-1">{answerLabel(question)}</p>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
-
-          {submission.reviews.length > 0 && (
-            <section className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
-              <h3 className="text-sm font-semibold text-slate-800 mb-2">Riwayat keputusan</h3>
-              <ul className="space-y-2 text-xs">
-                {submission.reviews.map((review) => (
-                  <li key={review.id}>
-                    <span className="font-medium">{review.reviewerName}</span> ·{' '}
-                    {review.decision === 'approve'
-                      ? 'Menyetujui'
-                      : review.decision === 'reject'
-                        ? 'Menolak'
-                        : 'Mengubah kredit'}{' '}
-                    · {formatDateTimeId(review.createdAt)}
-                    {review.note && <p className="text-slate-600 mt-0.5">{review.note}</p>}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
+      {/* Keputusan akhir selalu manusia */}
+      <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+        <ShieldAlert className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
+        <span>
+          Keputusan Anda selalu berlaku dan menjadi tanggung jawab Anda sebagai dosen wali.
+        </span>
       </div>
 
-      <RejectDecisionModal
-        isOpen={isRejectOpen}
-        onClose={() => setIsRejectOpen(false)}
-        title={`Tolak Pengajuan ${submission.publicId}`}
-        isSubmitting={rejectMutation.isPending}
-        onSubmit={async (note) => {
-          await rejectMutation.mutateAsync(note);
-        }}
-      />
+      {/* Main grid: PDF + Metadata */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Kiri: PDF sertifikat */}
+        <PdfViewer url={certData?.url ?? ''} fileName="Sertifikat Mahasiswa" />
 
-      <ApproveDecisionDialog
-        isOpen={isApproveOpen}
-        onClose={() => setIsApproveOpen(false)}
-        verifierName={user?.name ?? ''}
-        jabatan={user?.jabatan ?? null}
-        signatureUrl={signatureQuery.data ?? null}
-        isSubmitting={approveMutation.isPending}
-        onConfirm={async (note) => {
-          await approveMutation.mutateAsync(note);
-        }}
-      />
+        {/* Kanan: Metadata baca-saja */}
+        <MetadataPanel submission={submission} readOnly />
+      </div>
 
+      {/* Temuan AI */}
+      {submission.findings.length > 0 && <FindingsList findings={submission.findings} />}
+
+      {/* Riwayat pertanyaan agent */}
+      {submission.questions.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-base font-semibold text-brand-dark">Riwayat Pertanyaan Agent</h2>
+          {submission.questions.map((q) => (
+            <AgentQuestion key={q.id} question={q} publicId={publicId} readOnly />
+          ))}
+        </div>
+      )}
+
+      {/* Pratinjau formulir FM */}
+      <FormPreview submission={submission} />
+
+      {/* Tombol aksi bawah (duplikat untuk UX mobile) */}
+      {isPending && (
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200">
+          <Button
+            variant="danger"
+            className="gap-1.5 flex-1 sm:flex-none"
+            onClick={() => setShowRejectModal(true)}
+            disabled={rejectMut.isPending}
+          >
+            <X className="w-4 h-4" />
+            Tolak Pengajuan
+          </Button>
+          <Button
+            variant="primary"
+            className="gap-1.5 flex-1 sm:flex-none"
+            onClick={() => void handleApproveClick()}
+            disabled={approveMut.isPending}
+          >
+            <Check className="w-4 h-4" />
+            Setujui (E-Sign)
+          </Button>
+        </div>
+      )}
+
+      {/* === Modal Tolak === */}
+      <Modal
+        isOpen={showRejectModal}
+        onClose={() => {
+          setShowRejectModal(false);
+          setRejectNote('');
+        }}
+        title="Tolak Pengajuan"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-red-500" />
+            Mahasiswa akan menerima pemberitahuan penolakan beserta alasan yang Anda tulis.
+          </div>
+          <div>
+            <label
+              htmlFor="reject-note"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              Alasan Penolakan <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="reject-note"
+              rows={4}
+              value={rejectNote}
+              onChange={(e) => setRejectNote(e.target.value)}
+              placeholder="Jelaskan alasan penolakan pengajuan ini…"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+            />
+            <p className="text-xs text-slate-400 mt-1">{rejectNote.length}/1000 karakter</p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowRejectModal(false);
+                setRejectNote('');
+              }}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => rejectMut.mutate()}
+              disabled={rejectNote.trim().length === 0 || rejectMut.isPending}
+            >
+              {rejectMut.isPending ? 'Menolak…' : 'Tolak Pengajuan'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* === Modal Tanda Tangan (pertama kali / belum punya) === */}
       <SignatureModal
-        isOpen={isSignatureOpen}
-        onClose={() => setIsSignatureOpen(false)}
-        description={VERIFIER_SIGNATURE_DESCRIPTION}
-        onSuccess={() => setIsApproveOpen(true)}
+        isOpen={showSignModal}
+        onClose={() => setShowSignModal(false)}
+        onSave={handleSignatureSaved}
+        title="Buat Tanda Tangan Verifikator"
+        description="Tanda tangan Anda akan diterapkan pada formulir yang disetujui."
       />
+
+      {/* === Modal Konfirmasi Setujui === */}
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title="Konfirmasi Persetujuan"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-700">
+            Anda akan menyetujui pengajuan{' '}
+            <span className="font-semibold">{submission.activity.activityName ?? publicId}</span>{' '}
+            dari <span className="font-semibold">{submission.student.name}</span> dengan tanda
+            tangan digital Anda.
+          </p>
+
+          {/* Pratinjau tanda tangan */}
+          {signatureDataUrl && (
+            <div className="border border-slate-200 rounded-lg p-3 bg-slate-50">
+              <p className="text-xs text-slate-500 mb-2">Pratinjau Tanda Tangan (Bagian III):</p>
+              <img
+                src={signatureDataUrl}
+                alt="Tanda tangan Verifikator"
+                className="max-h-20 object-contain"
+              />
+            </div>
+          )}
+
+          {/* Mini FormPreview Bagian III */}
+          <div className="border border-slate-200 rounded-lg p-4 bg-white text-xs">
+            <p className="font-semibold text-slate-600 mb-3">III. Verifikasi (Dosen Wali)</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-slate-400">Nama Verifikator</p>
+                <p className="font-medium text-slate-800">{submission.verifier?.name ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">Jabatan</p>
+                <p className="font-medium text-slate-800">{submission.verifier?.jabatan ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">Tanggal Verifikasi</p>
+                <p className="font-medium text-slate-800">
+                  {new Date().toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-400">Keputusan</p>
+                <p className="font-medium text-green-700">☑ Disetujui</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setShowConfirmModal(false)}>
+              Batal
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => approveMut.mutate()}
+              disabled={approveMut.isPending}
+            >
+              {approveMut.isPending ? 'Menyetujui…' : 'Setujui & Terapkan Tanda Tangan'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

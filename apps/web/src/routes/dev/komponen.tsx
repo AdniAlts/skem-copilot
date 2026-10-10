@@ -43,7 +43,7 @@ export function DevKomponenRoute() {
       {/* Header Halaman Showcase */}
       <div>
         <div className="flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-brand-teal" />
+          <Sparkles className="w-6 h-6 text-brand-blue" />
           <h1 className="text-3xl font-serif font-bold text-brand-dark">
             Katalog Komponen UI & Tema (FE-01)
           </h1>
@@ -52,7 +52,7 @@ export function DevKomponenRoute() {
         <p className="mt-1 text-sm text-slate-600">
           Halaman tinjauan untuk seluruh komponen dasar, variasi status badge, tombol, dialog,
           tabel, dan tema warna sesuai{' '}
-          <code className="bg-slate-100 px-1.5 py-0.5 rounded text-brand-teal font-mono text-xs">
+          <code className="bg-slate-100 px-1.5 py-0.5 rounded text-brand-blue font-mono text-xs">
             docs/ui-spec.md §1–§3
           </code>
           .
@@ -123,7 +123,7 @@ export function DevKomponenRoute() {
           <CardContent className="space-y-4 pt-4">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="default">Default Badge</Badge>
-              <Badge variant="teal">Teal (Aksi / Proses)</Badge>
+              <Badge variant="blue">Biru PENS (Aksi / Proses)</Badge>
               <Badge variant="amber">Amber (Perlu Perhatian)</Badge>
               <Badge variant="terracotta">Terakota (Peringatan)</Badge>
               <Badge variant="outline">Outline</Badge>
@@ -295,7 +295,7 @@ export function DevKomponenRoute() {
               <TableCell>
                 <StatusBadge type="review" status="ready" size="sm" />
               </TableCell>
-              <TableCell className="text-right font-semibold text-brand-teal">1,10</TableCell>
+              <TableCell className="text-right font-semibold text-brand-blue">1,10</TableCell>
             </TableRow>
             <TableRow>
               <TableCell className="font-mono text-xs">2</TableCell>

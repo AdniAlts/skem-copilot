@@ -42,7 +42,7 @@ Lihat [ARCHITECTURE.md](ARCHITECTURE.md). Ringkasan:
 - **Frontend:** React + TypeScript (Vite, React Router, TanStack Query); tampilan per peran Mahasiswa, Verifikator, Validator, Unit Kemahasiswaan (read-only).
 - **Backend:** Node.js + TypeScript (Express) dengan worker antrian analisis di proses yang sama.
 - **Penyimpanan:** Supabase Postgres (Drizzle ORM) dan Supabase Storage (bucket privat), diakses hanya dari backend. Hasil dan riwayat bertahan setelah refresh.
-- **Model AI:** `deepseek-v4.1-flash` lewat gateway LiteLLM CBN (OpenAI-compatible) untuk membaca dokumen (teks atau gambar) dan klasifikasi.
+- **Model AI:** `gpt-5.6-luna` lewat gateway Griphub (OpenAI-compatible) untuk membaca dokumen (teks atau gambar) dan klasifikasi.
 - **Tools di luar LLM:** `lookup_credit_table`, `check_deadline`, `match_name`, `get_relevant_sections`, `ask_student`.
 - Skor kredit dihitung deterministik dari tabel JSON; LLM tidak mengeluarkan skor. Rujukan Pedoman memakai section-lookup bertag (tanpa vector DB).
 - Notifikasi dalam aplikasi; bot Telegram (Should have) hanya sebagai akibat tindakan staf.
@@ -58,7 +58,7 @@ npm run db:migrate
 npm run seed             # data dummy (Simulasi)
 npm run dev              # API http://localhost:3000, web http://localhost:5173
 ```
-Variabel lingkungan: lihat [`.env.example`](.env.example) (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `STORAGE_BUCKET_*`, `TELEGRAM_BOT_TOKEN`, `PORT`, `SESSION_SECRET`).
+Variabel lingkungan: lihat [`.env.example`](.env.example) (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_VISION_MODEL` (opsional), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `STORAGE_BUCKET_*`, `TELEGRAM_BOT_TOKEN`, `PORT`, `SESSION_SECRET`).
 
 ## 6. Test case dan hasil
 - **Test set:** TODO jumlah kasus, cara pembuatan, dan pembagian set tuning vs held-out.

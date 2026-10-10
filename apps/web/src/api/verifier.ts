@@ -1,49 +1,39 @@
-import type {
-  ApproveResponse,
-  RejectResponse,
-  SignedUrlResponse,
-  SubmissionDetail,
-  VerifierQueueQuery,
-  VerifierQueueResponse,
-} from '@skem/shared';
 import { apiClient } from './client';
 
+import type { VerifierQueueResponse, ApproveResponse, RejectResponse } from '@skem/shared';
+
 /*
- * Klien API layar Verifikator. Sengaja TANPA fallback data contoh: pengajuan kelas lain
- * atau kegagalan server harus tampil sebagai error, bukan data palsu yang bisa diputuskan.
+ * Klien API Verifikator. Sengaja TANPA fallback: keputusan yang gagal (tanda tangan belum ada,
+ * pengajuan kelas lain, koneksi putus) harus tampil sebagai error, tidak pernah pura-pura berhasil.
  */
 
-export function getVerifierQueue(
-  query: Partial<VerifierQueueQuery> = {},
-): Promise<VerifierQueueResponse> {
-  const params = new URLSearchParams();
-  if (query.aiStatus) params.set('aiStatus', query.aiStatus);
-  if (query.sort) params.set('sort', query.sort);
-  const search = params.toString();
-  return apiClient.get<VerifierQueueResponse>(`/api/verifier/queue${search ? `?${search}` : ''}`);
+/** Mengambil antrian verifikator kelas. */
+export async function getVerifierQueue(params?: {
+  aiStatus?: 'clean' | 'warning';
+  sort?: 'oldest' | 'newest' | 'flags';
+}): Promise<VerifierQueueResponse> {
+  const query = new URLSearchParams();
+  if (params?.aiStatus) query.set('aiStatus', params.aiStatus);
+  if (params?.sort) query.set('sort', params.sort);
+  const qs = query.toString();
+  return apiClient.get<VerifierQueueResponse>(`/api/verifier/queue${qs ? `?${qs}` : ''}`);
 }
 
-export function getVerifierSubmission(publicId: string): Promise<SubmissionDetail> {
-  return apiClient.get<SubmissionDetail>(`/api/submissions/${encodeURIComponent(publicId)}`);
-}
-
-export function getVerifierCertificateUrl(publicId: string): Promise<SignedUrlResponse> {
-  return apiClient.get<SignedUrlResponse>(
-    `/api/submissions/${encodeURIComponent(publicId)}/certificate`,
-  );
-}
-
-export function approveSubmission(publicId: string, note?: string): Promise<ApproveResponse> {
-  const trimmed = note?.trim();
+/** Menyetujui pengajuan (e-sign Verifikator). */
+export async function approveSubmission(
+  publicId: string,
+  payload?: { note?: string },
+): Promise<ApproveResponse> {
   return apiClient.post<ApproveResponse>(
     `/api/verifier/submissions/${encodeURIComponent(publicId)}/approve`,
-    trimmed ? { note: trimmed } : {},
+    payload ?? {},
   );
 }
 
-export function rejectSubmission(publicId: string, note: string): Promise<RejectResponse> {
+/** Menolak pengajuan dengan alasan wajib. */
+export async function rejectSubmission(publicId: string, note: string): Promise<RejectResponse> {
   return apiClient.post<RejectResponse>(
     `/api/verifier/submissions/${encodeURIComponent(publicId)}/reject`,
-    { note: note.trim() },
+    { note },
   );
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '../lib/utils';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'outline' | 'teal' | 'amber' | 'terracotta' | 'slate';
+  variant?: 'default' | 'outline' | 'blue' | 'amber' | 'terracotta' | 'slate';
   size?: 'sm' | 'md';
 }
 
@@ -21,7 +21,7 @@ export function Badge({
         size === 'md' && 'px-2.5 py-1 text-xs',
         variant === 'default' && 'bg-slate-100 text-slate-700',
         variant === 'outline' && 'border border-slate-300 text-slate-700 bg-transparent',
-        variant === 'teal' && 'bg-teal-50 text-brand-teal border border-teal-200/60',
+        variant === 'blue' && 'bg-brand-blue-50 text-brand-blue border border-brand-blue-200/60',
         variant === 'amber' && 'bg-amber-50 text-amber-800 border border-amber-200/60',
         variant === 'terracotta' && 'bg-red-50 text-brand-terracotta border border-red-200/60',
         variant === 'slate' && 'bg-slate-100 text-slate-600',

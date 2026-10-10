@@ -33,7 +33,7 @@ export function MahasiswaProfileRoute() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-brand-teal" />
+            <User className="w-5 h-5 text-brand-blue" />
             <CardTitle className="text-base">Data Akademik</CardTitle>
           </div>
         </CardHeader>
@@ -74,7 +74,7 @@ export function MahasiswaProfileRoute() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <PenTool className="w-5 h-5 text-brand-teal" />
+            <PenTool className="w-5 h-5 text-brand-blue" />
             <CardTitle className="text-base">Tanda Tangan Elektronik (E-Sign)</CardTitle>
           </div>
         </CardHeader>

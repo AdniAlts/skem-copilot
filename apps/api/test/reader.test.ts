@@ -75,6 +75,26 @@ describe('DocumentReader', () => {
     expect(result.llmCalls).toBe(0);
     expect(result.fields).toEqual(extracted);
   });
+
+  it('passes the strategy to the cache so it records the model that actually read the file', async () => {
+    const writes: string[] = [];
+    const incomplete = ExtractedFieldsSchema.parse({ ...extracted, recipient_name: { value: null, confidence: 0 } });
+    const textReader = new DocumentReader({
+      extractText: async () => extracted,
+      extractVision: async () => extracted,
+      readCache: async () => null,
+      writeCache: async (_sha, _version, _fields, strategy) => { writes.push(strategy); },
+    });
+    const visionReader = new DocumentReader({
+      extractText: async () => incomplete,
+      extractVision: async () => extracted,
+      readCache: async () => null,
+      writeCache: async (_sha, _version, _fields, strategy) => { writes.push(strategy); },
+    });
+    await textReader.read({ sha256: 'a', pdf: Buffer.from('%PDF a') }, { submissionId: 1, runId: 2 });
+    await visionReader.read({ sha256: 'b', pdf: Buffer.from('%PDF b') }, { submissionId: 1, runId: 2 });
+    expect(writes).toEqual(['text', 'vision']);
+  });
 });
 
 void schema;
