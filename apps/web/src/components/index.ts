@@ -18,3 +18,4 @@ export * from './Timeline';
 export * from './SignaturePad';
 export * from './SignatureModal';
 export * from './SubmitDialog';
+export * from './ErrorBoundary';

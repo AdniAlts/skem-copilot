@@ -1,9 +1,28 @@
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/Card';
 import { SimulasiBadge } from '../../components/SimulasiBadge';
 import { Button } from '../../components/Button';
+import { SignatureModal } from '../../components/SignatureModal';
+import { useAuth } from '../../api/auth-context';
+import { getSignature } from '../../api/signature';
 import { User, PenTool } from 'lucide-react';
 
 export function MahasiswaProfileRoute() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+
+  const { data: signatureUrl, isLoading: isLoadingSignature } = useQuery({
+    queryKey: ['signature'],
+    queryFn: getSignature,
+  });
+
+  const handleSignatureSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['signature'] });
+    queryClient.invalidateQueries({ queryKey: ['me'] });
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -19,29 +38,35 @@ export function MahasiswaProfileRoute() {
           </div>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <div className="grid grid-cols-2 gap-4 pb-2 border-b border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-2 border-b border-slate-100">
             <div>
               <span className="text-xs text-slate-400 block">Nama Lengkap</span>
-              <span className="font-semibold text-brand-dark">Budi Santoso</span>
+              <span className="font-semibold text-brand-dark">{user?.name || 'Mahasiswa'}</span>
             </div>
             <div>
               <span className="text-xs text-slate-400 block">NRP</span>
-              <span className="font-semibold text-brand-dark">3124500001</span>
+              <span className="font-semibold text-brand-dark">{user?.nrp || '—'}</span>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 pb-2 border-b border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-2 border-b border-slate-100">
             <div>
               <span className="text-xs text-slate-400 block">Program Studi</span>
-              <span className="text-slate-700">D3 Teknik Informatika</span>
+              <span className="text-slate-700">
+                {user?.programStudi || 'D3 Teknik Informatika'}
+              </span>
             </div>
             <div>
               <span className="text-xs text-slate-400 block">Kelas & Angkatan</span>
-              <span className="text-slate-700">2 D3 IT B (2025)</span>
+              <span className="text-slate-700">
+                {user?.className || '2 D3 IT B'} {user?.angkatan ? `(${user.angkatan})` : ''}
+              </span>
             </div>
           </div>
           <div className="pt-1">
             <span className="text-xs text-slate-400 block">Dosen Wali (Verifikator)</span>
-            <span className="text-slate-700 font-medium">Dr. Contoh Dosen Wali</span>
+            <span className="text-slate-700 font-medium">
+              {user?.verifierName || 'Dr. Akhmad Alimudin (Verifikator)'}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -58,14 +83,37 @@ export function MahasiswaProfileRoute() {
             Tanda tangan digunakan untuk lembar pernyataan mahasiswa pada formulir pengajuan SKEM
             (simulasi).
           </p>
-          <div className="h-28 rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-xs text-slate-400 mb-4">
-            [Pratinjau Gambar Tanda Tangan]
+          <div className="h-32 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-xs text-slate-400 mb-4 overflow-hidden">
+            {isLoadingSignature ? (
+              <span>Memuat tanda tangan...</span>
+            ) : signatureUrl && user?.hasSignature ? (
+              <img
+                src={signatureUrl}
+                alt="Tanda tangan tersimpan"
+                className="max-h-28 object-contain"
+              />
+            ) : (
+              <span>Belum ada tanda tangan tersimpan</span>
+            )}
           </div>
-          <Button variant="secondary" size="sm">
-            Ubah Tanda Tangan
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsSignatureModalOpen(true)}
+            className="gap-2"
+          >
+            <PenTool className="w-4 h-4" />
+            {user?.hasSignature ? 'Ubah Tanda Tangan' : 'Buat Tanda Tangan'}
           </Button>
         </CardContent>
       </Card>
+
+      <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        description="Tanda tangan ini akan dibubuhkan pada Bagian I formulir pengajuan kegiatan SKEM Anda."
+        onSuccess={handleSignatureSuccess}
+      />
     </div>
   );
 }

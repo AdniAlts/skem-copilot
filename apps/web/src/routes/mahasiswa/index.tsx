@@ -19,13 +19,10 @@ import { Button } from '../../components/Button';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Timeline } from '../../components/Timeline';
 import { EmptyState } from '../../components/EmptyState';
+import { ErrorState } from '../../components/ErrorState';
 import { useAuth } from '../../api/auth-context';
 import { useToast } from '../../components/ToastContext';
-import {
-  getSubmissions,
-  getStudentProgress,
-  getFinalFormUrl,
-} from '../../api/submissions';
+import { getSubmissions, getStudentProgress, getFinalFormUrl } from '../../api/submissions';
 import { toOfficialStatus, type SubmissionCard, type Progress } from '@skem/shared';
 import { cn } from '../../lib/utils';
 
@@ -39,7 +36,12 @@ export function MahasiswaDashboardRoute() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   // 1. Query Progres SKEM Mahasiswa (polling setiap 10 detik)
-  const { data: progress } = useQuery<Progress>({
+  const {
+    data: progress,
+    isLoading: isLoadingProgress,
+    error: progressError,
+    refetch: refetchProgress,
+  } = useQuery<Progress>({
     queryKey: ['student-progress'],
     queryFn: getStudentProgress,
     refetchInterval: 10000,
@@ -51,6 +53,8 @@ export function MahasiswaDashboardRoute() {
     data: allSubmissions,
     isLoading: isLoadingSubmissions,
     isRefetching: isRefetchingSubmissions,
+    error: submissionsError,
+    refetch: refetchSubmissions,
   } = useQuery<SubmissionCard[]>({
     queryKey: ['student-submissions'],
     queryFn: () => getSubmissions(),
@@ -59,9 +63,7 @@ export function MahasiswaDashboardRoute() {
   });
 
   // Saring hanya pengajuan yang sudah diajukan (non-draft)
-  const submittedSubmissions = (allSubmissions || []).filter(
-    (item) => item.status !== 'draft',
-  );
+  const submittedSubmissions = (allSubmissions || []).filter((item) => item.status !== 'draft');
 
   // Filter tab
   const filteredSubmissions = submittedSubmissions.filter((item) => {
@@ -74,9 +76,8 @@ export function MahasiswaDashboardRoute() {
 
   const counts = {
     all: submittedSubmissions.length,
-    in_process: submittedSubmissions.filter(
-      (s) => toOfficialStatus(s.status) === 'dalam_proses',
-    ).length,
+    in_process: submittedSubmissions.filter((s) => toOfficialStatus(s.status) === 'dalam_proses')
+      .length,
     approved: submittedSubmissions.filter((s) => s.status === 'approved').length,
     rejected: submittedSubmissions.filter((s) => s.status === 'rejected').length,
   };
@@ -143,9 +144,17 @@ export function MahasiswaDashboardRoute() {
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>NRP: <strong className="font-semibold text-slate-800">{user?.nrp || '3122500001'}</strong></span>
+            <span>
+              NRP:{' '}
+              <strong className="font-semibold text-slate-800">{user?.nrp || '3122500001'}</strong>
+            </span>
             <span>&bull;</span>
-            <span>Kelas: <strong className="font-semibold text-slate-800">{user?.className || '2 D3 IT B'}</strong></span>
+            <span>
+              Kelas:{' '}
+              <strong className="font-semibold text-slate-800">
+                {user?.className || '2 D3 IT B'}
+              </strong>
+            </span>
             <span>&bull;</span>
             <span className="flex items-center gap-1">
               <User className="w-3.5 h-3.5 text-slate-400" />
@@ -174,7 +183,9 @@ export function MahasiswaDashboardRoute() {
               <Award className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-base sm:text-lg">Progres Kredit SKEM (Target 3,00)</CardTitle>
+              <CardTitle className="text-base sm:text-lg">
+                Progres Kredit SKEM (Target 3,00)
+              </CardTitle>
               <p className="text-xs text-slate-500">
                 Akumulasi kredit resmi dari pengajuan yang telah disetujui Validator
               </p>
@@ -198,154 +209,171 @@ export function MahasiswaDashboardRoute() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 pt-1">
-          {/* Main Progress Bar */}
-          <div>
-            <div className="flex justify-between text-xs text-slate-500 mb-1.5 font-medium">
-              <span>Progres Kelulusan</span>
-              <span>{totalPercentage}% Tercapai</span>
+          {isLoadingProgress ? (
+            <div className="py-8 text-center text-sm text-slate-500 flex flex-col items-center justify-center gap-2">
+              <RefreshCw className="w-5 h-5 animate-spin text-brand-blue" />
+              <span>Memuat progres kredit...</span>
             </div>
-            <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/60">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all duration-500 ease-out',
-                  isFulfilled ? 'bg-emerald-600' : 'bg-brand-blue',
-                )}
-                style={{ width: `${totalPercentage}%` }}
+          ) : progressError ? (
+            <div className="py-4">
+              <ErrorState
+                title="Gagal Memuat Progres Kredit"
+                message="Terjadi kendala saat mengambil data progres kredit SKEM. Silakan coba lagi."
+                onRetry={() => refetchProgress()}
               />
             </div>
-          </div>
-
-          {/* 3 Component Breakdown Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-            {/* Komponen 1 */}
-            <div
-              className={cn(
-                'p-3.5 rounded-xl border transition-all text-xs flex flex-col justify-between',
-                isK1Complete
-                  ? 'bg-emerald-50/40 border-emerald-200'
-                  : 'bg-amber-50/50 border-amber-200 ring-1 ring-amber-200/70',
-              )}
-            >
+          ) : (
+            <>
+              {/* Main Progress Bar */}
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-slate-800 text-sm">
-                    Komponen 1 (Wajib)
-                  </span>
-                  {!isK1Complete && (
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-200/80 text-amber-900">
-                      Prioritas Wajib
-                    </span>
-                  )}
-                  {isK1Complete && (
-                    <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3" /> Lengkap
-                    </span>
-                  )}
+                <div className="flex justify-between text-xs text-slate-500 mb-1.5 font-medium">
+                  <span>Progres Kelulusan</span>
+                  <span>{totalPercentage}% Tercapai</span>
                 </div>
-                <p className="text-slate-500 text-[11px] mb-2">
-                  Kegiatan Wajib Institusi (LKMM, P2K, Bela Negara)
-                </p>
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
-                  <span>Target: {k1.target.toFixed(2)}</span>
-                  <span className="font-bold text-slate-800">{k1.earned.toFixed(2)} Poin</span>
-                </div>
-                <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/60">
                   <div
                     className={cn(
-                      'h-2 rounded-full',
-                      isK1Complete ? 'bg-emerald-600' : 'bg-amber-500',
+                      'h-full rounded-full transition-all duration-500 ease-out',
+                      isFulfilled ? 'bg-emerald-600' : 'bg-brand-blue',
                     )}
-                    style={{
-                      width: `${Math.min(Math.round((k1.earned / k1.target) * 100), 100)}%`,
-                    }}
+                    style={{ width: `${totalPercentage}%` }}
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Komponen 2 */}
-            <div
-              className={cn(
-                'p-3.5 rounded-xl border transition-all text-xs flex flex-col justify-between',
-                isK2Complete
-                  ? 'bg-emerald-50/40 border-emerald-200'
-                  : 'bg-amber-50/50 border-amber-200 ring-1 ring-amber-200/70',
-              )}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-slate-800 text-sm">
-                    Komponen 2 (Wajib)
-                  </span>
-                  {!isK2Complete && (
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-200/80 text-amber-900">
-                      Prioritas Wajib
-                    </span>
+              {/* 3 Component Breakdown Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                {/* Komponen 1 */}
+                <div
+                  className={cn(
+                    'p-3.5 rounded-xl border transition-all text-xs flex flex-col justify-between',
+                    isK1Complete
+                      ? 'bg-emerald-50/40 border-emerald-200'
+                      : 'bg-amber-50/50 border-amber-200 ring-1 ring-amber-200/70',
                   )}
-                  {isK2Complete && (
-                    <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3" /> Lengkap
-                    </span>
-                  )}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-slate-800 text-sm">
+                        Komponen 1 (Wajib)
+                      </span>
+                      {!isK1Complete && (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-200/80 text-amber-900">
+                          Prioritas Wajib
+                        </span>
+                      )}
+                      {isK1Complete && (
+                        <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Lengkap
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-500 text-[11px] mb-2">
+                      Kegiatan Wajib Institusi (LKMM, P2K, Bela Negara)
+                    </p>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
+                      <span>Target: {k1.target.toFixed(2)}</span>
+                      <span className="font-bold text-slate-800">{k1.earned.toFixed(2)} Poin</span>
+                    </div>
+                    <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-2 rounded-full',
+                          isK1Complete ? 'bg-emerald-600' : 'bg-amber-500',
+                        )}
+                        style={{
+                          width: `${Math.min(Math.round((k1.earned / k1.target) * 100), 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <p className="text-slate-500 text-[11px] mb-2">
-                  Organisasi, Kepengurusan, dan Kepanitiaan
-                </p>
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
-                  <span>Target: {k2.target.toFixed(2)}</span>
-                  <span className="font-bold text-slate-800">{k2.earned.toFixed(2)} Poin</span>
-                </div>
-                <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-2 rounded-full',
-                      isK2Complete ? 'bg-emerald-600' : 'bg-amber-500',
-                    )}
-                    style={{
-                      width: `${Math.min(Math.round((k2.earned / k2.target) * 100), 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
 
-            {/* Komponen 3 */}
-            <div className="p-3.5 rounded-xl border bg-slate-50/60 border-slate-200 text-xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-slate-800 text-sm">
-                    Komponen 3 (Pilihan)
-                  </span>
-                  {k3.earned >= k3.target && (
-                    <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3" /> Lengkap
-                    </span>
+                {/* Komponen 2 */}
+                <div
+                  className={cn(
+                    'p-3.5 rounded-xl border transition-all text-xs flex flex-col justify-between',
+                    isK2Complete
+                      ? 'bg-emerald-50/40 border-emerald-200'
+                      : 'bg-amber-50/50 border-amber-200 ring-1 ring-amber-200/70',
                   )}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-slate-800 text-sm">
+                        Komponen 2 (Wajib)
+                      </span>
+                      {!isK2Complete && (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-200/80 text-amber-900">
+                          Prioritas Wajib
+                        </span>
+                      )}
+                      {isK2Complete && (
+                        <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Lengkap
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-500 text-[11px] mb-2">
+                      Organisasi, Kepengurusan, dan Kepanitiaan
+                    </p>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
+                      <span>Target: {k2.target.toFixed(2)}</span>
+                      <span className="font-bold text-slate-800">{k2.earned.toFixed(2)} Poin</span>
+                    </div>
+                    <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-2 rounded-full',
+                          isK2Complete ? 'bg-emerald-600' : 'bg-amber-500',
+                        )}
+                        style={{
+                          width: `${Math.min(Math.round((k2.earned / k2.target) * 100), 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <p className="text-slate-500 text-[11px] mb-2">
-                  Prestasi, Lomba, Seminar, Pelatihan & Penalaran
-                </p>
+
+                {/* Komponen 3 */}
+                <div className="p-3.5 rounded-xl border bg-slate-50/60 border-slate-200 text-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-slate-800 text-sm">
+                        Komponen 3 (Pilihan)
+                      </span>
+                      {k3.earned >= k3.target && (
+                        <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Lengkap
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-500 text-[11px] mb-2">
+                      Prestasi, Lomba, Seminar, Pelatihan & Penalaran
+                    </p>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
+                      <span>Min: {k3.target.toFixed(2)}</span>
+                      <span className="font-bold text-slate-800">{k3.earned.toFixed(2)} Poin</span>
+                    </div>
+                    <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-2 rounded-full bg-brand-blue"
+                        style={{
+                          width: `${Math.min(Math.round((k3.earned / k3.target) * 100), 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
-                  <span>Min: {k3.target.toFixed(2)}</span>
-                  <span className="font-bold text-slate-800">{k3.earned.toFixed(2)} Poin</span>
-                </div>
-                <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="h-2 rounded-full bg-brand-blue"
-                    style={{
-                      width: `${Math.min(Math.round((k3.earned / k3.target) * 100), 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -419,6 +447,14 @@ export function MahasiswaDashboardRoute() {
             <div className="p-8 text-center text-sm text-slate-500 flex flex-col items-center justify-center gap-2">
               <RefreshCw className="w-5 h-5 animate-spin text-brand-blue" />
               <span>Memuat daftar pengajuan...</span>
+            </div>
+          ) : submissionsError ? (
+            <div className="p-8">
+              <ErrorState
+                title="Gagal Memuat Daftar Pengajuan"
+                message="Terjadi kesalahan saat mengambil riwayat pengajuan kegiatan Anda. Silakan coba lagi."
+                onRetry={() => refetchSubmissions()}
+              />
             </div>
           ) : filteredSubmissions.length === 0 ? (
             <div className="p-8">
@@ -525,7 +561,9 @@ export function MahasiswaDashboardRoute() {
                             title="Unduh Formulir Resmi FM.MHS.PENGAJUANSKEM (PDF)"
                           >
                             <Download className="w-3.5 h-3.5" />
-                            <span>{downloadingId === sub.publicId ? 'Mengunduh...' : 'Unduh PDF'}</span>
+                            <span>
+                              {downloadingId === sub.publicId ? 'Mengunduh...' : 'Unduh PDF'}
+                            </span>
                           </Button>
                         )}
 
