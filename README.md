@@ -58,7 +58,7 @@ npm run db:migrate
 npm run seed             # data dummy (Simulasi)
 npm run dev              # API http://localhost:3000, web http://localhost:5173
 ```
-Variabel lingkungan: lihat [`.env.example`](.env.example) (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `STORAGE_BUCKET_*`, `TELEGRAM_BOT_TOKEN`, `PORT`, `SESSION_SECRET`).
+Variabel lingkungan: lihat [`.env.example`](.env.example) (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_VISION_MODEL` (opsional), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `STORAGE_BUCKET_*`, `TELEGRAM_BOT_TOKEN`, `PORT`, `SESSION_SECRET`).
 
 ## 6. Test case dan hasil
 - **Test set:** TODO jumlah kasus, cara pembuatan, dan pembagian set tuning vs held-out.

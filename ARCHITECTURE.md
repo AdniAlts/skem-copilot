@@ -275,7 +275,7 @@ sequenceDiagram
 
 ## 7. DocumentReader (`apps/api/src/reader/`)
 
-`gpt-5.6-luna` lewat Griphub sudah dikonfirmasi menerima input gambar base64 dan berhasil mengekstrak sertifikat scan. OCR tidak diimplementasikan; slot strategi disediakan agar bisa ditambah.
+`gpt-5.6-luna` lewat Griphub sudah dikonfirmasi menerima input gambar base64 dan berhasil mengekstrak sertifikat scan. Model dipilih per tugas (`llm/client.ts` → `modelForPurpose`): `extract_vision` memakai `LLM_VISION_MODEL` bila diisi, selain itu `LLM_MODEL`; saat ini keduanya `gpt-5.6-luna` (`LLM_VISION_MODEL` kosong). Cache ekstraksi mencatat model yang membaca berkas; `READER_VERSION` dinaikkan saat model/prompt pembaca berubah. OCR tidak diimplementasikan; slot strategi disediakan agar bisa ditambah.
 
 ```ts
 interface DocumentReader {
