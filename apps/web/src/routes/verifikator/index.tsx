@@ -1,164 +1,145 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ArrowRight, CheckCircle2, Inbox, UserCheck } from 'lucide-react';
-import type { VerifierQueueQuery } from '@skem/shared';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/Card';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { EmptyState } from '../../components/EmptyState';
-import { ErrorState } from '../../components/ErrorState';
-import { SimulasiBadge } from '../../components/SimulasiBadge';
 import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  StatusBadge,
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
+  TableBody,
   TableRow,
-} from '../../components/Table';
-import { useAuth } from '../../api/auth-context';
+  TableHead,
+  TableCell,
+  EmptyState,
+  ErrorState,
+} from '../../components';
+import { ArrowRight, UserCheck, AlertTriangle, Filter } from 'lucide-react';
 import { getVerifierQueue } from '../../api/verifier';
-import { formatCredit, formatDateTimeId } from '../../lib/verifier';
+import type { VerifierQueueResponse } from '@skem/shared';
+import { cn } from '../../lib/utils';
 
-const QUEUE_REFRESH_MS = 30_000;
+type AiFilter = 'all' | 'clean' | 'warning';
+type SortOption = 'oldest' | 'newest' | 'flags';
 
-type AiFilter = VerifierQueueQuery['aiStatus'] | 'all';
+function formatDate(iso: string | null) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
-const AI_FILTERS: { value: AiFilter; label: string }[] = [
-  { value: 'all', label: 'Semua' },
-  { value: 'warning', label: 'Ada peringatan' },
-  { value: 'clean', label: 'Tanpa peringatan' },
-];
-
-const SORT_OPTIONS: { value: VerifierQueueQuery['sort']; label: string }[] = [
-  { value: 'oldest', label: 'Terlama masuk' },
-  { value: 'newest', label: 'Terbaru masuk' },
-  { value: 'flags', label: 'Peringatan terbanyak' },
-];
+function formatCredit(credit: number | null) {
+  if (credit === null) return '—';
+  return credit.toFixed(2).replace('.', ',') + ' Poin';
+}
 
 export function VerifikatorQueueRoute() {
-  const { user } = useAuth();
   const [aiFilter, setAiFilter] = useState<AiFilter>('all');
-  const [sort, setSort] = useState<VerifierQueueQuery['sort']>('oldest');
+  const [sort, setSort] = useState<SortOption>('oldest');
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery<VerifierQueueResponse>({
     queryKey: ['verifier-queue', aiFilter, sort],
     queryFn: () =>
-      getVerifierQueue({ sort, ...(aiFilter === 'all' ? {} : { aiStatus: aiFilter }) }),
-    refetchInterval: QUEUE_REFRESH_MS,
+      getVerifierQueue({
+        aiStatus: aiFilter === 'all' ? undefined : aiFilter,
+        sort,
+      }),
+    refetchInterval: 10000,
+    refetchOnWindowFocus: true,
   });
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             <UserCheck className="w-6 h-6 text-brand-teal" />
             <h1 className="text-2xl font-serif font-bold text-brand-dark">
               Antrian Kelas {data?.className ?? '…'}
             </h1>
-            <SimulasiBadge />
           </div>
-          <p className="text-sm text-slate-600 mt-1">
-            {user?.name ?? 'Dosen Wali'}
-            {user?.jabatan ? ` · ${user.jabatan}` : ''} · hanya pengajuan dari kelas Anda
-          </p>
+          {data && (
+            <p className="text-sm text-slate-600 mt-1">
+              <span className="font-medium text-brand-teal">{data.summary.waiting}</span> menunggu
+              keputusan
+              {data.summary.withWarnings > 0 && (
+                <>
+                  {' '}·{' '}
+                  <span className="text-amber-600 font-medium flex-inline items-center gap-1">
+                    <AlertTriangle className="inline w-3.5 h-3.5" />{' '}
+                    {data.summary.withWarnings} perlu perhatian
+                  </span>
+                </>
+              )}
+            </p>
+          )}
         </div>
-        <Link to="/verifikator/pengaturan">
-          <Button variant="outline" size="sm">
-            Pengaturan tanda tangan
-          </Button>
-        </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <Inbox className="w-8 h-8 text-brand-teal" />
-            <div>
-              <p className="text-xs text-slate-500">Menunggu keputusan</p>
-              <p className="text-2xl font-bold text-brand-dark">{data?.summary.waiting ?? '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <AlertTriangle className="w-8 h-8 text-amber-600" />
-            <div>
-              <p className="text-xs text-slate-500">Dengan peringatan AI</p>
-              <p className="text-2xl font-bold text-brand-dark">
-                {data?.summary.withWarnings ?? '—'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Filter & Sort */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Filter className="w-4 h-4 text-slate-400" />
+        <span className="text-xs text-slate-500">Status AI:</span>
+        {(['all', 'clean', 'warning'] as AiFilter[]).map((f) => (
+          <button
+            key={f}
+            onClick={() => setAiFilter(f)}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
+              aiFilter === f
+                ? 'bg-brand-teal text-white border-brand-teal'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-brand-teal',
+            )}
+          >
+            {f === 'all' ? 'Semua' : f === 'clean' ? 'Bersih' : '⚠ Peringatan'}
+          </button>
+        ))}
+        <span className="text-xs text-slate-400 ml-2">Urut:</span>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortOption)}
+          className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-teal"
+        >
+          <option value="oldest">Terlama dulu</option>
+          <option value="newest">Terbaru dulu</option>
+          <option value="flags">Paling banyak peringatan</option>
+        </select>
       </div>
 
+      {/* Table */}
       <Card>
-        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <CardTitle>Pengajuan Menunggu Verifikasi</CardTitle>
-          <div className="flex items-center gap-2 flex-wrap text-xs">
-            <div className="flex rounded-lg border border-slate-200 overflow-hidden" role="group">
-              {AI_FILTERS.map((filter) => (
-                <button
-                  key={filter.value}
-                  type="button"
-                  onClick={() => setAiFilter(filter.value)}
-                  aria-pressed={aiFilter === filter.value}
-                  className={`px-3 py-1.5 font-medium ${
-                    aiFilter === filter.value
-                      ? 'bg-brand-teal text-white'
-                      : 'bg-white text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-            <label className="flex items-center gap-1.5 text-slate-600">
-              Urutkan
-              <select
-                value={sort}
-                onChange={(event) => setSort(event.target.value as VerifierQueueQuery['sort'])}
-                className="rounded-lg border border-slate-200 px-2 py-1.5 bg-white"
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+        <CardHeader>
+          <CardTitle>Daftar Pengajuan Mahasiswa</CardTitle>
+          {!isLoading && data && (
+            <span className="text-xs text-slate-500">
+              Menampilkan {data.items.length} data
+            </span>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
-            <p className="p-6 text-sm text-slate-500">Memuat antrian…</p>
-          ) : error ? (
-            <div className="p-6">
-              <ErrorState
-                title="Gagal Memuat Antrian"
-                message={error instanceof Error ? error.message : 'Silakan coba lagi.'}
-                onRetry={() => refetch()}
-              />
+            <div className="flex items-center justify-center py-16 text-sm text-slate-400">
+              Memuat antrian…
             </div>
+          ) : isError ? (
+            <ErrorState
+              message="Gagal memuat antrian."
+              onRetry={() => void refetch()}
+              className="py-12"
+            />
           ) : !data || data.items.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                icon={<CheckCircle2 className="w-10 h-10 text-emerald-600" />}
-                title={
-                  aiFilter === 'all'
-                    ? 'Tidak ada pengajuan yang menunggu'
-                    : 'Tidak ada pengajuan dengan filter ini'
-                }
-                description={
-                  data?.className === null
-                    ? 'Akun ini belum terhubung ke kelas mana pun.'
-                    : 'Pengajuan baru dari mahasiswa kelas Anda akan muncul di sini.'
-                }
-              />
-            </div>
+            <EmptyState
+              title="Antrian kosong"
+              description="Tidak ada pengajuan yang menunggu verifikasi."
+              className="py-12"
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -166,8 +147,8 @@ export function VerifikatorQueueRoute() {
                   <TableHead>Mahasiswa</TableHead>
                   <TableHead>Kegiatan</TableHead>
                   <TableHead>Status AI</TableHead>
-                  <TableHead>Estimasi Kredit</TableHead>
-                  <TableHead>Masuk</TableHead>
+                  <TableHead>Kredit</TableHead>
+                  <TableHead>Diajukan</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -179,32 +160,31 @@ export function VerifikatorQueueRoute() {
                       <div className="text-xs text-slate-400 font-mono">{item.publicId}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium text-slate-800">{item.activityName ?? '—'}</div>
-                      <div className="text-xs text-slate-500">
-                        {[item.categoryLabel, item.level].filter(Boolean).join(' · ') || '—'}
+                      <div className="font-medium text-slate-800 max-w-[220px] truncate">
+                        {item.activityName ?? '—'}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {item.level ?? '—'}{item.categoryLabel ? ` · ${item.categoryLabel.split(' - ')[0]}` : ''}
                       </div>
                     </TableCell>
                     <TableCell>
                       {item.aiStatus === 'warning' ? (
-                        <Badge variant="amber" size="sm" className="gap-1">
-                          <AlertTriangle className="w-3.5 h-3.5" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                          <AlertTriangle className="w-3 h-3" />
                           {item.flagCount} peringatan
-                        </Badge>
+                        </span>
                       ) : (
-                        <Badge variant="teal" size="sm" className="gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Tanpa peringatan
-                        </Badge>
+                        <StatusBadge type="review" status="ready" size="sm" />
                       )}
                     </TableCell>
                     <TableCell className="font-semibold text-brand-teal">
                       {formatCredit(item.estimatedCredit)}
                     </TableCell>
-                    <TableCell className="text-xs text-slate-600">
-                      {formatDateTimeId(item.submittedAt)}
+                    <TableCell className="text-xs text-slate-500">
+                      {formatDate(item.submittedAt)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Link to={`/verifikator/detail/${item.publicId}`}>
+                      <Link to={`/verifikator/pengajuan/${item.publicId}`}>
                         <Button variant="ghost" size="sm" className="gap-1">
                           Periksa <ArrowRight className="w-3.5 h-3.5" />
                         </Button>
