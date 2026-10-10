@@ -390,7 +390,7 @@ Kode: `VALIDATION_ERROR` 400, `UNAUTHENTICATED` 401, `FORBIDDEN` 403, `NOT_FOUND
 |---|---|---|
 | Unit | Vitest | `rules/*` (credit, deadline per angkatan & batas tanggal, name-match, status-mapper, guideline), validasi `data/*.json` |
 | Integrasi API | Vitest + Supertest | guard peran/kelas, tolak tanpa alasan → 400, transisi status sah/tidak sah → 409, upload > 10 file → 400 |
-| Eval | `npm run eval` (`scripts/eval.ts`) | membaca `data/testset/answer_key.json`, menjalankan pipeline nyata ke gateway, mencetak akurasi per jenis kesalahan, kategori/tingkat (top-1, top-3), kredit, status, dan token per kasus |
+| Eval | `npm run eval` (`scripts/eval.ts` → `apps/api/src/eval/`) | membaca `data/testset/answer_key.json`, menjalankan pipeline nyata (`runPrecheck`) ke gateway, mencetak akurasi per jenis kesalahan (deteksi + salah alarm), status, kategori top-1/top-3, tingkat, peran, entri kredit, dan token per kasus. **Tidak menulis ke database**: catatan token (bentuk sama dengan `llm_calls`) ditampung di memori lewat `overrideLlmUsageRecorder`, cache ekstraksi di `data/testset/reports/extraction-cache.json`, `precheck_runs` tidak ditulis. Opsi: `--split=tuning|heldout|all` (bawaan `tuning`), `--limit`, `--ids`, `--no-cache`. Laporan JSON di `data/testset/reports/` (di-ignore). |
 
 `answer_key.json`: `{ "cases": [{ "id", "file", "split": "tuning" | "heldout", "account": {name, angkatan}, "expected": { "review_status", "category_code", "level", "role", "credit_entry_id", "errors": [] } }] }`. Angka akhir di README **hanya** dari `--split=heldout`. Tes unit tidak memanggil LLM (pakai fixture).
 
