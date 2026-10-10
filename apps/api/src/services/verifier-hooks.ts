@@ -1,4 +1,5 @@
 import { generateFinalForm } from './final-form.js';
+import { sendStaffDecisionNotification } from './notifications.js';
 
 /**
  * Dipanggil setelah transaksi persetujuan Verifikator di-commit.
@@ -6,6 +7,9 @@ import { generateFinalForm } from './final-form.js';
  * BE-09 menambahkan notifikasi Telegram di sini.
  * Kegagalan hook tidak membatalkan persetujuan.
  */
-export async function onVerifierApproved(submissionId: number): Promise<void> {
+export async function onVerifierApproved(submissionId: number, reviewId?: number): Promise<void> {
   await generateFinalForm(submissionId);
+  if (reviewId) {
+    await sendStaffDecisionNotification(reviewId);
+  }
 }

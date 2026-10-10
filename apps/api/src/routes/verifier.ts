@@ -24,6 +24,7 @@ import type { SessionUser } from '../middleware/auth.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import { creditTable } from '../rules/config.js';
 import { onVerifierApproved } from '../services/verifier-hooks.js';
+import { sendStaffDecisionNotification } from '../services/notifications.js';
 
 export const verifierRouter = Router();
 
@@ -31,7 +32,7 @@ const categoryLabels = new Map(creditTable.entries.map((entry) => [entry.categor
 
 type Decision = 'approve' | 'reject';
 
-async function decide(db: Db, user: SessionUser, publicId: string, decision: Decision, note: string | undefined): Promise<number> {
+async function decide(db: Db, user: SessionUser, publicId: string, decision: Decision, note: string | undefined): Promise<{ submissionId: number; reviewId: number }> {
   return db.transaction(async (tx) => {
     const [row] = await tx.select({ id: submissions.id, classId: submissions.classId, studentId: submissions.studentId, status: submissions.status, activityName: submissions.activityName })
       .from(submissions).where(eq(submissions.publicId, publicId)).limit(1).for('update');
@@ -74,7 +75,7 @@ async function decide(db: Db, user: SessionUser, publicId: string, decision: Dec
         : `${activity} ditolak. Alasan: ${note}`,
       status: 'pending',
     });
-    return row.id;
+    return { submissionId: row.id, reviewId: review!.id };
   });
 }
 
@@ -138,8 +139,8 @@ verifierRouter.post(
     if (!parsed.success) throw new AppError('VALIDATION_ERROR', 'Catatan tidak valid.', { issues: parsed.error.issues });
     const { client, db } = createDb();
     try {
-      const submissionId = await decide(db, req.sessionUser!, String(req.params.publicId), 'approve', parsed.data.note);
-      await onVerifierApproved(submissionId).catch(() => undefined);
+      const { submissionId, reviewId } = await decide(db, req.sessionUser!, String(req.params.publicId), 'approve', parsed.data.note);
+      await onVerifierApproved(submissionId, reviewId).catch(() => undefined);
       const [row] = await db.select({ finalFormStatus: submissions.finalFormStatus }).from(submissions).where(eq(submissions.id, submissionId)).limit(1);
       res.json(ApproveResponseSchema.parse({ status: 'waiting_validator', finalForm: { status: row?.finalFormStatus ?? 'none' } }));
     } finally {
@@ -157,7 +158,8 @@ verifierRouter.post(
     if (!parsed.success) throw new AppError('VALIDATION_ERROR', 'Alasan penolakan wajib diisi.', { issues: parsed.error.issues });
     const { client, db } = createDb();
     try {
-      await decide(db, req.sessionUser!, String(req.params.publicId), 'reject', parsed.data.note);
+      const { reviewId } = await decide(db, req.sessionUser!, String(req.params.publicId), 'reject', parsed.data.note);
+      await sendStaffDecisionNotification(reviewId).catch(() => undefined);
       res.json(RejectResponseSchema.parse({ status: 'rejected' }));
     } finally {
       await client.end();
