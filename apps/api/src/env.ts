@@ -16,6 +16,11 @@ const envSchema = z.object({
   LLM_BASE_URL: z.string().url(),
   LLM_API_KEY: z.string().min(1),
   LLM_MODEL: z.string().min(1),
+  // Model khusus membaca gambar (extract_vision); kosong = pakai LLM_MODEL.
+  LLM_VISION_MODEL: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().min(1).optional(),
+  ),
 
   // --- Supabase ---
   SUPABASE_URL: z.string().url(),

@@ -10,6 +10,9 @@ import { z } from 'zod';
 
 import {
   callWithClient,
+  describeModels,
+  modelForPurpose,
+  resolveLlmModels,
   type CallLlmInput,
   type ChatMessage,
   type GatewayOptions,
@@ -269,5 +272,36 @@ describe('callWithClient', () => {
       { type: 'text', text: 'read' },
       { type: 'image_url', image_url: { url: 'data:image/png;base64,AA==' } },
     ]);
+  });
+});
+
+describe('pemilihan model per tugas', () => {
+  const models = resolveLlmModels({
+    LLM_MODEL: 'deepseek-v4.1-flash',
+    LLM_VISION_MODEL: 'gpt-5.6-luna',
+  });
+
+  it('hanya extract_vision memakai model vision', () => {
+    expect(modelForPurpose('extract_vision', models)).toBe('gpt-5.6-luna');
+    for (const purpose of [
+      'extract_text',
+      'extract_repair',
+      'classify',
+      'classify_repair',
+    ] as const) {
+      expect(modelForPurpose(purpose, models)).toBe('deepseek-v4.1-flash');
+    }
+  });
+
+  it('LLM_VISION_MODEL kosong → vision memakai LLM_MODEL', () => {
+    expect(resolveLlmModels({ LLM_MODEL: 'deepseek-v4.1-flash' })).toEqual({
+      text: 'deepseek-v4.1-flash',
+      vision: 'deepseek-v4.1-flash',
+    });
+  });
+
+  it('label model untuk precheck_runs', () => {
+    expect(describeModels(models)).toBe('deepseek-v4.1-flash + vision gpt-5.6-luna');
+    expect(describeModels({ text: 'x', vision: 'x' })).toBe('x');
   });
 });

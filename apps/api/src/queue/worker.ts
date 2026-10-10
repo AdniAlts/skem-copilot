@@ -1,7 +1,7 @@
 /** Database-backed analysis worker. Pre-check implementation is a stub until BE-03/BE-04. */
 
 import { and, eq, lt, sql } from 'drizzle-orm';
-import { LlmError } from '../llm/client.js';
+import { describeModels, LlmError, resolveLlmModels } from '../llm/client.js';
 import { loadEnv } from '../env.js';
 import { createDb } from '../db/client.js';
 import { documents, precheckRuns, statusHistory, submissions, users, findings, agentQuestions } from '../db/schema.js';
@@ -68,7 +68,7 @@ export async function processSubmission(submissionId: number, config = DEFAULT_W
     const [run] = await db.insert(precheckRuns).values({
       submissionId: submission.id,
       attempt: submission.attempts,
-      model: loadEnv().LLM_MODEL,
+      model: describeModels(resolveLlmModels(loadEnv())),
       status: 'running',
     }).returning({ id: precheckRuns.id });
     if (!run) return;
