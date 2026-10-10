@@ -22,7 +22,7 @@ flowchart LR
   end
   PG[("Supabase Postgres")]
   ST[("Supabase Storage<br/>bucket privat")]
-  LLM["Gateway LLM CBN<br/>deepseek-v4.1-flash"]
+  LLM["Gateway Griphub<br/>gpt-5.6-luna"]
   TG["Telegram Bot API"]
   DATA["data/*.json<br/>tabel bobot, Pedoman bertag, aturan"]
 
@@ -275,7 +275,7 @@ sequenceDiagram
 
 ## 7. DocumentReader (`apps/api/src/reader/`)
 
-`deepseek-v4.1-flash` **sudah dikonfirmasi bisa membaca gambar** (jawaban tim). OCR tidak diimplementasikan; slot strategi disediakan agar bisa ditambah.
+`gpt-5.6-luna` lewat Griphub sudah dikonfirmasi menerima input gambar base64 dan berhasil mengekstrak sertifikat scan. OCR tidak diimplementasikan; slot strategi disediakan agar bisa ditambah.
 
 ```ts
 interface DocumentReader {

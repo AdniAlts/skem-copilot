@@ -19,7 +19,7 @@ Dokumen perencanaan berikut dibuat sebelum 9 Oktober 2026 dengan bantuan **Claud
 ## Model AI di dalam aplikasi
 | Model | Lewat | Fungsi |
 |---|---|---|
-| `deepseek-v4.1-flash` | Gateway LiteLLM CBN (OpenAI-compatible) | Membaca sertifikat (teks atau gambar), ekstraksi field terstruktur, klasifikasi kategori/tingkat/peran. Tidak menghasilkan skor kredit. |
+| `gpt-5.6-luna` | Griphub Router (OpenAI-compatible) | Membaca sertifikat (teks atau gambar), ekstraksi field terstruktur, klasifikasi kategori/tingkat/peran. Vision base64 diverifikasi pada sertifikat scan. Tidak menghasilkan skor kredit. |
 
 ## Layanan pihak ketiga
 | Layanan | Dipakai untuk | Catatan |
