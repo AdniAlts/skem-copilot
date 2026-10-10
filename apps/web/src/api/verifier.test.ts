@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { getVerifierQueue, approveSubmission, rejectSubmission } from './verifier';
-import { apiClient } from './client';
+import { apiClient, ApiClientError } from './client';
 
 describe('Verifier API Client', () => {
   beforeEach(() => {
@@ -54,31 +54,31 @@ describe('Verifier API Client', () => {
 
     const res = await rejectSubmission('SKM-7Q2K9D1A', 'Dokumen tidak valid');
     expect(res.status).toBe('rejected');
-    expect(apiClient.post).toHaveBeenCalledWith(
-      '/api/verifier/submissions/SKM-7Q2K9D1A/reject',
-      { note: 'Dokumen tidak valid' },
-    );
+    expect(apiClient.post).toHaveBeenCalledWith('/api/verifier/submissions/SKM-7Q2K9D1A/reject', {
+      note: 'Dokumen tidak valid',
+    });
   });
 
-  it('fallback demo jika API gagal saat getVerifierQueue', async () => {
+  it('error antrian diteruskan, tidak diganti data contoh', async () => {
     vi.spyOn(apiClient, 'get').mockRejectedValueOnce(new Error('Network error'));
-
-    const res = await getVerifierQueue();
-    expect(res.className).toBe('2 D3 IT B');
-    expect(res.items.length).toBeGreaterThan(0);
+    await expect(getVerifierQueue()).rejects.toThrow('Network error');
   });
 
-  it('fallback demo jika API gagal saat approveSubmission', async () => {
-    vi.spyOn(apiClient, 'post').mockRejectedValueOnce(new Error('Network error'));
-
-    const res = await approveSubmission('SKM-DEMO');
-    expect(res.status).toBe('waiting_validator');
+  it('Setujui yang gagal diteruskan sebagai error, tidak pura-pura berhasil', async () => {
+    vi.spyOn(apiClient, 'post').mockRejectedValueOnce(
+      new ApiClientError(409, 'Tanda tangan Verifikator wajib disiapkan.', 'SIGNATURE_REQUIRED'),
+    );
+    await expect(approveSubmission('SKM-AAAAAAAA')).rejects.toMatchObject({
+      code: 'SIGNATURE_REQUIRED',
+    });
   });
 
-  it('fallback demo jika API gagal saat rejectSubmission', async () => {
-    vi.spyOn(apiClient, 'post').mockRejectedValueOnce(new Error('Network error'));
-
-    const res = await rejectSubmission('SKM-DEMO', 'Alasan test');
-    expect(res.status).toBe('rejected');
+  it('Tolak yang gagal diteruskan sebagai error, tidak pura-pura berhasil', async () => {
+    vi.spyOn(apiClient, 'post').mockRejectedValueOnce(
+      new ApiClientError(404, 'Pengajuan tidak ditemukan.', 'NOT_FOUND'),
+    );
+    await expect(rejectSubmission('SKM-AAAAAAAA', 'Alasan test')).rejects.toMatchObject({
+      status: 404,
+    });
   });
 });
