@@ -1,6 +1,14 @@
 import { apiClient } from './client';
 import { calculateEstimatedCredit } from '../lib/credit-calc';
-import type { SubmissionDetail, PatchSubmissionBody, AnswerBody } from '@skem/shared';
+import type {
+  SubmissionDetail,
+  PatchSubmissionBody,
+  AnswerBody,
+  SubmissionCard,
+  SubmissionStatus,
+  ReviewStatus,
+  Progress,
+} from '@skem/shared';
 export { cancelSubmission, reuploadSubmission } from './batch';
 
 // In-memory demo store for realistic frontend behavior when API returns 404 or in mock mode
@@ -366,3 +374,161 @@ export async function submitToVerifier(publicIds: string[]): Promise<SubmitResul
     };
   }
 }
+
+/**
+ * Mengambil daftar pengajuan milik mahasiswa.
+ */
+export async function getSubmissions(params?: {
+  status?: SubmissionStatus;
+  reviewStatus?: ReviewStatus;
+}): Promise<SubmissionCard[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    if (params?.reviewStatus) query.set('reviewStatus', params.reviewStatus);
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+
+    return await apiClient.get<SubmissionCard[]>(`/api/submissions${queryString}`);
+  } catch {
+    // Demo / fallback mode
+    const now = new Date().toISOString();
+
+    // Default sample list jika mockStore belum memiliki banyak data
+    const sampleCards: SubmissionCard[] = [
+      {
+        publicId: 'SKM-7Q2K9D1A',
+        batchId: 'BAT-20261001-01',
+        fileName: 'sertif_seminar_nasional.pdf',
+        status: 'approved',
+        reviewStatus: 'ready',
+        activityName: 'Lomba Desain Poster Nasional 2026',
+        estimatedCredit: 1.1,
+        finalCredit: 1.1,
+        warnings: [],
+        openQuestionCount: 0,
+        lastError: null,
+        updatedAt: now,
+      },
+      {
+        publicId: 'SKM-8P3L0E2B',
+        batchId: 'BAT-20261001-01',
+        fileName: 'juara2_lomba_desain.pdf',
+        status: 'waiting_validator',
+        reviewStatus: 'ready',
+        activityName: 'Seminar Nasional Teknologi Kampus',
+        estimatedCredit: 0.75,
+        finalCredit: null,
+        warnings: [],
+        openQuestionCount: 0,
+        lastError: null,
+        updatedAt: now,
+      },
+      {
+        publicId: 'SKM-4X1N8K3M',
+        batchId: 'BAT-20261001-02',
+        fileName: 'pelatihan_cloud_aws.pdf',
+        status: 'waiting_verifier',
+        reviewStatus: 'ready',
+        activityName: 'Pelatihan Cloud Computing AWS PENS',
+        estimatedCredit: 0.5,
+        finalCredit: null,
+        warnings: [],
+        openQuestionCount: 0,
+        lastError: null,
+        updatedAt: now,
+      },
+      {
+        publicId: 'SKM-9Z5T2V7R',
+        batchId: 'BAT-20261001-03',
+        fileName: 'panitia_dies_natalis.pdf',
+        status: 'rejected',
+        reviewStatus: 'problem',
+        activityName: 'Kepanitiaan Dies Natalis PENS 36',
+        estimatedCredit: 0.4,
+        finalCredit: null,
+        warnings: [
+          {
+            code: 'INVALID_SIGNATURE',
+            message: 'Tanda tangan penyelenggara tidak jelas',
+          },
+        ],
+        openQuestionCount: 0,
+        lastError: null,
+        updatedAt: now,
+      },
+    ];
+
+    // Gabungkan dengan item di mockStore
+    const storeCards: SubmissionCard[] = Object.values(mockStore).map((s) => ({
+      publicId: s.publicId,
+      batchId: 'BAT-MOCK',
+      fileName: (s.activity.activityName || 'dokumen') + '.pdf',
+      status: s.status,
+      reviewStatus: s.reviewStatus,
+      activityName: s.activity.activityName,
+      estimatedCredit: s.skem.estimatedCredit,
+      finalCredit: s.skem.finalCredit,
+      warnings: s.warnings,
+      openQuestionCount: s.questions.filter((q) => !q.answer).length,
+      lastError: null,
+      updatedAt: now,
+    }));
+
+    // Ambil storeCards yang belum ada di sampleCards
+    const sampleIds = new Set(sampleCards.map((c) => c.publicId));
+    const merged = [...sampleCards, ...storeCards.filter((c) => !sampleIds.has(c.publicId))];
+
+    return merged.filter((item) => {
+      if (params?.status && item.status !== params.status) return false;
+      if (params?.reviewStatus && item.reviewStatus !== params.reviewStatus) return false;
+      return true;
+    });
+  }
+}
+
+/**
+ * Mengambil ringkasan progres kredit SKEM mahasiswa.
+ */
+export async function getStudentProgress(): Promise<Progress> {
+  try {
+    return await apiClient.get<Progress>('/api/me/progress');
+  } catch {
+    // Demo fallback matching seed data: K1 dummy (0.50) + K2 dummy (0.25) + K3 approved (1.10)
+    const earnedK1 = 0.5;
+    const earnedK2 = 0.25;
+    const earnedK3 = 1.1;
+    const total = Math.round((earnedK1 + earnedK2 + earnedK3) * 100) / 100;
+    const target = 3.0;
+
+    return {
+      komponen: [
+        { komponen: 1, target: 1.25, earned: earnedK1 },
+        { komponen: 2, target: 0.5, earned: earnedK2 },
+        { komponen: 3, target: 1.25, earned: earnedK3 },
+      ],
+      total,
+      target,
+      fulfilled: total >= target && earnedK1 >= 1.25 && earnedK2 >= 0.5,
+    };
+  }
+}
+
+/**
+ * Mengambil URL unduh signed formulir final (PDF).
+ */
+export async function getFinalFormUrl(
+  publicId: string,
+): Promise<{ url: string; expiresIn: number }> {
+  try {
+    return await apiClient.get<{ url: string; expiresIn: number }>(
+      `/api/submissions/${publicId}/final-form`,
+    );
+  } catch {
+    // Demo URL
+    return {
+      url: `https://storage.pens.ac.id/final-forms/${publicId}.pdf`,
+      expiresIn: 60,
+    };
+  }
+}
+

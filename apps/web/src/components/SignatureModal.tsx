@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Modal } from './Modal';
 import { SignaturePad } from './SignaturePad';
@@ -9,9 +9,11 @@ export interface SignatureModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  /** Teks penjelasan; bawaannya untuk mahasiswa (bagian IV formulir). */
+  description?: ReactNode;
 }
 
-export function SignatureModal({ isOpen, onClose, onSuccess }: SignatureModalProps) {
+export function SignatureModal({ isOpen, onClose, onSuccess, description }: SignatureModalProps) {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
@@ -38,9 +40,14 @@ export function SignatureModal({ isOpen, onClose, onSuccess }: SignatureModalPro
     <Modal isOpen={isOpen} onClose={onClose} title="Siapkan Tanda Tangan Anda">
       <div className="space-y-3.5">
         <p className="text-xs text-slate-600 leading-relaxed">
-          Tanda tangan digital ini akan disimpan di akun Anda dan dibubuhkan secara otomatis pada
-          bagian IV formulir resmi <strong className="text-slate-800">FM.MHS.PENGAJUANSKEM</strong>{' '}
-          saat mengajukan berkas ke Dosen Wali.
+          {description ?? (
+            <>
+              Tanda tangan digital ini akan disimpan di akun Anda dan dibubuhkan secara otomatis
+              pada bagian IV formulir resmi{' '}
+              <strong className="text-slate-800">FM.MHS.PENGAJUANSKEM</strong> saat mengajukan
+              berkas ke Dosen Wali.
+            </>
+          )}
         </p>
 
         <SignaturePad onSave={handleSaveSignature} onCancel={onClose} isSaving={isSaving} />

@@ -429,16 +429,20 @@ describe.skipIf(!HAS_DATABASE)('GET /api/submissions/:publicId', () => {
       await db.update(submissions).set({ komponen: item.component, finalCredit: item.credit }).where(eq(submissions.id, submissionId));
     }
     const response = await request(app).get('/api/me/progress').set('Cookie', studentCookie).expect(200);
+    const round2 = (value: number) => Math.round(value * 100) / 100;
     const expected = [
-      { komponen: 1, target: 1.25, earned: (baseline.get(1) ?? 0) + 0.5 },
-      { komponen: 2, target: 0.5, earned: (baseline.get(2) ?? 0) + 0.25 },
-      { komponen: 3, target: 1.25, earned: (baseline.get(3) ?? 0) + 0.75 },
+      { komponen: 1, target: 1.25, earned: round2((baseline.get(1) ?? 0) + 0.5) },
+      { komponen: 2, target: 0.5, earned: round2((baseline.get(2) ?? 0) + 0.25) },
+      { komponen: 3, target: 1.25, earned: round2((baseline.get(3) ?? 0) + 0.75) },
     ];
     expect(response.body.komponen).toEqual(expected);
-    const expectedTotal = expected.reduce((total, row) => total + row.earned, 0);
+    const expectedTotal = round2(expected.reduce((total, row) => total + row.earned, 0));
     expect(response.body.total).toBe(expectedTotal);
     expect(response.body.target).toBe(3);
-    expect(response.body.fulfilled).toBe(expectedTotal >= 3);
+    // Terpenuhi butuh total ≥ 3,0 DAN setiap komponen mencapai targetnya (detail di tes rules/progress).
+    expect(response.body.fulfilled).toBe(
+      expectedTotal >= 3 && expected.every((row) => row.earned >= row.target),
+    );
   }, 15000);
 
   it('creates a 60-second certificate URL only for authorized owner', async () => {
@@ -449,5 +453,27 @@ describe.skipIf(!HAS_DATABASE)('GET /api/submissions/:publicId', () => {
     expect(response.body).toEqual({ url: 'https://storage.test/signed', expiresIn: 60 });
     expect(storageMocks.signedUrl).toHaveBeenCalledWith('certificates', expect.stringContaining(`/${submissionId}.pdf`));
     await request(app).get(`/api/submissions/${certificateId}/certificate`).set('Cookie', otherCookie).expect(404);
+  });
+
+  it('serves the final form URL only when ready and only to owner or the class verifier', async () => {
+    await createFixture('waiting_verifier', 'ready');
+    const verifiers = await db.select({ id: users.id, classId: users.classId }).from(users).where(eq(users.role, 'verifier'));
+    const ownVerifier = verifiers.find((v) => v.classId === student.classId);
+    const otherVerifier = verifiers.find((v) => v.classId !== null && v.classId !== student.classId);
+    if (!ownVerifier || !otherVerifier) throw new Error('Seed requires verifiers for two classes');
+    const url = `/api/submissions/${publicId}/final-form`;
+
+    await request(app).get(url).set('Cookie', studentCookie).expect(404);
+
+    const path = `${student.id}/${publicId}-final.pdf`;
+    await db.update(submissions).set({ finalFormStatus: 'ready', finalFormPath: path }).where(eq(submissions.id, submissionId));
+    storageMocks.signedUrl.mockClear();
+    const response = await request(app).get(url).set('Cookie', studentCookie).expect(200);
+    expect(response.body).toEqual({ url: 'https://storage.test/signed', expiresIn: 60 });
+    expect(storageMocks.signedUrl).toHaveBeenCalledWith('forms', path);
+    await request(app).get(url).set('Cookie', await loginAs(ownVerifier.id)).expect(200);
+
+    await request(app).get(url).set('Cookie', otherCookie).expect(404);
+    await request(app).get(url).set('Cookie', await loginAs(otherVerifier.id)).expect(404);
   });
 });

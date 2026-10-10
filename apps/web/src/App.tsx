@@ -7,6 +7,7 @@ import { MahasiswaDetailRoute } from './routes/mahasiswa/detail';
 import { MahasiswaProfileRoute } from './routes/mahasiswa/profile';
 import { VerifikatorQueueRoute } from './routes/verifikator/index';
 import { VerifikatorDetailRoute } from './routes/verifikator/detail';
+import { VerifikatorSettingsRoute } from './routes/verifikator/settings';
 import { ValidatorQueueRoute } from './routes/validator/index';
 import { ValidatorDetailRoute } from './routes/validator/detail';
 import { UnitMonitoringRoute } from './routes/unit/index';
@@ -102,6 +103,14 @@ export function App() {
           element={
             <VerifikatorGuard>
               <VerifikatorDetailRoute />
+            </VerifikatorGuard>
+          }
+        />
+        <Route
+          path="/verifikator/pengaturan"
+          element={
+            <VerifikatorGuard>
+              <VerifikatorSettingsRoute />
             </VerifikatorGuard>
           }
         />

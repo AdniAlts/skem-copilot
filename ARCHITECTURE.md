@@ -331,7 +331,7 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | GET | `/me` | semua | profil, kelas, dosen wali, `hasSignature`, `telegramLinked` |
 | PUT | `/me/signature` | student, verifier | simpan/ganti PNG ≤ 1 MB di bucket privat (`multipart file` atau `dataUrl`) |
 | GET | `/me/signature` | student, verifier | gambar tanda tangan **milik sendiri**, tanpa signed URL |
-| GET | `/me/progress` | student | jumlah `final_credit` dari pengajuan `approved`, per komponen menuju 3,0 |
+| GET | `/me/progress` | student | jumlah `final_credit` dari pengajuan `approved`, per komponen menuju 3,0; terpenuhi hanya jika total ≥ 3,0 dan setiap komponen mencapai target (`rules/progress.ts`) |
 | POST | `/batches` | student | unggah 1–10 PDF |
 | GET | `/batches/:publicId` | student pemilik | progres + kartu |
 | GET | `/submissions` | student | daftar pengajuan sendiri |

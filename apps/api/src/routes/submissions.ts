@@ -228,6 +228,7 @@ submissionsRouter.get(
   }),
 );
 
+/** GET /submissions/:publicId/final-form — signed URL PDF formulir final (pemilik, Verifikator kelasnya, Validator). */
 submissionsRouter.get(
   '/submissions/:publicId/final-form',
   requireAuth(),
@@ -235,18 +236,15 @@ submissionsRouter.get(
     const user = req.sessionUser!;
     const { client, db } = createDb();
     try {
-      const [row] = await db.select({
-        studentId: submissions.studentId,
-        classId: submissions.classId,
-        finalFormStatus: submissions.finalFormStatus,
-        finalFormPath: submissions.finalFormPath,
-      }).from(submissions).where(eq(submissions.publicId, String(req.params.publicId))).limit(1);
+      const [row] = await db.select({ studentId: submissions.studentId, classId: submissions.classId, finalFormPath: submissions.finalFormPath, finalFormStatus: submissions.finalFormStatus })
+        .from(submissions).where(eq(submissions.publicId, String(req.params.publicId))).limit(1);
       const allowed = row && (
         (user.role === 'student' && row.studentId === user.id) ||
         (user.role === 'verifier' && row.classId === user.classId) ||
         user.role === 'validator'
       );
-      if (!allowed || row.finalFormStatus !== 'ready' || !row.finalFormPath) throw new AppError('NOT_FOUND', 'Formulir final belum tersedia.');
+      if (!allowed) throw new AppError('NOT_FOUND', 'Pengajuan tidak ditemukan.');
+      if (row.finalFormStatus !== 'ready' || !row.finalFormPath) throw new AppError('NOT_FOUND', 'Formulir final belum tersedia.');
       const signed = await createSignedUrl(bucketForms(), row.finalFormPath);
       res.json(SignedUrlResponseSchema.parse(signed));
     } finally {

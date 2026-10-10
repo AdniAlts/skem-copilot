@@ -64,6 +64,7 @@ Jika memakai starter template (mis. `npm create vite@latest`, shadcn/ui), tulis 
 | 10 Oktober 2026 | Halaman detail pengajuan (pratinjau PDF, pratinjau FM.MHS.PENGAJUANSKEM, panel metadata editable, modal Kenapa?, peringatan) untuk issue FE-04 (#18) | AdniAlts |
 | 10 Oktober 2026 | Komponen dan alur jawab pertanyaan agent per kartu, unggah ulang, dan batalkan untuk issue FE-05 (#19) | AdniAlts |
 | 10 Oktober 2026 | Komponen canvas tanda tangan (SignaturePad), modal e-sign (SignatureModal), dialog konfirmasi pengajuan (SubmitDialog) dengan Pernyataan Mahasiswa, dan tombol aksi "Ajukan semua yang Ready" untuk issue FE-06 (#20) | AdniAlts |
+| 10 Oktober 2026 | Dashboard status mahasiswa: header identitas, akumulasi 3 bar komponen + total menuju 3,0, daftar pengajuan non-draft dengan komponen Timeline, alasan penolakan, kredit final, dan unduh PDF untuk issue FE-07 (#21) | AdniAlts |
 
 ## Data
 - Seluruh sertifikat dan data mahasiswa di repo bersifat sintetis (fiktif).
