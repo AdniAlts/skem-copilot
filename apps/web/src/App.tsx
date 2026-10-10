@@ -14,6 +14,7 @@ import { UnitMonitoringRoute } from './routes/unit/index';
 import { DevKomponenRoute } from './routes/dev/komponen';
 import { EmptyState } from './components/EmptyState';
 import { Button } from './components/Button';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Link } from 'react-router-dom';
 import {
   MahasiswaGuard,
@@ -45,14 +46,23 @@ export function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<LoginRoute />} />
+        <Route
+          path="/login"
+          element={
+            <ErrorBoundary fallbackTitle="Kendala Halaman Masuk">
+              <LoginRoute />
+            </ErrorBoundary>
+          }
+        />
 
         {/* Rute Mahasiswa */}
         <Route
           path="/mahasiswa"
           element={
             <MahasiswaGuard>
-              <MahasiswaDashboardRoute />
+              <ErrorBoundary fallbackTitle="Kendala Beranda Mahasiswa">
+                <MahasiswaDashboardRoute />
+              </ErrorBoundary>
             </MahasiswaGuard>
           }
         />
@@ -60,7 +70,9 @@ export function App() {
           path="/mahasiswa/unggah"
           element={
             <MahasiswaGuard>
-              <MahasiswaUploadRoute />
+              <ErrorBoundary fallbackTitle="Kendala Halaman Unggah">
+                <MahasiswaUploadRoute />
+              </ErrorBoundary>
             </MahasiswaGuard>
           }
         />
@@ -68,7 +80,9 @@ export function App() {
           path="/mahasiswa/detail/:id"
           element={
             <MahasiswaGuard>
-              <MahasiswaDetailRoute />
+              <ErrorBoundary fallbackTitle="Kendala Rincian Pengajuan">
+                <MahasiswaDetailRoute />
+              </ErrorBoundary>
             </MahasiswaGuard>
           }
         />
@@ -76,7 +90,9 @@ export function App() {
           path="/mahasiswa/pengajuan/:id"
           element={
             <MahasiswaGuard>
-              <MahasiswaDetailRoute />
+              <ErrorBoundary fallbackTitle="Kendala Rincian Pengajuan">
+                <MahasiswaDetailRoute />
+              </ErrorBoundary>
             </MahasiswaGuard>
           }
         />
@@ -84,7 +100,9 @@ export function App() {
           path="/mahasiswa/profil"
           element={
             <MahasiswaGuard>
-              <MahasiswaProfileRoute />
+              <ErrorBoundary fallbackTitle="Kendala Profil Mahasiswa">
+                <MahasiswaProfileRoute />
+              </ErrorBoundary>
             </MahasiswaGuard>
           }
         />
@@ -94,7 +112,9 @@ export function App() {
           path="/verifikator"
           element={
             <VerifikatorGuard>
-              <VerifikatorQueueRoute />
+              <ErrorBoundary fallbackTitle="Kendala Antrian Verifikator">
+                <VerifikatorQueueRoute />
+              </ErrorBoundary>
             </VerifikatorGuard>
           }
         />
@@ -102,7 +122,9 @@ export function App() {
           path="/verifikator/detail/:id"
           element={
             <VerifikatorGuard>
-              <VerifikatorDetailRoute />
+              <ErrorBoundary fallbackTitle="Kendala Pemeriksaan Pengajuan">
+                <VerifikatorDetailRoute />
+              </ErrorBoundary>
             </VerifikatorGuard>
           }
         />
@@ -110,7 +132,9 @@ export function App() {
           path="/verifikator/pengaturan"
           element={
             <VerifikatorGuard>
-              <VerifikatorSettingsRoute />
+              <ErrorBoundary fallbackTitle="Kendala Pengaturan Verifikator">
+                <VerifikatorSettingsRoute />
+              </ErrorBoundary>
             </VerifikatorGuard>
           }
         />
@@ -120,7 +144,9 @@ export function App() {
           path="/validator"
           element={
             <ValidatorGuard>
-              <ValidatorQueueRoute />
+              <ErrorBoundary fallbackTitle="Kendala Antrian Validator">
+                <ValidatorQueueRoute />
+              </ErrorBoundary>
             </ValidatorGuard>
           }
         />
@@ -128,7 +154,9 @@ export function App() {
           path="/validator/detail/:id"
           element={
             <ValidatorGuard>
-              <ValidatorDetailRoute />
+              <ErrorBoundary fallbackTitle="Kendala Validasi Pengajuan">
+                <ValidatorDetailRoute />
+              </ErrorBoundary>
             </ValidatorGuard>
           }
         />
@@ -138,13 +166,22 @@ export function App() {
           path="/unit"
           element={
             <UnitGuard>
-              <UnitMonitoringRoute />
+              <ErrorBoundary fallbackTitle="Kendala Monitoring Kemahasiswaan">
+                <UnitMonitoringRoute />
+              </ErrorBoundary>
             </UnitGuard>
           }
         />
 
         {/* Showcase Komponen UI */}
-        <Route path="/dev/komponen" element={<DevKomponenRoute />} />
+        <Route
+          path="/dev/komponen"
+          element={
+            <ErrorBoundary fallbackTitle="Kendala Komponen Showcase">
+              <DevKomponenRoute />
+            </ErrorBoundary>
+          }
+        />
 
         {/* Fallback 404 */}
         <Route path="*" element={<NotFound />} />
