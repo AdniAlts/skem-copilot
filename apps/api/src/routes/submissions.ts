@@ -11,7 +11,7 @@ import { classes, documents, notifications, statusHistory, submissions, users } 
 import { requireAuth } from '../middleware/auth.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import { certificatePath, validatePdfFile } from '../services/batch-upload.js';
-import { bucketCertificates, createSignedUrl, removeObject, uploadObject } from '../services/storage.js';
+import { bucketCertificates, bucketForms, createSignedUrl, removeObject, uploadObject } from '../services/storage.js';
 import { toSubmissionCard } from '../services/submission-card.js';
 import { processSubmission } from '../queue/worker.js';
 
@@ -221,6 +221,31 @@ submissionsRouter.get(
       );
       if (!allowed) throw new AppError('NOT_FOUND', 'Sertifikat tidak ditemukan.');
       const signed = await createSignedUrl(bucketCertificates(), row.document.filePath);
+      res.json(SignedUrlResponseSchema.parse(signed));
+    } finally {
+      await client.end();
+    }
+  }),
+);
+
+/** GET /submissions/:publicId/final-form — signed URL PDF formulir final (pemilik, Verifikator kelasnya, Validator). */
+submissionsRouter.get(
+  '/submissions/:publicId/final-form',
+  requireAuth(),
+  asyncHandler(async (req, res) => {
+    const user = req.sessionUser!;
+    const { client, db } = createDb();
+    try {
+      const [row] = await db.select({ studentId: submissions.studentId, classId: submissions.classId, finalFormPath: submissions.finalFormPath, finalFormStatus: submissions.finalFormStatus })
+        .from(submissions).where(eq(submissions.publicId, String(req.params.publicId))).limit(1);
+      const allowed = row && (
+        (user.role === 'student' && row.studentId === user.id) ||
+        (user.role === 'verifier' && row.classId === user.classId) ||
+        user.role === 'validator'
+      );
+      if (!allowed) throw new AppError('NOT_FOUND', 'Pengajuan tidak ditemukan.');
+      if (row.finalFormStatus !== 'ready' || !row.finalFormPath) throw new AppError('NOT_FOUND', 'Formulir final belum tersedia.');
+      const signed = await createSignedUrl(bucketForms(), row.finalFormPath);
       res.json(SignedUrlResponseSchema.parse(signed));
     } finally {
       await client.end();

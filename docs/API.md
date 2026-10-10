@@ -86,7 +86,7 @@ Format tiap entri: **peran** · request · response · error khusus.
 | `GET /me` | semua · → `{ id, name, nrp, role, angkatan, programStudi, departemen, className, verifierName, jabatan, hasSignature, telegramLinked }` |
 | `PUT /me/signature` | student, verifier · multipart `file` (PNG ≤ 1 MB) **atau** `{ "dataUrl": "data:image/png;base64,…" }` → `{ hasSignature: true }` |
 | `GET /me/signature` | student, verifier · → `image/png` milik sendiri · 404 jika belum ada |
-| `GET /me/progress` | student · → `Progress` (komponen per kategori + total menuju 3,0) · sumber riwayat dari pengajuan `approved` |
+| `GET /me/progress` | student · → `Progress` (komponen per kategori + total menuju 3,0) · sumber riwayat dari pengajuan `approved` · `fulfilled` = total ≥ 3,0 **dan** K1 ≥ 1,25, K2 ≥ 0,5, K3 ≥ 1,25 (K3 tidak menggantikan K1/K2); nilai dibulatkan 2 desimal |
 
 ### Unggah & pengajuan (mahasiswa)
 | Endpoint | Ringkas |

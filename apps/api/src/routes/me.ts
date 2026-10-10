@@ -17,6 +17,7 @@ import { createDb } from '../db/client';
 import { classes, submissions, users } from '../db/schema';
 import { AppError, asyncHandler } from '../middleware/error';
 import { requireAuth, requireRole } from '../middleware/auth';
+import { summarizeProgress } from '../rules/progress.js';
 import { bucketSignatures, downloadObject, uploadObject } from '../services/storage.js';
 
 export const meRouter = Router();
@@ -94,14 +95,10 @@ meRouter.get(
         .from(submissions)
         .where(sql`${submissions.studentId} = ${user.id} and ${submissions.status} = 'approved' and ${submissions.komponen} is not null`)
         .groupBy(submissions.komponen);
-      const earnedByComponent = new Map(rows.map((row) => [row.komponen, Number(row.earned)]));
-      const komponen = [
-        { komponen: 1 as const, target: 1.25, earned: earnedByComponent.get(1) ?? 0 },
-        { komponen: 2 as const, target: 0.5, earned: earnedByComponent.get(2) ?? 0 },
-        { komponen: 3 as const, target: 1.25, earned: earnedByComponent.get(3) ?? 0 },
-      ];
-      const total = komponen.reduce((sum, row) => sum + row.earned, 0);
-      res.json(ProgressSchema.parse({ komponen, total, target: 3, fulfilled: total >= 3 }));
+      const earnedByComponent = new Map(
+        rows.flatMap((row) => (row.komponen === null ? [] : [[row.komponen, Number(row.earned)] as const])),
+      );
+      res.json(ProgressSchema.parse(summarizeProgress(earnedByComponent)));
     } finally {
       await client.end();
     }
