@@ -7,12 +7,15 @@ import { cn } from '../lib/utils';
 
 export interface AgentQuestionProps {
   question: AgentQuestionType;
+  publicId?: string;
   currentStep?: number;
   totalSteps?: number;
   fileName?: string;
   activityName?: string;
   isSubmitting?: boolean;
-  onSubmit: (questionId: number, answer: string) => Promise<void>;
+  /** Mode baca-saja: hanya tampilkan pertanyaan & jawaban, tanpa form submit. */
+  readOnly?: boolean;
+  onSubmit?: (questionId: number, answer: string) => Promise<void>;
   onNavigateToDetail?: () => void;
   className?: string;
 }
@@ -24,6 +27,7 @@ export function AgentQuestion({
   fileName,
   activityName,
   isSubmitting = false,
+  readOnly = false,
   onSubmit,
   onNavigateToDetail,
   className,
@@ -41,7 +45,7 @@ export function AgentQuestion({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedOption || isSubmitting) return;
+    if (!selectedOption || isSubmitting || !onSubmit) return;
 
     setSubmitError(null);
     try {
@@ -126,7 +130,8 @@ export function AgentQuestion({
               <label
                 key={opt.value}
                 className={cn(
-                  'flex items-center gap-2.5 p-2.5 rounded-lg border text-xs cursor-pointer transition-all',
+                  'flex items-center gap-2.5 p-2.5 rounded-lg border text-xs transition-all',
+                  readOnly ? 'cursor-default' : 'cursor-pointer',
                   isSelected
                     ? 'bg-white border-brand-teal shadow-xs text-slate-900 font-medium'
                     : 'bg-white/80 border-slate-200 text-slate-700 hover:bg-white hover:border-amber-300'
@@ -137,9 +142,10 @@ export function AgentQuestion({
                   name={`question-${question.id}`}
                   value={opt.value}
                   checked={isSelected}
-                  onChange={() => setSelectedOption(opt.value)}
+                  onChange={() => !readOnly && setSelectedOption(opt.value)}
                   className="w-3.5 h-3.5 text-brand-teal focus:ring-brand-teal border-slate-300"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || readOnly}
+                  readOnly={readOnly}
                 />
                 <span className="flex-1">{opt.label}</span>
               </label>
@@ -177,19 +183,21 @@ export function AgentQuestion({
           </div>
         )}
 
-        {/* Tombol Aksi */}
-        <div className="flex items-center justify-end gap-2 pt-1">
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            disabled={!selectedOption || isSubmitting}
-            className="gap-1.5"
-          >
-            <Send className="w-3.5 h-3.5" />
-            <span>{isSubmitting ? 'Mengirim...' : 'Kirim Jawaban'}</span>
-          </Button>
-        </div>
+        {/* Tombol Aksi — hanya jika bukan readOnly */}
+        {!readOnly && (
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={!selectedOption || isSubmitting}
+              className="gap-1.5"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>{isSubmitting ? 'Mengirim...' : 'Kirim Jawaban'}</span>
+            </Button>
+          </div>
+        )}
       </form>
 
       {/* Modal Kenapa? */}
