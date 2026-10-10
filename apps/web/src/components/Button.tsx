@@ -27,7 +27,7 @@ export function Button({
         size === 'lg' && 'px-5 py-2.5 text-base',
         // Varian
         variant === 'primary' &&
-          'bg-brand-teal text-white hover:bg-teal-700 focus:ring-brand-teal active:bg-teal-800 shadow-sm',
+          'bg-brand-blue text-white hover:bg-brand-blue-700 focus:ring-brand-blue active:bg-brand-blue-800 shadow-sm',
         variant === 'secondary' &&
           'bg-slate-100 text-slate-800 hover:bg-slate-200 focus:ring-slate-400 active:bg-slate-300',
         variant === 'danger' &&

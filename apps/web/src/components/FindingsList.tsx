@@ -38,7 +38,7 @@ export function FindingsList({ findings, className }: FindingsListProps) {
   return (
     <div className={cn('space-y-2.5', className)}>
       <div className="flex items-center gap-2 mb-2">
-        <ShieldCheck className="w-4 h-4 text-brand-teal" />
+        <ShieldCheck className="w-4 h-4 text-brand-blue" />
         <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
           Hasil Pemeriksaan AI Pre-Check ({findings.length})
         </h4>

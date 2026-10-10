@@ -138,7 +138,7 @@ export function MahasiswaDashboardRoute() {
             <h1 className="text-2xl font-serif font-bold text-brand-dark">
               Selamat Datang, {user?.name || 'Mahasiswa'}
             </h1>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 text-brand-teal font-medium border border-teal-200/60">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue font-medium border border-brand-blue-200/60">
               Mahasiswa
             </span>
           </div>
@@ -170,7 +170,7 @@ export function MahasiswaDashboardRoute() {
       <Card className="shadow-xs border-slate-200/80">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-brand-teal">
+            <div className="w-8 h-8 rounded-lg bg-brand-blue-50 flex items-center justify-center text-brand-blue">
               <Award className="w-5 h-5" />
             </div>
             <div>
@@ -208,7 +208,7 @@ export function MahasiswaDashboardRoute() {
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500 ease-out',
-                  isFulfilled ? 'bg-emerald-600' : 'bg-brand-teal',
+                  isFulfilled ? 'bg-emerald-600' : 'bg-brand-blue',
                 )}
                 style={{ width: `${totalPercentage}%` }}
               />
@@ -337,7 +337,7 @@ export function MahasiswaDashboardRoute() {
                 </div>
                 <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
                   <div
-                    className="h-2 rounded-full bg-brand-teal"
+                    className="h-2 rounded-full bg-brand-blue"
                     style={{
                       width: `${Math.min(Math.round((k3.earned / k3.target) * 100), 100)}%`,
                     }}
@@ -383,7 +383,7 @@ export function MahasiswaDashboardRoute() {
               className={cn(
                 'px-3 py-1.5 rounded-md transition-all',
                 activeTab === 'in_process'
-                  ? 'bg-white text-brand-teal shadow-xs font-semibold'
+                  ? 'bg-white text-brand-blue shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900',
               )}
             >
@@ -417,7 +417,7 @@ export function MahasiswaDashboardRoute() {
         <CardContent className="p-0">
           {isLoadingSubmissions ? (
             <div className="p-8 text-center text-sm text-slate-500 flex flex-col items-center justify-center gap-2">
-              <RefreshCw className="w-5 h-5 animate-spin text-brand-teal" />
+              <RefreshCw className="w-5 h-5 animate-spin text-brand-blue" />
               <span>Memuat daftar pengajuan...</span>
             </div>
           ) : filteredSubmissions.length === 0 ? (
@@ -521,7 +521,7 @@ export function MahasiswaDashboardRoute() {
                             size="sm"
                             onClick={() => handleDownloadFinalForm(sub.publicId)}
                             disabled={downloadingId === sub.publicId}
-                            className="gap-1.5 text-xs text-brand-teal hover:bg-teal-50"
+                            className="gap-1.5 text-xs text-brand-blue hover:bg-brand-blue-50"
                             title="Unduh Formulir Resmi FM.MHS.PENGAJUANSKEM (PDF)"
                           >
                             <Download className="w-3.5 h-3.5" />

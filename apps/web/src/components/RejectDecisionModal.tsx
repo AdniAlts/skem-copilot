@@ -59,7 +59,7 @@ export function RejectDecisionModal({
           maxLength={DECISION_NOTE_MAX_LENGTH}
           rows={5}
           autoFocus
-          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
+          className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
           placeholder="Contoh: Nama pada sertifikat bukan nama mahasiswa ini."
           aria-describedby="reject-note-help"
           aria-invalid={touched && !!error}

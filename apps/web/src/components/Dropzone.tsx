@@ -127,12 +127,12 @@ export function Dropzone({ onFilesSelected, disabled, className }: DropzoneProps
         className={cn(
           'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
           isDragging
-            ? 'border-brand-teal bg-teal-50/50'
+            ? 'border-brand-blue bg-brand-blue-50/50'
             : 'border-slate-300 bg-white/70 hover:border-slate-400',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       >
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal-50 text-brand-teal mb-4">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-blue-50 text-brand-blue mb-4">
           <UploadCloud className="h-7 w-7" />
         </div>
         <h3 className="text-base font-serif font-semibold text-brand-dark mb-1">
@@ -146,7 +146,7 @@ export function Dropzone({ onFilesSelected, disabled, className }: DropzoneProps
           'inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
           disabled
             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            : 'bg-brand-teal text-white hover:bg-brand-teal/90 cursor-pointer'
+            : 'bg-brand-blue text-white hover:bg-brand-blue/90 cursor-pointer'
         )}>
           <input
             type="file"
@@ -199,7 +199,7 @@ export function Dropzone({ onFilesSelected, disabled, className }: DropzoneProps
           <button
             onClick={handleSubmit}
             disabled={disabled || selectedFiles.length === 0}
-            className="mt-4 w-full px-4 py-2 bg-brand-teal text-white rounded-lg font-medium text-sm hover:bg-brand-teal/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="mt-4 w-full px-4 py-2 bg-brand-blue text-white rounded-lg font-medium text-sm hover:bg-brand-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Unggah {selectedFiles.length} File
           </button>

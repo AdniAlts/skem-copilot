@@ -147,7 +147,7 @@ export function ValidatorDetailRoute() {
           }
           onRetry={notFound ? undefined : () => submissionQuery.refetch()}
         />
-        <Link to="/validator" className="block text-center text-sm text-brand-teal">
+        <Link to="/validator" className="block text-center text-sm text-brand-blue">
           Kembali ke antrian
         </Link>
       </div>
@@ -237,7 +237,7 @@ export function ValidatorDetailRoute() {
                 onClick={() => setTab(value)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 font-medium ${
                   tab === value
-                    ? 'bg-brand-teal text-white'
+                    ? 'bg-brand-blue text-white'
                     : 'bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >

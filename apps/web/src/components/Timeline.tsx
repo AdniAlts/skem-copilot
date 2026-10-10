@@ -147,7 +147,7 @@ export function Timeline({
             if (isCompleted) {
               circleClass = 'bg-emerald-600 border-emerald-600 text-white';
             } else if (isCurrent) {
-              circleClass = 'bg-teal-600 border-teal-600 text-white ring-4 ring-teal-100';
+              circleClass = 'bg-brand-blue-600 border-brand-blue-600 text-white ring-4 ring-brand-blue-100';
             } else if (isRejected) {
               circleClass = 'bg-red-600 border-red-600 text-white ring-4 ring-red-100';
             }
@@ -175,7 +175,7 @@ export function Timeline({
                   className={cn(
                     'text-[10px] mt-1 text-center font-medium max-w-[70px] truncate',
                     isCurrent
-                      ? 'text-brand-teal font-semibold'
+                      ? 'text-brand-blue font-semibold'
                       : isRejected
                         ? 'text-red-700 font-semibold'
                         : isCompleted
@@ -222,7 +222,7 @@ export function Timeline({
                 isCompleted
                   ? 'bg-white border-emerald-200 shadow-xs'
                   : isCurrent
-                    ? 'bg-teal-50/70 border-teal-200 shadow-xs ring-1 ring-brand-teal'
+                    ? 'bg-brand-blue-50/70 border-brand-blue-200 shadow-xs ring-1 ring-brand-blue'
                     : isRejected
                       ? 'bg-red-50/70 border-red-200 shadow-xs ring-1 ring-red-400'
                       : 'bg-white/50 border-slate-200 opacity-60',
@@ -235,7 +235,7 @@ export function Timeline({
                     isCompleted
                       ? 'bg-emerald-100 text-emerald-800'
                       : isCurrent
-                        ? 'bg-teal-100 text-brand-teal'
+                        ? 'bg-brand-blue-100 text-brand-blue'
                         : isRejected
                           ? 'bg-red-100 text-red-700'
                           : 'bg-slate-100 text-slate-500',
@@ -249,7 +249,7 @@ export function Timeline({
                     isCompleted
                       ? 'text-emerald-900'
                       : isCurrent
-                        ? 'text-brand-teal'
+                        ? 'text-brand-blue'
                         : isRejected
                           ? 'text-red-800'
                           : 'text-slate-600',

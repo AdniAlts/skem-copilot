@@ -36,7 +36,7 @@ export function LoadingSteps({
                 className={cn(
                   'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium transition-colors',
                   isCompleted && 'bg-emerald-100 text-emerald-800',
-                  isInProgress && 'bg-teal-100 text-brand-teal',
+                  isInProgress && 'bg-brand-blue-100 text-brand-blue',
                   !isCompleted && !isInProgress && 'bg-slate-100 text-slate-400',
                 )}
               >

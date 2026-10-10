@@ -201,8 +201,8 @@ export function SubmitDialog({
         </div>
 
         {/* Keterangan Proses 100% Online */}
-        <div className="p-2.5 bg-teal-50/70 border border-teal-200 rounded-lg flex items-start gap-2 text-teal-950 text-[11px] leading-relaxed">
-          <Info className="w-4 h-4 text-brand-teal shrink-0 mt-0.5" />
+        <div className="p-2.5 bg-brand-blue-50/70 border border-brand-blue-200 rounded-lg flex items-start gap-2 text-brand-blue-950 text-[11px] leading-relaxed">
+          <Info className="w-4 h-4 text-brand-blue shrink-0 mt-0.5" />
           <span>
             Seluruh proses pengajuan dan verifikasi SKEM dilakukan 100% secara daring. Tidak
             memerlukan cetak formulir atau tanda tangan basah.

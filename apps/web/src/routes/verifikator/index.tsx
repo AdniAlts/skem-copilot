@@ -60,14 +60,14 @@ export function VerifikatorQueueRoute() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <UserCheck className="w-6 h-6 text-brand-teal" />
+            <UserCheck className="w-6 h-6 text-brand-blue" />
             <h1 className="text-2xl font-serif font-bold text-brand-dark">
               Antrian Kelas {data?.className ?? '…'}
             </h1>
           </div>
           {data && (
             <p className="text-sm text-slate-600 mt-1">
-              <span className="font-medium text-brand-teal">{data.summary.waiting}</span> menunggu
+              <span className="font-medium text-brand-blue">{data.summary.waiting}</span> menunggu
               keputusan
               {data.summary.withWarnings > 0 && (
                 <>
@@ -94,8 +94,8 @@ export function VerifikatorQueueRoute() {
             className={cn(
               'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
               aiFilter === f
-                ? 'bg-brand-teal text-white border-brand-teal'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-brand-teal',
+                ? 'bg-brand-blue text-white border-brand-blue'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-brand-blue',
             )}
           >
             {f === 'all' ? 'Semua' : f === 'clean' ? 'Bersih' : '⚠ Peringatan'}
@@ -105,7 +105,7 @@ export function VerifikatorQueueRoute() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-teal"
+          className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-blue"
         >
           <option value="oldest">Terlama dulu</option>
           <option value="newest">Terbaru dulu</option>
@@ -177,7 +177,7 @@ export function VerifikatorQueueRoute() {
                         <StatusBadge type="review" status="ready" size="sm" />
                       )}
                     </TableCell>
-                    <TableCell className="font-semibold text-brand-teal">
+                    <TableCell className="font-semibold text-brand-blue">
                       {formatCredit(item.estimatedCredit)}
                     </TableCell>
                     <TableCell className="text-xs text-slate-500">

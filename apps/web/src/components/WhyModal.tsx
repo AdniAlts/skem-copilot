@@ -24,7 +24,7 @@ export function WhyModal({
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-4">
         <div className="flex items-center gap-2.5 text-brand-dark pb-2 border-b border-slate-100">
-          <div className="p-2 rounded-lg bg-teal-50 text-brand-teal">
+          <div className="p-2 rounded-lg bg-brand-blue-50 text-brand-blue">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
@@ -39,7 +39,7 @@ export function WhyModal({
 
         {guidelineRef && (
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-brand-teal/10 text-brand-teal uppercase tracking-wider block mb-1 w-fit">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-brand-blue/10 text-brand-blue uppercase tracking-wider block mb-1 w-fit">
               Pasal / Rujukan
             </span>
             <p className="text-xs font-mono text-slate-700 font-medium">
@@ -49,8 +49,8 @@ export function WhyModal({
         )}
 
         {explanation && (
-          <div className="p-3.5 bg-teal-50/40 rounded-lg border border-teal-100 text-xs text-slate-800 leading-relaxed">
-            <span className="font-semibold text-[10px] text-brand-teal uppercase tracking-wider block mb-1">
+          <div className="p-3.5 bg-brand-blue-50/40 rounded-lg border border-brand-blue-100 text-xs text-slate-800 leading-relaxed">
+            <span className="font-semibold text-[10px] text-brand-blue uppercase tracking-wider block mb-1">
               Kutipan Pedoman
             </span>
             <p className="whitespace-pre-line">{explanation}</p>
@@ -93,7 +93,7 @@ export function WhyButton({
         e.stopPropagation();
         onClick();
       }}
-      className={`inline-flex items-center gap-1 text-brand-teal hover:text-teal-800 hover:underline font-medium focus:outline-none focus:ring-1 focus:ring-brand-teal rounded px-1.5 py-0.5 transition-colors ${
+      className={`inline-flex items-center gap-1 text-brand-blue hover:text-brand-blue-800 hover:underline font-medium focus:outline-none focus:ring-1 focus:ring-brand-blue rounded px-1.5 py-0.5 transition-colors ${
         size === 'xs' ? 'text-xs' : 'text-sm'
       } ${className}`}
       title="Lihat rujukan aturan pedoman"

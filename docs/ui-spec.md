@@ -6,7 +6,7 @@ Nama status/enum di kode mengikuti [ARCHITECTURE §3.1](../ARCHITECTURE.md); lab
 
 ## 1. Gaya visual
 - Desktop 1440 px sebagai acuan; tetap usable di layar laptop kecil. Bahasa Indonesia, semua data dummy.
-- Warna: hijau tua `#12343B` (utama/teks judul), teal `#1F7068` (aksi, proses), amber `#E8A33D` (perlu perhatian), terakota `#C8553D` **hanya** untuk peringatan/kesalahan, latar `#F4F7F6`.
+- Warna mengikuti logo PENS: **biru PENS `#1B4679`** (aksi, tautan, aktif; kelas `brand-blue`, tint `brand-blue-50…900`), navy gelap `#102A49` (teks judul, `brand-dark`), **kuning PENS `#F4C801`** sebagai aksen identitas saja (`brand-yellow`, mis. garis bawah header), latar `#F4F6F9`. Warna **status** tetap semantik dan tidak memakai warna merek: hijau (emerald) = lolos/Ready/Disetujui, amber = perlu perhatian, terakota `#C8553D` **hanya** untuk peringatan/kesalahan.
 - Kartu putih, sudut 12 px, bayangan halus. Judul serif, isi sans-serif, ikon garis.
 - **Status selalu ikon + teks**, tidak hanya warna.
 - Tanpa logo/merek resmi PENS; cukup nama teks.

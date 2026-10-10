@@ -133,7 +133,7 @@ export function AgentQuestion({
                   'flex items-center gap-2.5 p-2.5 rounded-lg border text-xs transition-all',
                   readOnly ? 'cursor-default' : 'cursor-pointer',
                   isSelected
-                    ? 'bg-white border-brand-teal shadow-xs text-slate-900 font-medium'
+                    ? 'bg-white border-brand-blue shadow-xs text-slate-900 font-medium'
                     : 'bg-white/80 border-slate-200 text-slate-700 hover:bg-white hover:border-amber-300'
                 )}
               >
@@ -143,7 +143,7 @@ export function AgentQuestion({
                   value={opt.value}
                   checked={isSelected}
                   onChange={() => !readOnly && setSelectedOption(opt.value)}
-                  className="w-3.5 h-3.5 text-brand-teal focus:ring-brand-teal border-slate-300"
+                  className="w-3.5 h-3.5 text-brand-blue focus:ring-brand-blue border-slate-300"
                   disabled={isSubmitting || readOnly}
                   readOnly={readOnly}
                 />
@@ -165,7 +165,7 @@ export function AgentQuestion({
                 <button
                   type="button"
                   onClick={onNavigateToDetail}
-                  className="block mt-1 text-brand-teal font-semibold hover:underline inline-flex items-center gap-1"
+                  className="block mt-1 text-brand-blue font-semibold hover:underline inline-flex items-center gap-1"
                 >
                   <span>Buka Halaman Detail</span>
                   <ArrowRight className="w-3 h-3" />

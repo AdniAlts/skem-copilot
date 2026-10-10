@@ -66,7 +66,7 @@ export function CreditAdjustPanel({
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="text-brand-teal font-semibold hover:underline"
+          className="text-brand-blue font-semibold hover:underline"
         >
           Ubah kredit final
         </button>
@@ -95,7 +95,7 @@ export function CreditAdjustPanel({
             value={creditText}
             onChange={(event) => setCreditText(event.target.value)}
             placeholder="mis. 0,5"
-            className="w-32 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
+            className="w-32 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
           <label htmlFor="credit-reason" className="block font-semibold text-slate-800">
             Alasan perubahan <span className="text-red-500">*</span>
@@ -106,7 +106,7 @@ export function CreditAdjustPanel({
             onChange={(event) => setReason(event.target.value)}
             maxLength={DECISION_NOTE_MAX_LENGTH}
             rows={3}
-            className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
+            className="w-full rounded-lg border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
           <p className={showError ? 'text-red-600' : 'text-slate-500'}>
             {showError ? error : 'Perubahan dan alasannya tercatat beserta nama Anda.'}

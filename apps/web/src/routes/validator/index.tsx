@@ -31,7 +31,7 @@ const QUEUE_REFRESH_MS = 30_000;
 const ALL_CLASSES = '';
 
 const FORM_STATUS = {
-  ready: { label: 'Tersedia', variant: 'teal' },
+  ready: { label: 'Tersedia', variant: 'blue' },
   none: { label: 'Belum tersedia', variant: 'slate' },
   failed: { label: 'Gagal dibuat', variant: 'terracotta' },
 } as const;
@@ -53,7 +53,7 @@ export function ValidatorQueueRoute() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2 flex-wrap">
-          <ShieldCheck className="w-6 h-6 text-brand-teal" />
+          <ShieldCheck className="w-6 h-6 text-brand-blue" />
           <h1 className="text-2xl font-serif font-bold text-brand-dark">
             Antrian Validator Lintas Kelas
           </h1>
@@ -67,7 +67,7 @@ export function ValidatorQueueRoute() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
-            <Inbox className="w-8 h-8 text-brand-teal" />
+            <Inbox className="w-8 h-8 text-brand-blue" />
             <div>
               <p className="text-xs text-slate-500">Menunggu validasi</p>
               <p className="text-2xl font-bold text-brand-dark">{data?.summary.waiting ?? '—'}</p>
@@ -164,7 +164,7 @@ export function ValidatorQueueRoute() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="font-semibold text-brand-teal">
+                        <div className="font-semibold text-brand-blue">
                           {formatCredit(effectiveCredit(item))}
                         </div>
                         {item.finalCredit !== null && (
