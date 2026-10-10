@@ -14,7 +14,9 @@ import { FindingsList } from '../../components/FindingsList';
 import { AgentQuestion } from '../../components/AgentQuestion';
 import { SignatureModal } from '../../components/SignatureModal';
 import { useToast } from '../../components/ToastContext';
-import { getSubmissionDetail, getCertificateUrl } from '../../api/submissions';
+import { getStaffCertificateUrl, getStaffSubmission } from '../../api/staff';
+import { ApiClientError } from '../../api/client';
+import { classifyDecisionError } from '../../lib/verifier';
 import { approveSubmission, rejectSubmission } from '../../api/verifier';
 import { getSignature } from '../../api/signature';
 import type { SubmissionDetail } from '@skem/shared';
@@ -35,18 +37,48 @@ export function VerifikatorDetailRoute() {
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
 
   // Fetch submission detail
-  const { data: submission, isLoading, isError, refetch } = useQuery<SubmissionDetail>({
+  const {
+    data: submission,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<SubmissionDetail>({
     queryKey: ['submission-detail', publicId],
-    queryFn: () => getSubmissionDetail(publicId),
+    queryFn: () => getStaffSubmission(publicId),
     refetchOnWindowFocus: true,
+    retry: (count, error) =>
+      !(error instanceof ApiClientError && error.status === 404) && count < 2,
   });
 
   // Fetch certificate URL for PdfViewer
   const { data: certData } = useQuery({
     queryKey: ['certificate-url', publicId],
-    queryFn: () => getCertificateUrl(publicId),
+    queryFn: () => getStaffCertificateUrl(publicId),
     enabled: !!submission,
   });
+
+  /** Keputusan gagal: tampilkan alasan sebenarnya; jangan pernah menganggapnya berhasil. */
+  function handleDecisionError(error: unknown) {
+    switch (classifyDecisionError(error)) {
+      case 'needs_signature':
+        setShowConfirmModal(false);
+        setShowSignModal(true);
+        showToast('Tanda tangan belum tersimpan di server. Siapkan tanda tangan Anda.', 'info');
+        return;
+      case 'already_decided':
+        setShowConfirmModal(false);
+        setShowRejectModal(false);
+        showToast('Pengajuan ini sudah tidak menunggu keputusan Anda.', 'info');
+        void refetch();
+        return;
+      default:
+        showToast(
+          error instanceof Error ? error.message : 'Keputusan gagal dikirim. Coba lagi.',
+          'error',
+        );
+    }
+  }
 
   // Mutation: approve
   const approveMut = useMutation({
@@ -61,9 +93,7 @@ export function VerifikatorDetailRoute() {
       setShowConfirmModal(false);
       navigate('/verifikator');
     },
-    onError: () => {
-      showToast('Gagal menyetujui. Coba lagi.', 'error');
-    },
+    onError: handleDecisionError,
   });
 
   // Mutation: reject
@@ -75,9 +105,7 @@ export function VerifikatorDetailRoute() {
       setShowRejectModal(false);
       navigate('/verifikator');
     },
-    onError: () => {
-      showToast('Gagal menolak. Coba lagi.', 'error');
-    },
+    onError: handleDecisionError,
   });
 
   /** Tombol Setujui: cek tanda tangan dulu. */
@@ -112,10 +140,15 @@ export function VerifikatorDetailRoute() {
   }
 
   if (isError || !submission) {
+    const notFound = error instanceof ApiClientError && error.status === 404;
     return (
       <ErrorState
-        message="Gagal memuat detail pengajuan."
-        onRetry={() => void refetch()}
+        message={
+          notFound
+            ? 'Pengajuan tidak ditemukan atau bukan dari kelas Anda.'
+            : 'Gagal memuat detail pengajuan.'
+        }
+        onRetry={notFound ? undefined : () => void refetch()}
         className="min-h-[40vh]"
       />
     );
@@ -175,40 +208,29 @@ export function VerifikatorDetailRoute() {
       {/* Keputusan akhir selalu manusia */}
       <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
         <ShieldAlert className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
-        <span>Keputusan Anda selalu berlaku dan menjadi tanggung jawab Anda sebagai dosen wali.</span>
+        <span>
+          Keputusan Anda selalu berlaku dan menjadi tanggung jawab Anda sebagai dosen wali.
+        </span>
       </div>
 
       {/* Main grid: PDF + Metadata */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Kiri: PDF sertifikat */}
-        <PdfViewer
-          url={certData?.url ?? ''}
-          fileName="Sertifikat Mahasiswa"
-        />
+        <PdfViewer url={certData?.url ?? ''} fileName="Sertifikat Mahasiswa" />
 
         {/* Kanan: Metadata baca-saja */}
-        <MetadataPanel
-          submission={submission}
-          readOnly
-        />
+        <MetadataPanel submission={submission} readOnly />
       </div>
 
       {/* Temuan AI */}
-      {submission.findings.length > 0 && (
-        <FindingsList findings={submission.findings} />
-      )}
+      {submission.findings.length > 0 && <FindingsList findings={submission.findings} />}
 
       {/* Riwayat pertanyaan agent */}
       {submission.questions.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-base font-semibold text-brand-dark">Riwayat Pertanyaan Agent</h2>
           {submission.questions.map((q) => (
-            <AgentQuestion
-              key={q.id}
-              question={q}
-              publicId={publicId}
-              readOnly
-            />
+            <AgentQuestion key={q.id} question={q} publicId={publicId} readOnly />
           ))}
         </div>
       )}
@@ -311,9 +333,8 @@ export function VerifikatorDetailRoute() {
           <p className="text-sm text-slate-700">
             Anda akan menyetujui pengajuan{' '}
             <span className="font-semibold">{submission.activity.activityName ?? publicId}</span>{' '}
-            dari{' '}
-            <span className="font-semibold">{submission.student.name}</span> dengan tanda tangan
-            digital Anda.
+            dari <span className="font-semibold">{submission.student.name}</span> dengan tanda
+            tangan digital Anda.
           </p>
 
           {/* Pratinjau tanda tangan */}
@@ -343,7 +364,11 @@ export function VerifikatorDetailRoute() {
               <div>
                 <p className="text-slate-400">Tanggal Verifikasi</p>
                 <p className="font-medium text-slate-800">
-                  {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {new Date().toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
                 </p>
               </div>
               <div>
