@@ -89,14 +89,14 @@ export const SubmissionDetailSchema = z.object({
     })
     .nullable(),
   activity: z.object({
-    activityName: z.string(),
-    activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    locationPlatform: z.string(),
-    organizer: z.string(),
-    attachmentType: z.string(),
+    activityName: z.string().nullable(),
+    activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+    locationPlatform: z.string().nullable(),
+    organizer: z.string().nullable(),
+    attachmentType: z.string().nullable(),
   }),
   skem: z.object({
-    komponen: z.number().int().min(1).max(3),
+    komponen: z.number().int().min(1).max(3).nullable(),
     categoryCode: z.string().nullable(),
     level: z.string().nullable(),
     roleInActivity: z.string().nullable(),
@@ -202,31 +202,36 @@ export type Progress = z.infer<typeof ProgressSchema>;
 export const PatchSubmissionBodySchema = z.object({
   activity: z
     .object({
-      activityName: z.string().optional(),
-      activityDate: z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/)
-        .optional(),
-      locationPlatform: z.string().optional(),
-      organizer: z.string().optional(),
-      attachmentType: z.string().optional(),
+      activityName: z.string().nullable().optional(),
+      activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      locationPlatform: z.string().nullable().optional(),
+      organizer: z.string().nullable().optional(),
+      attachmentType: z.string().nullable().optional(),
     })
+    .strict()
     .optional(),
   skem: z
     .object({
-      categoryCode: z.string().optional(),
-      level: z.string().optional(),
-      roleInActivity: z.string().optional(),
-      achievement: z.string().optional(),
+      categoryCode: z.string().nullable().optional(),
+      level: z.string().nullable().optional(),
+      roleInActivity: z.string().nullable().optional(),
+      achievement: z.string().nullable().optional(),
     })
+    .strict()
     .optional(),
-});
+})
+  .strict()
+  .refine(
+    (body) => Object.values(body.activity ?? {}).some((value) => value !== undefined)
+      || Object.values(body.skem ?? {}).some((value) => value !== undefined),
+    'Minimal satu field wajib diisi.',
+  );
 export type PatchSubmissionBody = z.infer<typeof PatchSubmissionBodySchema>;
 
 /** Body untuk POST /submissions/:publicId/answers. */
 export const AnswerBodySchema = z.object({
   questionId: z.number().int().positive(),
-  answer: z.string().trim().min(1, 'Jawaban wajib diisi.'),
+  answer: z.string().trim().min(1, 'Jawaban wajib diisi.').max(500, 'Jawaban maksimal 500 karakter.'),
 });
 export type AnswerBody = z.infer<typeof AnswerBodySchema>;
 
@@ -235,33 +240,57 @@ export const SubmitBodySchema = z.object({
   publicIds: z
     .array(z.string().regex(/^SKM-[A-Z0-9]{8}$/))
     .min(1, 'Minimal 1 pengajuan.')
-    .max(10, 'Maksimal 10 pengajuan.'),
+    .max(10, 'Maksimal 10 pengajuan.')
+    .refine((publicIds) => new Set(publicIds).size === publicIds.length, 'ID pengajuan tidak boleh duplikat.'),
 });
 export type SubmitBody = z.infer<typeof SubmitBodySchema>;
 
 /** Body untuk POST /verifier/submissions/:publicId/approve. */
 export const ApproveBodySchema = z.object({
-  note: z.string().optional(),
-});
+  note: z.string().trim().max(1000, 'Catatan maksimal 1000 karakter.').optional(),
+}).strict();
 export type ApproveBody = z.infer<typeof ApproveBodySchema>;
 
 /** Body untuk POST /verifier/submissions/:publicId/reject. */
 export const RejectBodySchema = z.object({
-  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.'),
-});
+  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.').max(1000, 'Alasan maksimal 1000 karakter.'),
+}).strict();
 export type RejectBody = z.infer<typeof RejectBodySchema>;
 
-/** Body untuk POST /validator/submissions/:publicId/credit. */
+/** Status AI ringkas di antrian Verifikator: `warning` jika pengajuan memiliki peringatan. */
+export const VERIFIER_AI_STATUS = ['clean', 'warning'] as const;
+export const VERIFIER_QUEUE_SORT = ['oldest', 'newest', 'flags'] as const;
+
+/** Query untuk GET /verifier/queue. */
+export const VerifierQueueQuerySchema = z.object({
+  aiStatus: z.enum(VERIFIER_AI_STATUS).optional(),
+  sort: z.enum(VERIFIER_QUEUE_SORT).default('oldest'),
+}).strict();
+export type VerifierQueueQuery = z.infer<typeof VerifierQueueQuerySchema>;
+
+/** Body untuk POST /validator/submissions/:publicId/credit. Kredit 0–3, maksimal dua desimal. */
 export const CreditAdjustBodySchema = z.object({
-  finalCredit: z.number().min(0),
-  reason: z.string().trim().min(1, 'Alasan perubahan kredit wajib diisi.'),
-});
+  finalCredit: z.number().min(0).max(3)
+    .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-6, 'Kredit maksimal dua desimal.')
+    .transform((value) => Math.round(value * 100) / 100),
+  reason: z.string().trim().min(1, 'Alasan perubahan kredit wajib diisi.').max(1000, 'Alasan maksimal 1000 karakter.'),
+}).strict();
 export type CreditAdjustBody = z.infer<typeof CreditAdjustBodySchema>;
+
+/** Body untuk POST /validator/submissions/:publicId/validate. */
+export const ValidateBodySchema = z.object({}).strict();
+export type ValidateBody = z.infer<typeof ValidateBodySchema>;
+
+/** Query untuk GET /validator/queue. */
+export const ValidatorQueueQuerySchema = z.object({
+  classId: z.coerce.number().int().positive().optional(),
+}).strict();
+export type ValidatorQueueQuery = z.infer<typeof ValidatorQueueQuerySchema>;
 
 /** Body untuk POST /validator/submissions/:publicId/reject. */
 export const ValidatorRejectBodySchema = z.object({
-  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.'),
-});
+  note: z.string().trim().min(1, 'Alasan penolakan wajib diisi.').max(1000, 'Alasan maksimal 1000 karakter.'),
+}).strict();
 export type ValidatorRejectBody = z.infer<typeof ValidatorRejectBodySchema>;
 
 /** Body untuk POST /auth/mock-login. */
@@ -315,6 +344,27 @@ export const RejectResponseSchema = z.object({
 });
 export type RejectResponse = z.infer<typeof RejectResponseSchema>;
 
+/** Response untuk GET /verifier/queue. */
+export const VerifierQueueResponseSchema = z.object({
+  className: z.string().nullable(),
+  summary: z.object({
+    waiting: z.number().int().min(0),
+    withWarnings: z.number().int().min(0),
+  }),
+  items: z.array(z.object({
+    publicId: z.string().regex(/^SKM-[A-Z0-9]{8}$/),
+    studentName: z.string(),
+    activityName: z.string().nullable(),
+    categoryLabel: z.string().nullable(),
+    level: z.string().nullable(),
+    estimatedCredit: z.number().nullable(),
+    aiStatus: z.enum(VERIFIER_AI_STATUS),
+    flagCount: z.number().int().min(0),
+    submittedAt: z.string().datetime().nullable(),
+  })),
+});
+export type VerifierQueueResponse = z.infer<typeof VerifierQueueResponseSchema>;
+
 /** Response untuk POST /validator/submissions/:publicId/credit. */
 export const CreditAdjustResponseSchema = z.object({
   previousCredit: z.number(),
@@ -336,6 +386,29 @@ export const ValidateResponseSchema = z.object({
   finalCredit: z.number(),
 });
 export type ValidateResponse = z.infer<typeof ValidateResponseSchema>;
+
+/** Response untuk GET /validator/queue. `finalCredit` terisi jika Validator sudah mengubah kredit. */
+export const ValidatorQueueResponseSchema = z.object({
+  summary: z.object({
+    waiting: z.number().int().min(0),
+    formFailed: z.number().int().min(0),
+  }),
+  items: z.array(z.object({
+    publicId: z.string().regex(/^SKM-[A-Z0-9]{8}$/),
+    studentName: z.string(),
+    nrp: z.string().nullable(),
+    className: z.string().nullable(),
+    activityName: z.string().nullable(),
+    categoryLabel: z.string().nullable(),
+    level: z.string().nullable(),
+    estimatedCredit: z.number().nullable(),
+    finalCredit: z.number().nullable(),
+    flagCount: z.number().int().min(0),
+    finalFormStatus: z.enum(FINAL_FORM_STATUS),
+    submittedAt: z.string().datetime().nullable(),
+  })),
+});
+export type ValidatorQueueResponse = z.infer<typeof ValidatorQueueResponseSchema>;
 
 /** Response untuk POST /validator/submissions/:publicId/reject. */
 export const ValidatorRejectResponseSchema = z.object({

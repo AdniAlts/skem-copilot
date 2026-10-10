@@ -71,27 +71,33 @@ export function requireAuth(): (req: Request, res: Response, next: NextFunction)
       if (userId === null) {
         throw new AppError('UNAUTHENTICATED', 'Belum masuk.');
       }
-      const { db } = createDb();
-      const { users } = await import('../db/schema.js');
-      const { eq } = await import('drizzle-orm');
-      const rows = await db
-        .select({
-          id: users.id,
-          name: users.name,
-          role: users.role,
-          classId: users.classId,
-          nrp: users.nrp,
-          signaturePath: users.signaturePath,
-          telegramChatId: users.telegramChatId,
-        })
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
-      const user = rows[0];
-      if (!user) {
-        throw new AppError('UNAUTHENTICATED', 'Sesi tidak valid.');
+      const { client, db } = createDb();
+      let authenticatedUser: SessionUser;
+      try {
+        const { users } = await import('../db/schema.js');
+        const { eq } = await import('drizzle-orm');
+        const rows = await db
+          .select({
+            id: users.id,
+            name: users.name,
+            role: users.role,
+            classId: users.classId,
+            nrp: users.nrp,
+            signaturePath: users.signaturePath,
+            telegramChatId: users.telegramChatId,
+          })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        const user = rows[0];
+        if (!user) {
+          throw new AppError('UNAUTHENTICATED', 'Sesi tidak valid.');
+        }
+        authenticatedUser = user;
+      } finally {
+        await client.end();
       }
-      req.sessionUser = user;
+      req.sessionUser = authenticatedUser;
       next();
     } catch (err) {
       next(err);

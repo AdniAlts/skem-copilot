@@ -84,12 +84,30 @@ export function Header() {
               )}
 
               {location.pathname.startsWith('/verifikator') && (
-                <Link
-                  to="/verifikator"
-                  className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-teal-50 text-brand-teal"
-                >
-                  Antrian Kelas
-                </Link>
+                <>
+                  <Link
+                    to="/verifikator"
+                    className={cn(
+                      'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+                      location.pathname === '/verifikator/pengaturan'
+                        ? 'text-slate-600 hover:text-brand-dark hover:bg-slate-50'
+                        : 'bg-teal-50 text-brand-teal font-semibold',
+                    )}
+                  >
+                    Antrian Kelas
+                  </Link>
+                  <Link
+                    to="/verifikator/pengaturan"
+                    className={cn(
+                      'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+                      location.pathname === '/verifikator/pengaturan'
+                        ? 'bg-teal-50 text-brand-teal font-semibold'
+                        : 'text-slate-600 hover:text-brand-dark hover:bg-slate-50',
+                    )}
+                  >
+                    Pengaturan
+                  </Link>
+                </>
               )}
 
               {location.pathname.startsWith('/validator') && (

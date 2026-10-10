@@ -106,7 +106,10 @@ export function recheck(input: RecheckInput, data: RecheckData): RecheckResult {
 
   if (activityEndDate) {
     const deadline = checkDeadline({ activityEndDate, angkatan: input.angkatan, today: input.today }, data.rules.dateRules);
-    findings.push(finding(data, 'deadline', deadline.result, deadline.message, categoryCode));
+    findings.push(finding(data, 'deadline', deadline.result, deadline.message, categoryCode, undefined, {
+      validFrom: deadline.validFrom,
+      validTo: deadline.validTo,
+    }));
   }
 
   let creditLookup: LookupCreditResult = { found: false, reason: 'COMBINATION_NOT_FOUND' };

@@ -10,7 +10,7 @@ export function toSubmissionCard(row: typeof submissions.$inferSelect, fileName:
     reviewStatus: row.reviewStatus,
     activityName: row.activityName,
     estimatedCredit: row.estimatedCredit === null ? null : Number(row.estimatedCredit),
-    finalCredit: row.finalCredit === null ? null : Number(row.finalCredit),
+    finalCredit: row.status === 'approved' && row.finalCredit !== null ? Number(row.finalCredit) : null,
     warnings: Array.isArray(row.warnings) ? row.warnings as { code: string; message: string }[] : [],
     openQuestionCount: 0,
     lastError: row.lastError,

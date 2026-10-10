@@ -95,11 +95,13 @@ export function FormPreview({ submission, className }: FormPreviewProps) {
               <span className="text-slate-500 font-medium">Tanggal Kegiatan</span>
               <span className="col-span-2 text-slate-800">
                 :{' '}
-                {new Date(activity.activityDate).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
+                {activity.activityDate
+                  ? new Date(activity.activityDate).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  : '-'}
               </span>
 
               <span className="text-slate-500 font-medium">Lokasi / Platform</span>

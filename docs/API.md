@@ -94,9 +94,9 @@ Format tiap entri: **peran** · request · response · error khusus.
 | `POST /batches` | multipart `files[]` 1–10 PDF → 201 `{ batch: { publicId, fileCount }, submissions: SubmissionCard[] }` · 400 `TOO_MANY_FILES`, 415 bukan PDF (sebut nama file), 413 > 10 MB |
 | `GET /batches/:publicId` | → `{ batch, progress: { total, done, counts: { queued, analyzing, ready, needs_fix, problem, error } }, submissions: SubmissionCard[] }` |
 | `GET /submissions` | query `status?`, `reviewStatus?` → `SubmissionCard[]` milik sendiri |
-| `GET /submissions/:publicId` | → `SubmissionDetail` |
-| `PATCH /submissions/:publicId` | `{ activity?: {...}, skem?: { categoryCode?, level?, roleInActivity?, achievement? } }` → `SubmissionDetail` (cek ulang deterministik, tanpa LLM) · 409 jika bukan `draft` atau sedang `analyzing` · identitas tidak bisa diubah |
-| `POST /submissions/:publicId/answers` | `{ "questionId": 12, "answer": "national" }` → `SubmissionDetail` · 400 opsi tidak valid |
+| `GET /submissions/:publicId` | → `SubmissionDetail`; metadata kegiatan/SKEM nullable selama ekstraksi belum lengkap |
+| `PATCH /submissions/:publicId` | `{ activity?: {...}, skem?: { categoryCode?, level?, roleInActivity?, achievement? } }` → `SubmissionDetail` (cek ulang deterministik, tanpa LLM) · 400 body kosong/field tidak dikenal/identitas · 409 jika bukan `draft`, sedang `queued`/`analyzing`, atau `cancelled` · metadata boleh dikosongkan dengan `null` |
+| `POST /submissions/:publicId/answers` | `{ "questionId": 12, "answer": "national" }` → `SubmissionDetail` · opsi harus cocok; hanya `activity_name` menerima teks bebas, `activity_date` harus `YYYY-MM-DD` · 400 jawaban tidak valid · 409 jika bukan `draft` atau sedang `queued`/`analyzing`/`cancelled` |
 | `POST /submissions/:publicId/cancel` | → 204 · 409 jika bukan `draft` |
 | `POST /submissions/:publicId/reupload` | multipart `file` → `SubmissionCard` (`queued`) |
 | `POST /submissions/:publicId/retry` | → `SubmissionCard` (`queued`) · 409 jika bukan `error` |
@@ -107,18 +107,18 @@ Format tiap entri: **peran** · request · response · error khusus.
 ### Verifikator (baca-saja + keputusan)
 | Endpoint | Ringkas |
 |---|---|
-| `GET /verifier/queue` | query `aiStatus?`, `sort?` → `{ className, summary: { waiting, withWarnings }, items: [{ publicId, studentName, activityName, categoryLabel, level, estimatedCredit, aiStatus, flagCount, submittedAt }] }` — hanya kelasnya, `status=waiting_verifier` |
+| `GET /verifier/queue` | query `aiStatus?` (`clean` \| `warning`), `sort?` (`oldest` default \| `newest` \| `flags`) → `{ className, summary: { waiting, withWarnings }, items: [{ publicId, studentName, activityName, categoryLabel, level, estimatedCredit, aiStatus, flagCount, submittedAt }] }` — hanya kelasnya, `status=waiting_verifier`; `aiStatus=warning` jika `warnings` tidak kosong, `flagCount` = jumlah `warnings`; field metadata boleh `null` · 400 query tidak dikenal |
 | `GET /submissions/:publicId` | detail yang sama (baca-saja); 404 untuk kelas lain |
-| `POST /verifier/submissions/:publicId/approve` | `{ "note": "opsional" }` → `{ status: "waiting_validator", finalForm: { status } }` · 409 `SIGNATURE_REQUIRED` |
-| `POST /verifier/submissions/:publicId/reject` | `{ "note": "wajib" }` → `{ status: "rejected" }` · 400 jika `note` kosong |
+| `POST /verifier/submissions/:publicId/approve` | `{ "note": "opsional, ≤ 1000" }` → `{ status: "waiting_validator", finalForm: { status } }` · 409 `SIGNATURE_REQUIRED` · 409 `INVALID_TRANSITION` jika bukan `waiting_verifier` · 404 kelas lain. Satu transaksi: `reviews(approve, signature_applied=true)`, `status_history`, notifikasi in-app mahasiswa; hook `onVerifierApproved` setelah commit (gagal tidak membatalkan) |
+| `POST /verifier/submissions/:publicId/reject` | `{ "note": "wajib, ≤ 1000" }` → `{ status: "rejected" }` · 400 jika `note` kosong/spasi · 409 `INVALID_TRANSITION` · 404 kelas lain; `reviews(reject)`, `status_history` (catatan = alasan), notifikasi in-app mahasiswa |
 
 ### Validator
 | Endpoint | Ringkas |
 |---|---|
-| `GET /validator/queue` | query `classId?` → items + `finalFormStatus` |
-| `POST /validator/submissions/:publicId/credit` | `{ "finalCredit": 0.5, "reason": "wajib" }` → `{ previousCredit, finalCredit, review }` · 400 alasan kosong / nilai sama |
-| `POST /validator/submissions/:publicId/validate` | `{}` → `{ status: "approved", finalCredit }` |
-| `POST /validator/submissions/:publicId/reject` | `{ "note": "wajib" }` → `{ status: "rejected" }` |
+| `GET /validator/queue` | query `classId?` → `{ summary: { waiting, formFailed }, items: [{ publicId, studentName, nrp, className, activityName, categoryLabel, level, estimatedCredit, finalCredit, flagCount, finalFormStatus, submittedAt }] }` — lintas kelas, `status=waiting_validator`, urut `submittedAt` naik; `finalCredit` terisi jika sudah diubah lewat `/credit` · 400 query tidak dikenal |
+| `POST /validator/submissions/:publicId/credit` | `{ "finalCredit": 0.5, "reason": "wajib, ≤ 1000" }` → `{ previousCredit, finalCredit, review }` · `finalCredit` 0–3, maks. dua desimal · 400 alasan kosong / nilai sama dengan nilai saat ini · 409 bukan `waiting_validator`. Menulis `submissions.final_credit` + `reviews(adjust_credit, previous_credit, adjusted_credit, adjust_reason)`; mahasiswa baru melihat `finalCredit` setelah `approved` |
+| `POST /validator/submissions/:publicId/validate` | `{}` (body lain → 400) → `{ status: "approved", finalCredit }` · `finalCredit` = hasil `/credit` terakhir atau `estimated_credit` · 409 bukan `waiting_validator`; `reviews(approve)`, `status_history`, notifikasi in-app mahasiswa |
+| `POST /validator/submissions/:publicId/reject` | `{ "note": "wajib, ≤ 1000" }` → `{ status: "rejected" }` · 409 bukan `waiting_validator`; `reviews(reject)`, `status_history` (catatan = alasan), notifikasi in-app mahasiswa |
 | `POST /validator/submissions/:publicId/regenerate-form` | → `{ finalForm: { status } }` |
 
 ### Notifikasi, Telegram, monitoring

@@ -205,7 +205,7 @@ export async function patchSubmission(
 
     // Recompute estimated credit from official credit table
     const calc = calculateEstimatedCredit({
-      komponen: current.skem.komponen,
+      komponen: current.skem.komponen ?? 3,
       categoryCode: newCategory,
       level: newLevel,
       role: newRole,
@@ -302,7 +302,7 @@ export async function answerQuestion(
 
     // Recompute credit
     const calc = calculateEstimatedCredit({
-      komponen: current.skem.komponen,
+      komponen: current.skem.komponen ?? 3,
       categoryCode: updatedCategory,
       level: updatedLevel,
       role: current.skem.roleInActivity,
