@@ -3,6 +3,7 @@
  * POST /validator/submissions/:publicId/credit — ubah kredit final dengan alasan wajib.
  * POST /validator/submissions/:publicId/validate — setujui; kredit final = nilai terakhir.
  * POST /validator/submissions/:publicId/reject — tolak dengan alasan wajib.
+ * POST /validator/submissions/:publicId/regenerate-form — buat ulang PDF final yang belum `ready`.
  */
 
 import { and, asc, eq } from 'drizzle-orm';
@@ -10,6 +11,7 @@ import { Router } from 'express';
 import {
   CreditAdjustBodySchema,
   CreditAdjustResponseSchema,
+  RegenerateFormResponseSchema,
   ValidateBodySchema,
   ValidateResponseSchema,
   ValidatorQueueQuerySchema,
@@ -25,6 +27,7 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import type { SessionUser } from '../middleware/auth.js';
 import { AppError, asyncHandler } from '../middleware/error.js';
 import { creditTable } from '../rules/config.js';
+import { generateFinalForm } from '../services/final-form.js';
 
 export const validatorRouter = Router();
 
@@ -189,6 +192,27 @@ validatorRouter.post(
     } finally {
       await client.end();
     }
+  }),
+);
+
+validatorRouter.post(
+  '/validator/submissions/:publicId/regenerate-form',
+  requireAuth(),
+  requireRole('validator'),
+  asyncHandler(async (req, res) => {
+    const { client, db } = createDb();
+    let submissionId: number;
+    try {
+      submissionId = await db.transaction(async (tx) => {
+        const row = await lockWaiting(tx, String(req.params.publicId));
+        if (row.finalFormStatus === 'ready') throw new AppError('CONFLICT', 'Formulir final sudah tersedia.');
+        return row.id;
+      });
+    } finally {
+      await client.end();
+    }
+    const status = await generateFinalForm(submissionId);
+    res.json(RegenerateFormResponseSchema.parse({ finalForm: { status } }));
   }),
 );
 

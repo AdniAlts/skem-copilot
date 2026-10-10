@@ -338,6 +338,14 @@ export const ApproveResponseSchema = z.object({
 });
 export type ApproveResponse = z.infer<typeof ApproveResponseSchema>;
 
+/** Response untuk POST /validator/submissions/:publicId/regenerate-form. */
+export const RegenerateFormResponseSchema = z.object({
+  finalForm: z.object({
+    status: z.enum(FINAL_FORM_STATUS),
+  }),
+});
+export type RegenerateFormResponse = z.infer<typeof RegenerateFormResponseSchema>;
+
 /** Response untuk POST /verifier/submissions/:publicId/reject. */
 export const RejectResponseSchema = z.object({
   status: z.literal('rejected'),

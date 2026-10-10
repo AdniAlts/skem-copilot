@@ -1,8 +1,11 @@
+import { generateFinalForm } from './final-form.js';
+
 /**
  * Dipanggil setelah transaksi persetujuan Verifikator di-commit.
- * BE-08 mengisi pembuatan PDF final, BE-09 mengisi notifikasi Telegram.
+ * Checkpoint B: membuat PDF final (`final_form_status` ready/failed).
+ * BE-09 menambahkan notifikasi Telegram di sini.
  * Kegagalan hook tidak membatalkan persetujuan.
  */
 export async function onVerifierApproved(submissionId: number): Promise<void> {
-  void submissionId;
+  await generateFinalForm(submissionId);
 }

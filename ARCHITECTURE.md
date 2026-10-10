@@ -343,7 +343,7 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | POST | `/submissions/:publicId/retry` | student pemilik | coba lagi (dari `error`) |
 | POST | `/submissions/submit` | student | `{ publicIds }` ajukan satu/banyak yang `ready`; wajib tanda tangan; transaksi status/history + notifikasi in-app Verifikator |
 | GET | `/submissions/:publicId/certificate` | pemilik, verifier kelasnya, validator | signed URL bukti (TTL 60 s) |
-| GET | `/submissions/:publicId/final-form` | pemilik, verifier kelasnya, validator | signed URL PDF final |
+| GET | `/submissions/:publicId/final-form` | pemilik, verifier kelasnya, validator | signed URL PDF final (TTL 60 s), hanya jika `final_form_status=ready` |
 | GET | `/verifier/queue` | verifier | antrian kelasnya (`waiting_verifier`); filter `aiStatus=clean\|warning`, urut `oldest\|newest\|flags` |
 | POST | `/verifier/submissions/:publicId/approve` | verifier kelasnya | Setujui (+e-sign tersimpan, 409 `SIGNATURE_REQUIRED`); hook `onVerifierApproved` setelah commit |
 | POST | `/verifier/submissions/:publicId/reject` | verifier kelasnya | Tolak `{ note }` wajib (zod + CHECK DB) |
@@ -351,7 +351,7 @@ Prefix `/api`. JSON, kecuali unggahan (`multipart/form-data`). Detail request/re
 | POST | `/validator/submissions/:publicId/credit` | validator | ubah kredit final `{ finalCredit (0–3, 2 desimal), reason }`; nilai sama → 400 |
 | POST | `/validator/submissions/:publicId/validate` | validator | Validasi; `final_credit` = hasil `/credit` terakhir atau estimasi |
 | POST | `/validator/submissions/:publicId/reject` | validator | Tolak `{ note }` wajib |
-| POST | `/validator/submissions/:publicId/regenerate-form` | validator | buat ulang PDF final |
+| POST | `/validator/submissions/:publicId/regenerate-form` | validator | buat ulang PDF final (`waiting_validator`, belum `ready`) |
 | GET | `/notifications` | semua | notifikasi in-app |
 | POST | `/notifications/:id/read` | pemilik | tandai dibaca |
 | POST | `/me/telegram/link` | student, verifier | deep link `t.me/<bot>?start=<token>` |
