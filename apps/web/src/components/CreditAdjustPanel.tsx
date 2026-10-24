@@ -38,7 +38,7 @@ export function CreditAdjustPanel({
   };
 
   return (
-    <section className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs space-y-3 text-xs">
+    <section className="bg-white rounded-card shadow-card p-4 space-y-3 text-xs">
       <h3 className="text-sm font-semibold text-slate-800">Kredit Final</h3>
       <dl className="grid grid-cols-2 gap-2">
         <div>

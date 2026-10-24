@@ -32,7 +32,7 @@ export function PdfViewer({ url, className, onRefreshUrl, fileName }: PdfViewerP
   };
 
   return (
-    <div className={cn('flex flex-col bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm', className)}>
+    <div className={cn('flex flex-col bg-white rounded-card shadow-card overflow-hidden', className)}>
       {/* Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50 text-xs">
         <div className="flex items-center gap-2">
