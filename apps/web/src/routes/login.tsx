@@ -52,7 +52,7 @@ export function LoginRoute() {
       acc[mockUser.role].push(mockUser);
       return acc;
     },
-    {} as Record<UserRole, typeof mockUsers>
+    {} as Record<UserRole, typeof mockUsers>,
   );
 
   const handleLogin = async (userId: number, role: UserRole) => {
@@ -72,7 +72,7 @@ export function LoginRoute() {
     <div className="max-w-4xl mx-auto py-8">
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 mb-3">
-          <h1 className="text-3xl font-serif font-bold text-brand-dark">
+          <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
             Masuk ke SKEM AI Co-Pilot
           </h1>
           <SimulasiBadge />
@@ -104,9 +104,7 @@ export function LoginRoute() {
                   <div className="p-2 rounded-lg bg-brand-blue-50 text-brand-blue">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h2 className="text-lg font-semibold text-brand-dark">
-                    {ROLE_LABELS[role]}
-                  </h2>
+                  <h2 className="text-lg font-semibold text-brand-dark">{ROLE_LABELS[role]}</h2>
                   <span className="text-xs text-slate-500">({users.length} akun)</span>
                 </div>
 
@@ -145,8 +143,8 @@ export function LoginRoute() {
       )}
 
       <div className="mt-8 p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
-        <strong>Catatan:</strong> Ini adalah sistem simulasi untuk demo. Semua data bersifat sintetis
-        dan tidak terhubung ke sistem SKEM PENS yang sebenarnya.
+        <strong>Catatan:</strong> Ini adalah sistem simulasi untuk demo. Semua data bersifat
+        sintetis dan tidak terhubung ke sistem SKEM PENS yang sebenarnya.
       </div>
     </div>
   );

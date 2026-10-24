@@ -26,7 +26,9 @@ export function MahasiswaProfileRoute() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif font-bold text-brand-dark">Profil Mahasiswa</h1>
+        <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
+          Profil Mahasiswa
+        </h1>
         <SimulasiBadge />
       </div>
 

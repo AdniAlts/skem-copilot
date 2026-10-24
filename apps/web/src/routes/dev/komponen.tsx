@@ -44,7 +44,7 @@ export function DevKomponenRoute() {
       <div>
         <div className="flex items-center gap-2">
           <Sparkles className="w-6 h-6 text-brand-blue" />
-          <h1 className="text-3xl font-serif font-bold text-brand-dark">
+          <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
             Katalog Komponen UI & Tema (FE-01)
           </h1>
           <SimulasiBadge />
