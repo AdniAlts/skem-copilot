@@ -162,7 +162,7 @@ export function Dropzone({ onFilesSelected, disabled, className }: DropzoneProps
 
       {/* Selected Files Preview */}
       {selectedFiles.length > 0 && (
-        <div className="bg-white rounded-lg border border-slate-200 p-4">
+        <div className="bg-white rounded-card shadow-card p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-semibold text-brand-dark">
               File Terpilih ({selectedFiles.length}/{MAX_FILES})

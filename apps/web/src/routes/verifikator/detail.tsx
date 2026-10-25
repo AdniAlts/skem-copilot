@@ -168,7 +168,7 @@ export function VerifikatorDetailRoute() {
           </Link>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-serif font-bold text-brand-dark">
+              <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
                 Verifikasi {publicId}
               </h1>
               <StatusBadge type="submission" status={submission.status} size="sm" />

@@ -11,7 +11,11 @@ export function VerifikatorSettingsRoute() {
   const { showToast } = useToast();
   const [showSignModal, setShowSignModal] = useState(false);
 
-  const { data: signatureUrl, refetch, isLoading } = useQuery<string | null>({
+  const {
+    data: signatureUrl,
+    refetch,
+    isLoading,
+  } = useQuery<string | null>({
     queryKey: ['verifier-signature'],
     queryFn: getSignature,
   });
@@ -36,7 +40,9 @@ export function VerifikatorSettingsRoute() {
     <div className="space-y-6 max-w-xl">
       <div className="flex items-center gap-2">
         <Settings className="w-6 h-6 text-brand-blue" />
-        <h1 className="text-2xl font-serif font-bold text-brand-dark">Pengaturan Tanda Tangan</h1>
+        <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
+          Pengaturan Tanda Tangan
+        </h1>
       </div>
 
       <Card>
@@ -74,11 +80,7 @@ export function VerifikatorSettingsRoute() {
           ) : (
             <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 flex flex-col items-center gap-3 text-center">
               <p className="text-sm text-slate-500">Belum ada tanda tangan tersimpan.</p>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowSignModal(true)}
-              >
+              <Button variant="primary" size="sm" onClick={() => setShowSignModal(true)}>
                 Buat Tanda Tangan
               </Button>
             </div>

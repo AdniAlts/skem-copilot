@@ -99,7 +99,7 @@ export function SubmissionCard({
   return (
     <div
       className={cn(
-        'bg-white rounded-lg border border-slate-200 p-4 hover:border-slate-300 transition-colors',
+        'bg-white rounded-card shadow-card p-4 hover:shadow-pop transition-shadow',
         className,
       )}
     >

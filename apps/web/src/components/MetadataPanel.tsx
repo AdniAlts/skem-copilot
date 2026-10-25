@@ -220,7 +220,7 @@ export function MetadataPanel({
         {/* ============================================================== */}
         {/* GRUP 1: IDENTITAS MAHASISWA (TERKUNCI / DARI AKUN)             */}
         {/* ============================================================== */}
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-xs">
+        <div className="bg-white rounded-card shadow-card overflow-hidden">
           <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded bg-slate-200 text-slate-700">
@@ -268,7 +268,7 @@ export function MetadataPanel({
         {/* ============================================================== */}
         {/* GRUP 2: INFORMASI KEGIATAN (EDITABLE DRAFT)                     */}
         {/* ============================================================== */}
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-xs">
+        <div className="bg-white rounded-card shadow-card overflow-hidden">
           <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-slate-800">

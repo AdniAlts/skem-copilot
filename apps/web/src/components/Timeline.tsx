@@ -1,7 +1,10 @@
 import React from 'react';
 import {
+  Check,
   CheckCircle2,
-  Clock,
+  CornerDownRight,
+  MoreHorizontal,
+  X,
   XCircle,
   FileText,
   UserCheck,
@@ -122,69 +125,77 @@ export function Timeline({
             ? 'Perlu perbaikan atau unggah ulang'
             : 'Menunggu proses validasi',
       icon: status === 'rejected' ? XCircle : CheckCircle2,
-      state:
-        status === 'approved'
-          ? 'completed'
-          : status === 'rejected'
-            ? 'rejected'
-            : 'pending',
+      state: status === 'approved' ? 'completed' : status === 'rejected' ? 'rejected' : 'pending',
     },
   ];
 
   if (compact) {
+    const isReached = (idx: number) =>
+      idx >= 0 && idx < steps.length && steps[idx]?.state !== 'pending';
     return (
       <div className={cn('w-full', className)}>
-        <div className="flex items-center justify-between relative">
-          {/* Connector line */}
-          <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-slate-200 z-0" />
-
+        <div className="flex w-full">
           {steps.map((step, idx) => {
             const isCompleted = step.state === 'completed';
             const isCurrent = step.state === 'current';
             const isRejected = step.state === 'rejected';
-
-            let circleClass = 'bg-white border-slate-300 text-slate-400';
-            if (isCompleted) {
-              circleClass = 'bg-emerald-600 border-emerald-600 text-white';
-            } else if (isCurrent) {
-              circleClass = 'bg-brand-blue-600 border-brand-blue-600 text-white ring-4 ring-brand-blue-100';
-            } else if (isRejected) {
-              circleClass = 'bg-red-600 border-red-600 text-white ring-4 ring-red-100';
-            }
+            const lineLeft =
+              isReached(idx) && isReached(idx - 1) ? 'bg-brand-blue' : 'bg-slate-200';
+            const lineRight =
+              isReached(idx) && isReached(idx + 1) ? 'bg-brand-blue' : 'bg-slate-200';
 
             return (
-              <div key={step.key} className="relative z-10 flex flex-col items-center group">
-                <div
-                  className={cn(
-                    'w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-semibold transition-all',
-                    circleClass,
-                  )}
-                  title={`${step.title} (${step.subtitle})`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle2 className="w-4 h-4" />
-                  ) : isRejected ? (
-                    <XCircle className="w-4 h-4" />
-                  ) : isCurrent ? (
-                    <Clock className="w-3.5 h-3.5 animate-pulse" />
-                  ) : (
-                    <span>{idx + 1}</span>
-                  )}
+              <div key={step.key} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+                <div className="flex w-full items-center">
+                  <span className={cn('h-0.5 flex-1', idx === 0 ? 'invisible' : lineLeft)} />
+                  <span
+                    className={cn(
+                      'grid h-6 w-6 flex-none place-items-center rounded-full border-2',
+                      isRejected
+                        ? 'border-brand-terracotta bg-brand-terracotta text-white'
+                        : isCompleted
+                          ? 'border-brand-blue bg-brand-blue text-white'
+                          : isCurrent
+                            ? 'border-brand-blue bg-white text-brand-blue'
+                            : 'border-slate-300 bg-white',
+                    )}
+                    title={`${step.title} (${step.subtitle})`}
+                  >
+                    {isRejected ? (
+                      <X className="h-3.5 w-3.5" strokeWidth={3} />
+                    ) : isCompleted ? (
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                    ) : isCurrent ? (
+                      <MoreHorizontal className="h-3.5 w-3.5" strokeWidth={3} />
+                    ) : null}
+                  </span>
+                  <span
+                    className={cn(
+                      'h-0.5 flex-1',
+                      idx === steps.length - 1 ? 'invisible' : lineRight,
+                    )}
+                  />
                 </div>
                 <span
                   className={cn(
-                    'text-[10px] mt-1 text-center font-medium max-w-[70px] truncate',
-                    isCurrent
-                      ? 'text-brand-blue font-semibold'
-                      : isRejected
-                        ? 'text-red-700 font-semibold'
+                    'text-center text-[11.5px] leading-tight',
+                    isRejected
+                      ? 'font-bold text-red-700'
+                      : isCurrent
+                        ? 'font-bold text-brand-dark'
                         : isCompleted
-                          ? 'text-slate-700'
+                          ? 'text-brand-dark'
                           : 'text-slate-400',
                   )}
                 >
-                  {step.title.split(' ')[0]}
+                  {step.title}
                 </span>
+                {isRejected && (
+                  <span className="inline-flex h-5 items-center gap-0.5 whitespace-nowrap rounded-full bg-brand-terracotta pl-1 pr-[7px] text-[10.5px] font-bold text-white">
+                    <CornerDownRight className="h-3 w-3" />
+                    Ditolak (perlu perbaikan)
+                  </span>
+                )}
               </div>
             );
           })}
@@ -192,12 +203,11 @@ export function Timeline({
 
         {/* Rejection notice in compact mode */}
         {status === 'rejected' && (
-          <div className="mt-3 p-2.5 bg-red-50/80 border border-red-200 rounded-lg text-xs flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-semibold text-red-800 block">Alasan Penolakan:</span>
-              <p className="text-red-700 text-xs mt-0.5">{rejectionNote}</p>
-            </div>
+          <div className="mt-3 flex items-start gap-1.5 text-[12.5px] leading-snug text-red-700">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              <span className="font-bold">Alasan Penolakan:</span> {rejectionNote}
+            </p>
           </div>
         )}
       </div>
@@ -220,11 +230,11 @@ export function Timeline({
               className={cn(
                 'p-2.5 rounded-lg border text-left transition-all',
                 isCompleted
-                  ? 'bg-white border-emerald-200 shadow-xs'
+                  ? 'bg-white border-emerald-200'
                   : isCurrent
-                    ? 'bg-brand-blue-50/70 border-brand-blue-200 shadow-xs ring-1 ring-brand-blue'
+                    ? 'bg-white border-brand-blue ring-1 ring-brand-blue'
                     : isRejected
-                      ? 'bg-red-50/70 border-red-200 shadow-xs ring-1 ring-red-400'
+                      ? 'bg-red-50 border-red-200 ring-1 ring-brand-terracotta'
                       : 'bg-white/50 border-slate-200 opacity-60',
               )}
             >
@@ -245,7 +255,7 @@ export function Timeline({
                 </span>
                 <span
                   className={cn(
-                    'text-xs font-semibold truncate',
+                    'text-xs font-bold truncate',
                     isCompleted
                       ? 'text-emerald-900'
                       : isCurrent
@@ -272,7 +282,8 @@ export function Timeline({
             <h4 className="text-sm font-semibold text-red-800">Catatan Penolakan Staf</h4>
             <p className="text-xs text-red-700 mt-1 leading-relaxed">{rejectionNote}</p>
             <p className="text-[11px] text-red-600/80 mt-2">
-              Silakan perbaiki data atau unggah ulang dokumen sertifikat yang valid pada menu unggah.
+              Silakan perbaiki data atau unggah ulang dokumen sertifikat yang valid pada menu
+              unggah.
             </p>
           </div>
         </div>
@@ -318,9 +329,7 @@ export function Timeline({
                       {item.note || `Status berubah menjadi ${item.to}`}
                     </span>
                     {item.by && (
-                      <span className="text-slate-400 text-[11px] ml-1.5">
-                        oleh {item.by}
-                      </span>
+                      <span className="text-slate-400 text-[11px] ml-1.5">oleh {item.by}</span>
                     )}
                   </div>
                 </div>

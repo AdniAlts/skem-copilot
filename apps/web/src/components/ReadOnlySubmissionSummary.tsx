@@ -12,7 +12,7 @@ type Row = { label: string; value: string | number | null | undefined };
 
 function Section({ title, rows }: { title: string; rows: Row[] }) {
   return (
-    <section className="bg-white rounded-lg border border-slate-200 shadow-xs">
+    <section className="bg-white rounded-card shadow-card">
       <h3 className="px-4 py-2.5 border-b border-slate-200 bg-slate-50 text-sm font-semibold text-slate-800">
         {title}
       </h3>

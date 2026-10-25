@@ -1,20 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  FileWarning,
-  Inbox,
-  ShieldCheck,
-} from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle2, FileWarning, Inbox } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
 import { SimulasiBadge } from '../../components/SimulasiBadge';
+import { StatCard } from '../../components/StatCard';
 import {
   Table,
   TableBody,
@@ -52,50 +46,40 @@ export function ValidatorQueueRoute() {
   return (
     <div className="space-y-6">
       <div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <ShieldCheck className="w-6 h-6 text-brand-blue" />
-          <h1 className="text-2xl font-serif font-bold text-brand-dark">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
             Antrian Validator Lintas Kelas
           </h1>
           <SimulasiBadge />
         </div>
-        <p className="text-sm text-slate-600 mt-1">
+        <p className="mt-1.5 text-[14.5px] leading-relaxed text-slate-600">
           Pengajuan yang sudah disetujui Verifikator dan menunggu validasi akhir.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <Inbox className="w-8 h-8 text-brand-blue" />
-            <div>
-              <p className="text-xs text-slate-500">Menunggu validasi</p>
-              <p className="text-2xl font-bold text-brand-dark">{data?.summary.waiting ?? '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <FileWarning className="w-8 h-8 text-brand-terracotta" />
-            <div>
-              <p className="text-xs text-slate-500">PDF formulir final gagal dibuat</p>
-              <p className="text-2xl font-bold text-brand-dark">
-                {data?.summary.formFailed ?? '—'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Menunggu validasi"
+          value={data?.summary.waiting ?? '—'}
+          icon={<Inbox className="h-[17px] w-[17px]" />}
+        />
+        <StatCard
+          label="PDF formulir final gagal dibuat"
+          value={data?.summary.formFailed ?? '—'}
+          tone="error"
+          icon={<FileWarning className="h-[17px] w-[17px]" />}
+        />
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <Card className="overflow-hidden p-0">
+        <CardHeader className="mb-0 flex flex-col justify-between gap-3 border-b border-slate-100 px-4 py-3.5 md:flex-row md:items-center">
           <CardTitle>Pengajuan Menunggu Validasi</CardTitle>
-          <label className="flex items-center gap-1.5 text-xs text-slate-600">
+          <label className="flex items-center gap-2 text-[13px] text-slate-600">
             Kelas
             <select
               value={className}
               onChange={(event) => setClassName(event.target.value)}
-              className="rounded-lg border border-slate-200 px-2 py-1.5 bg-white"
+              className="h-9 rounded-[10px] border border-slate-300 bg-white px-2 text-[13px] text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-blue"
             >
               <option value={ALL_CLASSES}>Semua kelas</option>
               {classes.map((name) => (

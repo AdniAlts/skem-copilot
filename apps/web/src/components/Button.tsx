@@ -20,22 +20,22 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed select-none gap-2',
+        'inline-flex items-center justify-center font-bold rounded-[10px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed select-none gap-2',
         // Ukuran
-        size === 'sm' && 'px-3 py-1.5 text-xs',
-        size === 'md' && 'px-4 py-2 text-sm',
-        size === 'lg' && 'px-5 py-2.5 text-base',
+        size === 'sm' && 'h-9 px-3 text-[13px]',
+        size === 'md' && 'h-10 px-4 text-sm',
+        size === 'lg' && 'h-[50px] px-5 text-[15px] rounded-xl',
         // Varian
         variant === 'primary' &&
-          'bg-brand-blue text-white hover:bg-brand-blue-700 focus:ring-brand-blue active:bg-brand-blue-800 shadow-sm',
+          'bg-brand-blue text-white hover:bg-brand-blue-700 focus-visible:ring-brand-blue active:bg-brand-blue-800 shadow-cta',
         variant === 'secondary' &&
-          'bg-slate-100 text-slate-800 hover:bg-slate-200 focus:ring-slate-400 active:bg-slate-300',
+          'bg-emerald-50 text-brand-blue-600 hover:bg-brand-blue-100 focus-visible:ring-brand-blue-300 active:bg-brand-blue-200',
         variant === 'danger' &&
-          'bg-brand-terracotta text-white hover:bg-red-700 focus:ring-brand-terracotta active:bg-red-800 shadow-sm',
+          'bg-brand-terracotta text-white hover:bg-red-600 focus-visible:ring-brand-terracotta active:bg-red-700',
         variant === 'outline' &&
-          'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-400',
+          'border border-slate-300 bg-white text-brand-dark hover:bg-brand-bg focus-visible:ring-brand-blue-300',
         variant === 'ghost' &&
-          'bg-transparent text-slate-700 hover:bg-slate-100 focus:ring-slate-400',
+          'bg-transparent text-brand-blue hover:bg-emerald-50 focus-visible:ring-brand-blue-300',
         className,
       )}
       disabled={disabled || isLoading}

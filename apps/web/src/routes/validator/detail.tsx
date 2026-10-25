@@ -162,7 +162,7 @@ export function ValidatorDetailRoute() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs space-y-3">
+      <div className="bg-white rounded-card shadow-card p-4 space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <Link to="/validator" title="Kembali ke antrian">
@@ -292,7 +292,7 @@ export function ValidatorDetailRoute() {
         <div className="lg:col-span-4 space-y-4">
           <ReadOnlySubmissionSummary submission={submission} />
 
-          <section className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs text-xs">
+          <section className="bg-white rounded-card shadow-card p-4 text-xs">
             <h3 className="text-sm font-semibold text-slate-800 mb-2">Catatan Verifikator</h3>
             {verifierReviews.length === 0 ? (
               <p className="text-slate-500">Tidak ada catatan.</p>
@@ -310,7 +310,7 @@ export function ValidatorDetailRoute() {
             )}
           </section>
 
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
+          <div className="bg-white rounded-card shadow-card p-4">
             <FindingsList findings={submission.findings} />
           </div>
         </div>

@@ -1,65 +1,45 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/Card';
-import { BarChart3, TrendingUp, Users, CheckCircle } from 'lucide-react';
+import { StatCard } from '../../components/StatCard';
+import { TrendingUp, Users, CheckCircle } from 'lucide-react';
 
 export function UnitMonitoringRoute() {
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-brand-blue" />
-          <h1 className="text-2xl font-serif font-bold text-brand-dark">
-            Monitoring SKEM &bull; Unit Kemahasiswaan
-          </h1>
-        </div>
-        <p className="text-sm text-slate-600 mt-1">
+    <div className="space-y-5">
+      <header className="flex flex-col gap-1.5">
+        <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
+          Monitoring SKEM &bull; Unit Kemahasiswaan
+        </h1>
+        <p className="text-[14.5px] leading-relaxed text-slate-600">
           Tampilan analitik dan evaluasi pelaksanaan SKEM (Read-only)
         </p>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-brand-blue-50 text-brand-blue rounded-lg">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block">Total Pengajuan</span>
-              <span className="text-xl font-bold text-brand-dark">142 Berkas</span>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
-              <CheckCircle className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block">Telah Divalidasi</span>
-              <span className="text-xl font-bold text-brand-dark">118 Berkas</span>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-lg">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block">Rata-rata Kredit / Mhs</span>
-              <span className="text-xl font-bold text-brand-dark">2,45 Poin</span>
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+        <StatCard
+          label="Total Pengajuan"
+          value="142 Berkas"
+          icon={<Users className="h-[17px] w-[17px]" />}
+        />
+        <StatCard
+          label="Telah Divalidasi"
+          value="118 Berkas"
+          tone="blue"
+          icon={<CheckCircle className="h-[17px] w-[17px]" />}
+        />
+        <StatCard
+          label="Rata-rata Kredit / Mhs"
+          value="2,45 Poin"
+          tone="warning"
+          icon={<TrendingUp className="h-[17px] w-[17px]" />}
+        />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Distribusi Pengajuan per Kelas</CardTitle>
+          <CardTitle className="text-xl">Distribusi Pengajuan per Kelas</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-44 flex items-center justify-center bg-slate-50 border border-dashed border-slate-200 rounded text-xs text-slate-400">
+          <div className="flex h-44 items-center justify-center rounded-[10px] border border-dashed border-slate-300 bg-slate-50 text-xs text-slate-400">
             [Visualisasi Grafik Pengajuan SKEM per Kelas]
           </div>
         </CardContent>

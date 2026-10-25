@@ -16,14 +16,14 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center font-medium rounded-full transition-colors',
-        size === 'sm' && 'px-2 py-0.5 text-xs',
-        size === 'md' && 'px-2.5 py-1 text-xs',
+        'inline-flex items-center gap-1 font-bold rounded-full transition-colors',
+        size === 'sm' && 'h-[22px] px-2 text-[11.5px]',
+        size === 'md' && 'h-6 px-2.5 text-xs',
         variant === 'default' && 'bg-slate-100 text-slate-700',
-        variant === 'outline' && 'border border-slate-300 text-slate-700 bg-transparent',
-        variant === 'blue' && 'bg-brand-blue-50 text-brand-blue border border-brand-blue-200/60',
-        variant === 'amber' && 'bg-amber-50 text-amber-800 border border-amber-200/60',
-        variant === 'terracotta' && 'bg-red-50 text-brand-terracotta border border-red-200/60',
+        variant === 'outline' && 'border border-slate-200 text-slate-700 bg-white',
+        variant === 'blue' && 'bg-brand-blue-100 text-brand-blue-600',
+        variant === 'amber' && 'bg-amber-50 text-amber-800',
+        variant === 'terracotta' && 'bg-red-50 text-red-700',
         variant === 'slate' && 'bg-slate-100 text-slate-600',
         className,
       )}

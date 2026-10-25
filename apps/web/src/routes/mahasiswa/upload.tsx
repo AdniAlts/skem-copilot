@@ -255,7 +255,9 @@ export function MahasiswaUploadRoute() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-serif font-bold text-brand-dark">Unggah Berkas Sertifikat</h1>
+        <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
+          Unggah Berkas Sertifikat
+        </h1>
         <p className="text-sm text-slate-600">
           Unggah hingga 10 berkas PDF sertifikat sekaligus untuk dianalisis oleh AI Pre-Check Agent.
         </p>

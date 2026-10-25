@@ -16,7 +16,7 @@ export function ProgressTracker({ progress, className }: ProgressTrackerProps) {
   const hasProblems = (counts.problem ?? 0) > 0;
 
   return (
-    <div className={cn('bg-white rounded-lg border border-slate-200 p-4', className)}>
+    <div className={cn('bg-white rounded-card shadow-card p-4', className)}>
       {/* Progress Bar */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-2">
@@ -35,7 +35,7 @@ export function ProgressTracker({ progress, className }: ProgressTrackerProps) {
                 ? hasErrors || hasProblems
                   ? 'bg-amber-500'
                   : 'bg-emerald-500'
-                : 'bg-brand-blue'
+                : 'bg-brand-blue',
             )}
             style={{ width: `${percentage}%` }}
           />

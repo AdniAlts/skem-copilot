@@ -9,11 +9,10 @@ export function Card({ className, variant = 'default', children, ...props }: Car
   return (
     <div
       className={cn(
-        'rounded-card bg-white border border-slate-100 p-5 transition-shadow duration-150',
+        'rounded-card bg-white p-5 transition-shadow duration-150',
         variant === 'default' && 'shadow-card',
-        variant === 'flat' && 'border-slate-200',
-        variant === 'interactive' &&
-          'shadow-card hover:shadow-md cursor-pointer hover:border-slate-200',
+        variant === 'flat' && 'border border-slate-200',
+        variant === 'interactive' && 'shadow-card hover:shadow-pop cursor-pointer',
         className,
       )}
       {...props}
@@ -41,7 +40,10 @@ export function CardTitle({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-lg font-serif font-semibold text-brand-dark', className)} {...props}>
+    <h3
+      className={cn('text-lg font-serif font-semibold leading-tight text-brand-dark', className)}
+      {...props}
+    >
       {children}
     </h3>
   );
@@ -67,7 +69,7 @@ export function CardFooter({
   return (
     <div
       className={cn(
-        'mt-5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2',
+        'mt-5 pt-4 border-t border-slate-100 flex items-center justify-end gap-2',
         className,
       )}
       {...props}

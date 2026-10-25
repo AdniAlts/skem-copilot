@@ -16,4 +16,11 @@
   h6 {
     @apply font-serif text-brand-dark;
   }
+
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
 }

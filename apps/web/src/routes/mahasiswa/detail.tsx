@@ -193,7 +193,7 @@ export function MahasiswaDetailRoute() {
       {/* ============================================================== */}
       {/* TOP HEADER: BREADCRUMBS, STATUS BADGES & ACTION BUTTONS        */}
       {/* ============================================================== */}
-      <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
+      <div className="bg-white rounded-card shadow-card p-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <Link to="/mahasiswa">
@@ -422,7 +422,7 @@ export function MahasiswaDetailRoute() {
           />
 
           {/* Daftar Temuan AI Pre-Check */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
+          <div className="bg-white rounded-card shadow-card p-4">
             <FindingsList findings={submission.findings} />
           </div>
 

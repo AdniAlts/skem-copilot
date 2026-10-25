@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -13,6 +13,8 @@ import {
   ChevronDown,
   ChevronUp,
   User,
+  IdCard,
+  Users,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -131,259 +133,107 @@ export function MahasiswaDashboardRoute() {
   const isK2Complete = k2.earned >= k2.target;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-6xl space-y-[22px]">
       {/* ── Header Identitas Mahasiswa ─────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-serif font-bold text-brand-dark">
-              Selamat Datang, {user?.name || 'Mahasiswa'}
-            </h1>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-brand-blue-50 text-brand-blue font-medium border border-brand-blue-200/60">
-              Mahasiswa
-            </span>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-2.5">
+          <h1 className="text-[28px] sm:text-[32px] leading-[1.15] font-serif font-bold text-brand-dark">
+            Selamat Datang, {user?.name || 'Mahasiswa'}
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            <IdentityChip icon={<IdCard className="h-4 w-4" />}>
+              NRP {user?.nrp || '3122500001'}
+            </IdentityChip>
+            <IdentityChip icon={<Users className="h-4 w-4" />}>
+              Kelas {user?.className || '2 D3 IT B'}
+            </IdentityChip>
+            <IdentityChip icon={<User className="h-4 w-4" />}>
+              Dosen Wali: {user?.verifierName || 'Dr. Akhmad Alimudin (Verifikator)'}
+            </IdentityChip>
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>
-              NRP:{' '}
-              <strong className="font-semibold text-slate-800">{user?.nrp || '3122500001'}</strong>
-            </span>
-            <span>&bull;</span>
-            <span>
-              Kelas:{' '}
-              <strong className="font-semibold text-slate-800">
-                {user?.className || '2 D3 IT B'}
-              </strong>
-            </span>
-            <span>&bull;</span>
-            <span className="flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-slate-400" />
-              Dosen Wali:{' '}
-              <strong className="font-semibold text-slate-800">
-                {user?.verifierName || 'Dr. Akhmad Alimudin (Verifikator)'}
-              </strong>
-            </span>
-          </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link to="/mahasiswa/unggah">
-            <Button variant="primary" className="gap-2 shadow-xs">
-              <Upload className="w-4 h-4" />
-              Unggah Sertifikat
-            </Button>
-          </Link>
-        </div>
-      </div>
+        <Link to="/mahasiswa/unggah">
+          <Button variant="primary" size="lg">
+            <Upload className="h-5 w-5" />
+            Unggah Sertifikat
+          </Button>
+        </Link>
+      </header>
 
       {/* ── Progres Akumulasi Kredit Menuju 3,00 Poin ─────────────── */}
-      <Card className="shadow-xs border-slate-200/80">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-blue-50 flex items-center justify-center text-brand-blue">
-              <Award className="w-5 h-5" />
-            </div>
-            <div>
-              <CardTitle className="text-base sm:text-lg">
+      <Card className="p-6">
+        {isLoadingProgress ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-sm text-slate-500">
+            <RefreshCw className="h-5 w-5 animate-spin text-brand-blue" />
+            <span>Memuat progres kredit...</span>
+          </div>
+        ) : progressError ? (
+          <ErrorState
+            title="Gagal Memuat Progres Kredit"
+            message="Terjadi kendala saat mengambil data progres kredit SKEM. Silakan coba lagi."
+            onRetry={() => refetchProgress()}
+          />
+        ) : (
+          <div className="grid items-center gap-7 md:grid-cols-[230px_minmax(0,1fr)]">
+            <div className="flex flex-col gap-2 border-slate-100 md:border-r md:pr-6">
+              <span className="text-[13px] font-bold text-slate-600">
                 Progres Kredit SKEM (Target 3,00)
-              </CardTitle>
-              <p className="text-xs text-slate-500">
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="font-serif text-[56px] font-bold leading-none">
+                  {currentTotal.toFixed(2)}
+                </span>
+                <span className="text-[15px] text-slate-600">/ {targetTotal.toFixed(2)}</span>
+              </div>
+              <ProgressBar percent={totalPercentage} className="h-2.5" />
+              <span className="text-[13px] text-slate-600">
+                {isFulfilled
+                  ? `Terpenuhi · ${totalPercentage}% tercapai`
+                  : `Belum Terpenuhi (Kurang ${(targetTotal - currentTotal).toFixed(2)}) · ${totalPercentage}% tercapai`}
+              </span>
+              <span className="text-xs text-slate-500">
                 Akumulasi kredit resmi dari pengajuan yang telah disetujui Validator
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {isFulfilled ? (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Terpenuhi
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                <Clock className="w-3.5 h-3.5" />
-                Belum Terpenuhi (Kurang {(targetTotal - currentTotal).toFixed(2)})
-              </span>
-            )}
-            <span className="text-base sm:text-lg font-serif font-bold text-brand-dark ml-2">
-              {currentTotal.toFixed(2)} / {targetTotal.toFixed(2)} Poin
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-1">
-          {isLoadingProgress ? (
-            <div className="py-8 text-center text-sm text-slate-500 flex flex-col items-center justify-center gap-2">
-              <RefreshCw className="w-5 h-5 animate-spin text-brand-blue" />
-              <span>Memuat progres kredit...</span>
             </div>
-          ) : progressError ? (
-            <div className="py-4">
-              <ErrorState
-                title="Gagal Memuat Progres Kredit"
-                message="Terjadi kendala saat mengambil data progres kredit SKEM. Silakan coba lagi."
-                onRetry={() => refetchProgress()}
+            <div className="flex flex-col gap-4">
+              <ComponentProgressRow
+                name="Komponen 1 (Wajib)"
+                description="Kegiatan Wajib Institusi (LKMM, P2K, Bela Negara)"
+                earned={k1.earned}
+                target={k1.target}
+                targetLabel="Target"
+                complete={isK1Complete}
+                pendingLabel="Prioritas Wajib"
+              />
+              <ComponentProgressRow
+                name="Komponen 2 (Wajib)"
+                description="Organisasi, Kepengurusan, dan Kepanitiaan"
+                earned={k2.earned}
+                target={k2.target}
+                targetLabel="Target"
+                complete={isK2Complete}
+                pendingLabel="Prioritas Wajib"
+              />
+              <ComponentProgressRow
+                name="Komponen 3 (Pilihan)"
+                description="Prestasi, Lomba, Seminar, Pelatihan & Penalaran"
+                earned={k3.earned}
+                target={k3.target}
+                targetLabel="Min"
+                complete={k3.earned >= k3.target}
               />
             </div>
-          ) : (
-            <>
-              {/* Main Progress Bar */}
-              <div>
-                <div className="flex justify-between text-xs text-slate-500 mb-1.5 font-medium">
-                  <span>Progres Kelulusan</span>
-                  <span>{totalPercentage}% Tercapai</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/60">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all duration-500 ease-out',
-                      isFulfilled ? 'bg-emerald-600' : 'bg-brand-blue',
-                    )}
-                    style={{ width: `${totalPercentage}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* 3 Component Breakdown Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-                {/* Komponen 1 */}
-                <div
-                  className={cn(
-                    'p-3.5 rounded-xl border transition-all text-xs flex flex-col justify-between',
-                    isK1Complete
-                      ? 'bg-emerald-50/40 border-emerald-200'
-                      : 'bg-amber-50/50 border-amber-200 ring-1 ring-amber-200/70',
-                  )}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-slate-800 text-sm">
-                        Komponen 1 (Wajib)
-                      </span>
-                      {!isK1Complete && (
-                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-200/80 text-amber-900">
-                          Prioritas Wajib
-                        </span>
-                      )}
-                      {isK1Complete && (
-                        <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Lengkap
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-slate-500 text-[11px] mb-2">
-                      Kegiatan Wajib Institusi (LKMM, P2K, Bela Negara)
-                    </p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
-                      <span>Target: {k1.target.toFixed(2)}</span>
-                      <span className="font-bold text-slate-800">{k1.earned.toFixed(2)} Poin</span>
-                    </div>
-                    <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={cn(
-                          'h-2 rounded-full',
-                          isK1Complete ? 'bg-emerald-600' : 'bg-amber-500',
-                        )}
-                        style={{
-                          width: `${Math.min(Math.round((k1.earned / k1.target) * 100), 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Komponen 2 */}
-                <div
-                  className={cn(
-                    'p-3.5 rounded-xl border transition-all text-xs flex flex-col justify-between',
-                    isK2Complete
-                      ? 'bg-emerald-50/40 border-emerald-200'
-                      : 'bg-amber-50/50 border-amber-200 ring-1 ring-amber-200/70',
-                  )}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-slate-800 text-sm">
-                        Komponen 2 (Wajib)
-                      </span>
-                      {!isK2Complete && (
-                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-200/80 text-amber-900">
-                          Prioritas Wajib
-                        </span>
-                      )}
-                      {isK2Complete && (
-                        <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Lengkap
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-slate-500 text-[11px] mb-2">
-                      Organisasi, Kepengurusan, dan Kepanitiaan
-                    </p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
-                      <span>Target: {k2.target.toFixed(2)}</span>
-                      <span className="font-bold text-slate-800">{k2.earned.toFixed(2)} Poin</span>
-                    </div>
-                    <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={cn(
-                          'h-2 rounded-full',
-                          isK2Complete ? 'bg-emerald-600' : 'bg-amber-500',
-                        )}
-                        style={{
-                          width: `${Math.min(Math.round((k2.earned / k2.target) * 100), 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Komponen 3 */}
-                <div className="p-3.5 rounded-xl border bg-slate-50/60 border-slate-200 text-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-slate-800 text-sm">
-                        Komponen 3 (Pilihan)
-                      </span>
-                      {k3.earned >= k3.target && (
-                        <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Lengkap
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-slate-500 text-[11px] mb-2">
-                      Prestasi, Lomba, Seminar, Pelatihan & Penalaran
-                    </p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
-                      <span>Min: {k3.target.toFixed(2)}</span>
-                      <span className="font-bold text-slate-800">{k3.earned.toFixed(2)} Poin</span>
-                    </div>
-                    <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
-                      <div
-                        className="h-2 rounded-full bg-brand-blue"
-                        style={{
-                          width: `${Math.min(Math.round((k3.earned / k3.target) * 100), 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
+          </div>
+        )}
       </Card>
 
       {/* ── Daftar Pengajuan Resmi Mahasiswa ─────────────────────── */}
-      <Card className="shadow-xs border-slate-200/80">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <Card className="overflow-hidden p-0">
+        <CardHeader className="mb-0 flex flex-col justify-between gap-3 border-b border-slate-100 px-[22px] py-[18px] sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-brand-dark" />
-              <CardTitle className="text-lg">Daftar Pengajuan Kegiatan</CardTitle>
+              <CardTitle className="text-xl">Daftar Pengajuan Kegiatan</CardTitle>
               {isRefetchingSubmissions && (
                 <RefreshCw className="w-3.5 h-3.5 text-slate-400 animate-spin" />
               )}
@@ -394,14 +244,14 @@ export function MahasiswaDashboardRoute() {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-lg text-xs font-medium">
+          <div className="flex flex-wrap items-center gap-0.5 rounded-full bg-emerald-50 p-[3px] text-[12.5px] font-bold">
             <button
               onClick={() => setActiveTab('all')}
               className={cn(
-                'px-3 py-1.5 rounded-md transition-all',
+                'h-[34px] px-3 rounded-full transition-colors',
                 activeTab === 'all'
-                  ? 'bg-white text-brand-dark shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900',
+                  ? 'bg-brand-blue text-white'
+                  : 'text-slate-700 hover:text-brand-blue',
               )}
             >
               Semua ({counts.all})
@@ -409,10 +259,10 @@ export function MahasiswaDashboardRoute() {
             <button
               onClick={() => setActiveTab('in_process')}
               className={cn(
-                'px-3 py-1.5 rounded-md transition-all',
+                'h-[34px] px-3 rounded-full transition-colors',
                 activeTab === 'in_process'
-                  ? 'bg-white text-brand-blue shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900',
+                  ? 'bg-brand-blue text-white'
+                  : 'text-slate-700 hover:text-brand-blue',
               )}
             >
               Dalam Proses ({counts.in_process})
@@ -420,10 +270,10 @@ export function MahasiswaDashboardRoute() {
             <button
               onClick={() => setActiveTab('approved')}
               className={cn(
-                'px-3 py-1.5 rounded-md transition-all',
+                'h-[34px] px-3 rounded-full transition-colors',
                 activeTab === 'approved'
-                  ? 'bg-white text-emerald-800 shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900',
+                  ? 'bg-brand-blue text-white'
+                  : 'text-slate-700 hover:text-brand-blue',
               )}
             >
               Disetujui ({counts.approved})
@@ -431,10 +281,10 @@ export function MahasiswaDashboardRoute() {
             <button
               onClick={() => setActiveTab('rejected')}
               className={cn(
-                'px-3 py-1.5 rounded-md transition-all',
+                'h-[34px] px-3 rounded-full transition-colors',
                 activeTab === 'rejected'
-                  ? 'bg-white text-red-800 shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900',
+                  ? 'bg-brand-blue text-white'
+                  : 'text-slate-700 hover:text-brand-blue',
               )}
             >
               Ditolak ({counts.rejected})
@@ -494,8 +344,8 @@ export function MahasiswaDashboardRoute() {
                   <div
                     key={sub.publicId}
                     className={cn(
-                      'p-4 hover:bg-slate-50/50 transition-colors space-y-3',
-                      isRejected && 'bg-red-50/20',
+                      'px-[22px] py-[18px] hover:bg-slate-50 transition-colors space-y-3.5',
+                      isRejected && 'bg-red-50/30',
                     )}
                   >
                     {/* Item Header */}
@@ -506,7 +356,7 @@ export function MahasiswaDashboardRoute() {
                             {sub.publicId}
                           </span>
                           <span className="text-slate-300">&bull;</span>
-                          <h4 className="font-semibold text-brand-dark text-sm sm:text-base">
+                          <h4 className="font-sans text-[15px] font-bold leading-snug text-brand-dark">
                             {sub.activityName || sub.fileName}
                           </h4>
                         </div>
@@ -535,7 +385,7 @@ export function MahasiswaDashboardRoute() {
                             <span className="text-[10px] text-emerald-700 block font-medium">
                               Kredit Final
                             </span>
-                            <span className="text-sm sm:text-base font-serif font-bold text-emerald-800">
+                            <span className="font-mono text-sm font-medium text-emerald-800 sm:text-base">
                               +{(sub.finalCredit ?? sub.estimatedCredit ?? 0).toFixed(2)} Poin
                             </span>
                           </div>
@@ -544,7 +394,7 @@ export function MahasiswaDashboardRoute() {
                             <span className="text-[10px] text-slate-400 block font-medium">
                               Estimasi Kredit
                             </span>
-                            <span className="text-sm font-semibold text-slate-700">
+                            <span className="font-mono text-sm font-medium text-slate-700">
                               {(sub.estimatedCredit ?? 0).toFixed(2)} Poin
                             </span>
                           </div>
@@ -607,6 +457,83 @@ export function MahasiswaDashboardRoute() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function IdentityChip({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 text-[13px] text-brand-dark">
+      <span className="text-brand-blue">{icon}</span>
+      {children}
+    </span>
+  );
+}
+
+function ProgressBar({
+  percent,
+  tone = 'blue',
+  className,
+}: {
+  percent: number;
+  tone?: 'blue' | 'yellow';
+  className?: string;
+}) {
+  return (
+    <span className={cn('block h-2 overflow-hidden rounded-full bg-slate-100', className)}>
+      <span
+        className={cn(
+          'block h-full rounded-full transition-all duration-500 ease-out',
+          tone === 'blue' ? 'bg-brand-blue' : 'bg-brand-yellow',
+        )}
+        style={{ width: `${percent}%` }}
+      />
+    </span>
+  );
+}
+
+interface ComponentProgressRowProps {
+  name: string;
+  description: string;
+  earned: number;
+  target: number;
+  targetLabel: string;
+  complete: boolean;
+  /** Label chip saat belum lengkap; tanpa chip jika tidak diisi. */
+  pendingLabel?: string;
+}
+
+function ComponentProgressRow({
+  name,
+  description,
+  earned,
+  target,
+  targetLabel,
+  complete,
+  pendingLabel,
+}: ComponentProgressRowProps) {
+  const percent = Math.min(Math.round((earned / target) * 100), 100);
+  return (
+    <div className="flex flex-col gap-[7px]">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span className="text-[14.5px] font-bold">{name}</span>
+        <span className="text-[12.5px] text-slate-500">{description}</span>
+        {complete ? (
+          <span className="inline-flex h-[22px] items-center gap-1 rounded-full bg-brand-blue-100 pl-1.5 pr-2 text-[11.5px] font-bold text-brand-blue-600">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Lengkap
+          </span>
+        ) : (
+          pendingLabel && (
+            <span className="inline-flex h-[22px] items-center gap-1 rounded-full bg-brand-yellow-100 pl-1.5 pr-2 text-[11.5px] font-bold text-brand-yellow-900">
+              <Clock className="h-3.5 w-3.5" /> {pendingLabel}
+            </span>
+          )
+        )}
+        <span className="ml-auto font-mono text-[13.5px]">
+          {earned.toFixed(2)} / {targetLabel} {target.toFixed(2)}
+        </span>
+      </div>
+      <ProgressBar percent={percent} tone={complete ? 'blue' : 'yellow'} />
     </div>
   );
 }
