@@ -37,6 +37,8 @@ const envSchema = z.object({
   // --- Telegram (opsional; kosong = bot nonaktif) ---
   TELEGRAM_BOT_TOKEN: z.string().optional().default(''),
   TELEGRAM_BOT_USERNAME: z.string().optional().default(''),
+  TELEGRAM_WEBHOOK_SECRET: z.string().optional().default(''),
+  CRON_SECRET: z.string().optional().default(''),
 });
 
 export type Env = z.infer<typeof envSchema>;

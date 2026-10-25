@@ -5,7 +5,7 @@ Track: CBN Digital Campus Worker, PENS Hackathon 2026 (9–10 Oktober 2026).
 
 > Bagian bertanda `TODO` diisi dengan hasil nyata selama acara. Angka akurasi dan token hanya ditulis setelah benar-benar diukur.
 
-Dokumen lain: [PRD](docs/PRD.md) · [Arsitektur](ARCHITECTURE.md) · [API](docs/API.md) · [Aturan agent](AGENTS.md) · [Pengungkapan teknologi & AI](tech.md)
+Dokumen lain: [PRD](docs/PRD.md) · [Arsitektur](ARCHITECTURE.md) · [API](docs/API.md) · [Deploy Vercel](docs/DEPLOYMENT.md) · [Aturan agent](AGENTS.md) · [Pengungkapan teknologi & AI](tech.md)
 
 ## 1. Target user dan masalah
 - **Target user:** mahasiswa D3/STr angkatan 2024+ yang mengajukan SKEM; dosen wali (Verifikator) yang memeriksa pengajuan kelasnya; Validator yang memvalidasi secara administratif dan teknis.

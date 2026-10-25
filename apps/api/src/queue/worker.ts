@@ -175,41 +175,36 @@ export async function processSubmission(submissionId: number, config = DEFAULT_W
   }
 }
 
+export async function processQueuedSubmissions(config = DEFAULT_WORKER_CONFIG): Promise<number> {
+  const { client, db } = createDb();
+  try {
+    const jobs = await db.transaction(async (tx) => {
+      const claimed = await tx.execute<{ id: number }>(sql`
+        WITH picked AS (
+          SELECT id
+          FROM submissions
+          WHERE review_status = 'queued'
+            AND (next_attempt_at IS NULL OR next_attempt_at <= now())
+          ORDER BY created_at
+          FOR UPDATE SKIP LOCKED
+          LIMIT ${config.concurrency}
+        )
+        UPDATE submissions
+        SET review_status = 'analyzing', locked_at = now(), attempts = attempts + 1, updated_at = now()
+        WHERE id IN (SELECT id FROM picked)
+        RETURNING id
+      `);
+      return [...claimed].map((job) => Number(job.id));
+    });
+    await Promise.all(jobs.map((id) => processSubmission(id, config, true)));
+    return jobs.length;
+  } finally {
+    await client.end();
+  }
+}
+
 export function startWorker(config = DEFAULT_WORKER_CONFIG): { stop: () => void } {
   if (process.env.NODE_ENV === 'test') return { stop: () => undefined };
-  let stopped = false;
-  let running = 0;
-  const tick = async (): Promise<void> => {
-    if (stopped || running >= config.concurrency) return;
-    const { client, db } = createDb();
-    try {
-      const jobs = await db.transaction(async (tx) => {
-        const limit = Math.max(1, config.concurrency - running);
-        const claimed = await tx.execute<{ id: number }>(sql`
-          WITH picked AS (
-            SELECT id
-            FROM submissions
-            WHERE review_status = 'queued'
-              AND (next_attempt_at IS NULL OR next_attempt_at <= now())
-            ORDER BY created_at
-            FOR UPDATE SKIP LOCKED
-            LIMIT ${limit}
-          )
-          UPDATE submissions
-          SET review_status = 'analyzing', locked_at = now(), attempts = attempts + 1, updated_at = now()
-          WHERE id IN (SELECT id FROM picked)
-          RETURNING id
-        `);
-        return [...claimed].map((job) => ({ id: Number(job.id) }));
-      });
-      await Promise.all(jobs.map(async (job) => {
-        running += 1;
-        try { await processSubmission(job.id, config, true); } finally { running -= 1; }
-      }));
-    } finally {
-      await client.end();
-    }
-  };
-  const timer = setInterval(() => { void tick(); }, config.pollMs);
-  return { stop: () => { stopped = true; clearInterval(timer); } };
+  const timer = setInterval(() => { void processQueuedSubmissions(config); }, config.pollMs);
+  return { stop: () => clearInterval(timer) };
 }

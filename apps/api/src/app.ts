@@ -11,11 +11,14 @@ import { submissionsRouter } from './routes/submissions';
 import { verifierRouter } from './routes/verifier';
 import { validatorRouter } from './routes/validator';
 import { notificationsRouter } from './routes/notifications';
+import { telegramWebhookHandler } from './telegram/bot';
 
 export function createApp(): Express {
   const app = express();
   app.use(express.json({ limit: '2mb' }));
   app.use(cookieParser());
+  const telegramWebhook = telegramWebhookHandler();
+  if (telegramWebhook) app.post(`${API_PREFIX}/telegram/webhook`, telegramWebhook);
   app.use(API_PREFIX, healthRouter);
   app.use(API_PREFIX, authRouter);
   app.use(API_PREFIX, meRouter);
